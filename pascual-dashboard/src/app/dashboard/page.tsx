@@ -3,80 +3,10 @@
 import { useState } from "react";
 import { StatCard } from "@/components/ui/Card";
 import { Grid, Section, SectionHeader } from "@/components/layout/MainContent";
-import { ActivityFeed, ActivityItem } from "@/components/dashboard/ActivityFeed";
+import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { ChatWindow, ChatMessage } from "@/components/chat/ChatWindow";
 import { MessageInput } from "@/components/chat/MessageInput";
-
-// Mock data
-const mockActivities: ActivityItem[] = [
-  {
-    id: "1",
-    type: "agent",
-    title: "Nexus completed research task",
-    description: "Analyzed 15 documents",
-    timestamp: "2m ago",
-    agentName: "Nexus",
-  },
-  {
-    id: "2",
-    type: "security",
-    title: "Security scan completed",
-    description: "No threats detected",
-    timestamp: "15m ago",
-    agentName: "Sentinel",
-  },
-  {
-    id: "3",
-    type: "task",
-    title: "New task assigned to Scout",
-    description: "Calendar optimization",
-    timestamp: "32m ago",
-    agentName: "Scout",
-  },
-  {
-    id: "4",
-    type: "system",
-    title: "System backup completed",
-    timestamp: "1h ago",
-  },
-  {
-    id: "5",
-    type: "agent",
-    title: "Oracle generated financial report",
-    description: "Q4 analysis ready",
-    timestamp: "2h ago",
-    agentName: "Oracle",
-  },
-];
-
-const mockMessages: ChatMessage[] = [
-  {
-    id: "1",
-    role: "system",
-    content: "Session started",
-    timestamp: "10:00 AM",
-  },
-  {
-    id: "2",
-    role: "assistant",
-    content: "Hello! I'm PASCUAL, your multi-agent AI assistant. How can I help you today?",
-    timestamp: "10:00 AM",
-    agentName: "Nexus",
-  },
-  {
-    id: "3",
-    role: "user",
-    content: "Show me the current system status",
-    timestamp: "10:02 AM",
-  },
-  {
-    id: "4",
-    role: "assistant",
-    content: "All systems are operational.\n\n- CPU: 24% utilization\n- Memory: 3.2GB / 16GB\n- Active Agents: 4\n- Pending Tasks: 11",
-    timestamp: "10:02 AM",
-    agentName: "Nexus",
-  },
-];
+import { mockActivities, mockMessages, mockDashboardStats } from "@/lib/api/mock/dashboard";
 
 export default function DashboardPage() {
   const [messages, setMessages] = useState<ChatMessage[]>(mockMessages);

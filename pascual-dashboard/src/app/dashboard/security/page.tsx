@@ -7,111 +7,25 @@ import { BarChart } from "@/components/charts/BarChart";
 import { LineChart } from "@/components/charts/LineChart";
 import { CircularProgress, DonutChart } from "@/components/charts/CircularProgress";
 import { HeatMap } from "@/components/charts/HeatMap";
+import {
+  mockSecurityEvents,
+  mockThreatCategories,
+  mockSystemUsageData,
+  mockResourceAllocation,
+  mockAuditLogs,
+  mockHeatmapData,
+  dayLabels,
+  hourLabels,
+  mockSecurityStats,
+  mockPerformanceMetrics,
+} from "@/lib/api/mock/security";
 
-const securityEvents = [
-  { name: "00:00", value: 5 },
-  { name: "04:00", value: 3 },
-  { name: "08:00", value: 12 },
-  { name: "12:00", value: 18 },
-  { name: "16:00", value: 25 },
-  { name: "20:00", value: 15 },
-  { name: "Now", value: 8 },
-];
-
-const threatCategories = [
-  { name: "Scan", value: 45, color: "#00d9ff" },
-  { name: "Auth", value: 28, color: "#ff006e" },
-  { name: "API", value: 15, color: "#39ff14" },
-  { name: "Other", value: 12, color: "#ffaa00" },
-];
-
-const systemUsageData = [
-  { name: "00:00", value: 20 },
-  { name: "04:00", value: 15 },
-  { name: "08:00", value: 35 },
-  { name: "12:00", value: 55 },
-  { name: "16:00", value: 70 },
-  { name: "20:00", value: 45 },
-  { name: "Now", value: 42 },
-];
-
-const resourceAllocation = [
-  { name: "Agents", value: 45, color: "#00d9ff" },
-  { name: "Tasks", value: 30, color: "#ff006e" },
-  { name: "System", value: 25, color: "#39ff14" },
-];
-
-const auditLogs = [
-  {
-    id: "1",
-    action: "User login",
-    user: "admin",
-    ip: "192.168.1.1",
-    timestamp: "10:45:23",
-    status: "success",
-  },
-  {
-    id: "2",
-    action: "API key generated",
-    user: "system",
-    ip: "internal",
-    timestamp: "10:32:15",
-    status: "success",
-  },
-  {
-    id: "3",
-    action: "Failed login attempt",
-    user: "unknown",
-    ip: "203.0.113.42",
-    timestamp: "10:28:00",
-    status: "blocked",
-  },
-  {
-    id: "4",
-    action: "Permission change",
-    user: "admin",
-    ip: "192.168.1.1",
-    timestamp: "10:15:30",
-    status: "success",
-  },
-  {
-    id: "5",
-    action: "Agent activation",
-    user: "system",
-    ip: "internal",
-    timestamp: "09:58:12",
-    status: "success",
-  },
-];
-
-// Generate heatmap data for activity by hour/day
-const generateHeatmapData = () => {
-  const days = 7;
-  const hours = 24;
-  const data = [];
-
-  for (let d = 0; d < days; d++) {
-    const row = [];
-    for (let h = 0; h < hours; h++) {
-      // Simulate activity patterns
-      let baseValue = Math.random() * 30;
-      // Higher activity during work hours
-      if (h >= 9 && h <= 17) baseValue += 40;
-      // Lower on weekends
-      if (d >= 5) baseValue *= 0.5;
-      row.push({
-        value: Math.round(baseValue),
-        label: `Day ${d + 1}, Hour ${h}: ${Math.round(baseValue)} events`,
-      });
-    }
-    data.push(row);
-  }
-  return data;
-};
-
-const heatmapData = generateHeatmapData();
-const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const hourLabels = Array.from({ length: 24 }, (_, i) => (i % 6 === 0 ? `${i}h` : ""));
+const securityEvents = mockSecurityEvents;
+const threatCategories = mockThreatCategories;
+const systemUsageData = mockSystemUsageData;
+const resourceAllocation = mockResourceAllocation;
+const auditLogs = mockAuditLogs;
+const heatmapData = mockHeatmapData;
 
 export default function SecurityPage() {
   return (

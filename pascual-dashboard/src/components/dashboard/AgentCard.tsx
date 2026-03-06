@@ -84,6 +84,73 @@ const getAgentRam = (agentId: string): number => {
   return 15 + (hash % 35); // 15-50%
 };
 
+// Determines if the model is efficient for the agent's role
+export const getModelEfficiency = (agentName: string, model: string): { isEfficient: boolean; reason: string } => {
+  const name = agentName.toLowerCase();
+
+  // Tasks that require simpler/faster models (Haiku is efficient)
+  const simpleTasks = ["parser", "validator", "scanner", "monitor", "harvester", "integrador"];
+  // Tasks that require balanced models (Sonnet is efficient)
+  const mediumTasks = ["orchestrator", "curator", "synthesizer", "firewall", "cuantificador", "fundamental", "diseñador"];
+  // Tasks that require powerful models (Opus is efficient)
+  const complexTasks = ["estratega", "innovador", "nexus", "condor360", "dashboard"];
+
+  const isHaiku = model.toLowerCase().includes("haiku");
+  const isSonnet = model.toLowerCase().includes("sonnet");
+  const isOpus = model.toLowerCase().includes("opus");
+
+  if (simpleTasks.some(task => name.includes(task))) {
+    if (isHaiku) return { isEfficient: true, reason: "Optimal for simple tasks" };
+    return { isEfficient: false, reason: "Consider Haiku for better efficiency" };
+  }
+
+  if (mediumTasks.some(task => name.includes(task))) {
+    if (isSonnet) return { isEfficient: true, reason: "Optimal for medium complexity" };
+    if (isHaiku) return { isEfficient: false, reason: "May need more capability" };
+    return { isEfficient: false, reason: "Consider Sonnet for balance" };
+  }
+
+  if (complexTasks.some(task => name.includes(task))) {
+    if (isOpus) return { isEfficient: true, reason: "Optimal for complex tasks" };
+    return { isEfficient: false, reason: "Consider Opus for best results" };
+  }
+
+  // Default: Sonnet is a good balance
+  if (isSonnet) return { isEfficient: true, reason: "Good default choice" };
+  return { isEfficient: true, reason: "Model accepted" };
+};
+
+// Check efficiency of agent AND all its sub-agents - returns alert if ANY has issues
+export const getAgentGroupEfficiency = (agent: Agent): { isEfficient: boolean; reason: string; issueCount: number } => {
+  const issues: string[] = [];
+
+  // Check main agent
+  const mainEfficiency = getModelEfficiency(agent.name, agent.model);
+  if (!mainEfficiency.isEfficient) {
+    issues.push(`${agent.name}: ${mainEfficiency.reason}`);
+  }
+
+  // Check all sub-agents
+  if (agent.subAgents) {
+    for (const subAgent of agent.subAgents) {
+      const subEfficiency = getModelEfficiency(subAgent.name, subAgent.model);
+      if (!subEfficiency.isEfficient) {
+        issues.push(`${subAgent.name}: ${subEfficiency.reason}`);
+      }
+    }
+  }
+
+  if (issues.length === 0) {
+    return { isEfficient: true, reason: "All models optimized", issueCount: 0 };
+  }
+
+  return {
+    isEfficient: false,
+    reason: `${issues.length} model(s) need review`,
+    issueCount: issues.length,
+  };
+};
+
 export function AgentCard({ agent, onExpand }: AgentCardProps) {
   const roleColor = getRoleColor(agent.role);
   const [timeRange, setTimeRange] = useState<TimeRange>("24h");
@@ -117,8 +184,22 @@ export function AgentCard({ agent, onExpand }: AgentCardProps) {
 
       <CardBody>
         <div className="flex items-center justify-between mb-2">
-          <div className="text-xs text-zinc-400 font-mono">
+          <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono">
             <span className="text-zinc-500">MODEL:</span> {agent.model}
+            {(() => {
+              const groupEfficiency = getAgentGroupEfficiency(agent);
+              return (
+                <Tooltip content={groupEfficiency.reason} position="top" inline>
+                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-sm cursor-help ${
+                    groupEfficiency.isEfficient
+                      ? "bg-green-950/50 text-[#39ff14] border border-green-500/30"
+                      : "bg-amber-950/50 text-amber-400 border border-amber-500/30"
+                  }`}>
+                    {groupEfficiency.isEfficient ? "✓" : `!${groupEfficiency.issueCount > 1 ? groupEfficiency.issueCount : ""}`}
+                  </span>
+                </Tooltip>
+              );
+            })()}
           </div>
           <div className="flex items-center gap-3">
             <span className="text-[10px] font-mono text-zinc-500">
@@ -205,7 +286,23 @@ export function AgentListItem({ agent, onExpand }: AgentListItemProps) {
           <span className="text-xl" style={{ color: roleColor }}>{agent.icon}</span>
           <div>
             <h3 className="font-mono text-sm font-bold">{agent.name}</h3>
-            <p className="font-mono text-xs text-zinc-500">{agent.model}</p>
+            <div className="flex items-center gap-2">
+              <p className="font-mono text-xs text-zinc-500">{agent.model}</p>
+              {(() => {
+                const groupEfficiency = getAgentGroupEfficiency(agent);
+                return (
+                  <Tooltip content={groupEfficiency.reason} position="top" inline>
+                    <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-sm cursor-help ${
+                      groupEfficiency.isEfficient
+                        ? "bg-green-950/50 text-[#39ff14] border border-green-500/30"
+                        : "bg-amber-950/50 text-amber-400 border border-amber-500/30"
+                    }`}>
+                      {groupEfficiency.isEfficient ? "✓" : `!${groupEfficiency.issueCount > 1 ? groupEfficiency.issueCount : ""}`}
+                    </span>
+                  </Tooltip>
+                );
+              })()}
+            </div>
           </div>
         </div>
 
@@ -216,13 +313,12 @@ export function AgentListItem({ agent, onExpand }: AgentListItemProps) {
           <span className="text-[10px] font-mono text-zinc-500">
             RAM: <span className="text-amber-400">{getAgentRam(agent.id)}%</span>
           </span>
-          <StatusBadge status={agent.status} />
           <button
             onClick={onExpand}
             className="flex items-center gap-1.5 px-2 py-1 bg-zinc-800 border border-zinc-700 rounded-sm text-[#00d9ff] hover:bg-zinc-700 hover:text-white transition-colors"
           >
             <span className="text-xs">⚙</span>
-            <span className="text-[10px] font-mono">EXPAND</span>
+            <span className="text-[10px] font-mono">CONFIG</span>
           </button>
         </div>
       </div>

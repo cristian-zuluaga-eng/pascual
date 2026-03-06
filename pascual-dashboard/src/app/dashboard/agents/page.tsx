@@ -6,115 +6,18 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardBody, CardFooter } from "@/components/ui/Card";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { Input, Select } from "@/components/ui/Input";
-import { AgentCard, AgentListItem, Agent } from "@/components/dashboard/AgentCard";
+import { AgentCard, AgentListItem, Agent, getModelEfficiency } from "@/components/dashboard/AgentCard";
 import { LineChart } from "@/components/charts/LineChart";
 import { CircularProgress } from "@/components/charts/CircularProgress";
 import { Tooltip } from "@/components/ui/Tooltip";
-
-const AVAILABLE_MODELS = [
-  "Claude Opus",
-  "Claude Sonnet",
-  "Claude Haiku",
-  "GPT-4o",
-  "GPT-4o Mini",
-  "Gemini Pro",
-];
-
-const initialAgents: Agent[] = [
-  {
-    id: "nexus",
-    name: "Nexus",
-    icon: "◈",
-    description: "Agente central de coordinación que gestiona la comunicación entre todos los agentes del sistema PASCUAL",
-    model: "Claude Opus",
-    role: "general",
-    status: "active",
-    activeTasks: 3,
-    usageHistory: [45, 52, 48, 61, 55, 67, 72, 68, 75, 71],
-    subAgents: [
-      { id: "nexus-1", name: "Parser", model: "Claude Haiku", status: "active", description: "Analiza y procesa texto estructurado y no estructurado" },
-      { id: "nexus-2", name: "Validator", model: "Claude Haiku", status: "active", description: "Valida la integridad y formato de los datos" },
-      { id: "nexus-3", name: "Orchestrator", model: "Claude Sonnet", status: "busy", description: "Coordina la comunicación entre agentes" },
-    ],
-  },
-  {
-    id: "sentinel",
-    name: "Sentinel",
-    icon: "⛊",
-    description: "Agente de seguridad encargado de monitorear, detectar y responder a amenazas en el sistema",
-    model: "Claude Sonnet",
-    role: "security",
-    status: "active",
-    activeTasks: 2,
-    usageHistory: [30, 35, 42, 38, 45, 52, 48, 55, 50, 47],
-    subAgents: [
-      { id: "sentinel-1", name: "Scanner", model: "Claude Haiku", status: "active", description: "Escanea vulnerabilidades en el sistema" },
-      { id: "sentinel-2", name: "Monitor", model: "Claude Haiku", status: "active", description: "Monitorea actividad sospechosa en tiempo real" },
-      { id: "sentinel-3", name: "Firewall", model: "Claude Sonnet", status: "offline", description: "Gestiona reglas de acceso y bloqueo" },
-    ],
-  },
-  {
-    id: "scout",
-    name: "Scout",
-    icon: "◎",
-    description: "Agente de investigación que busca, recopila y sintetiza información de múltiples fuentes",
-    model: "Claude Haiku",
-    role: "assistant",
-    status: "busy",
-    activeTasks: 5,
-    usageHistory: [60, 65, 70, 68, 75, 80, 78, 82, 85, 88],
-    subAgents: [
-      { id: "scout-1", name: "Hunter", model: "Claude Haiku", status: "busy", description: "Busca y localiza información relevante" },
-      { id: "scout-2", name: "Harvester", model: "Claude Haiku", status: "active", description: "Recolecta y extrae datos de múltiples fuentes" },
-      { id: "scout-3", name: "Curator", model: "Claude Haiku", status: "busy", description: "Organiza y clasifica la información recopilada" },
-      { id: "scout-4", name: "Synthesizer", model: "Claude Sonnet", status: "active", description: "Sintetiza y resume información compleja" },
-    ],
-  },
-  {
-    id: "oracle",
-    name: "Condor360",
-    icon: "⟁",
-    description: "Agente financiero especializado en análisis de mercados, estrategias de inversión y gestión de portafolios",
-    model: "Claude Sonnet",
-    role: "financial",
-    status: "active",
-    activeTasks: 1,
-    usageHistory: [25, 28, 32, 30, 35, 38, 42, 40, 45, 48],
-    subAgents: [
-      { id: "oracle-1", name: "Cuantificador", model: "Claude Sonnet", status: "active", description: "Análisis cuantitativo de mercados financieros" },
-      { id: "oracle-2", name: "Fundamental", model: "Claude Sonnet", status: "active", description: "Análisis fundamental de activos y empresas" },
-      { id: "oracle-3", name: "Estratega", model: "Claude Opus", status: "offline", description: "Diseña estrategias de inversión optimizadas" },
-    ],
-  },
-  {
-    id: "forge",
-    name: "Dashboard",
-    icon: "⌘",
-    description: "Agente de desarrollo encargado de crear, mantener y mejorar las interfaces y sistemas del ecosistema",
-    model: "Claude Opus",
-    role: "development",
-    status: "offline",
-    activeTasks: 0,
-    usageHistory: [80, 75, 70, 65, 60, 55, 50, 45, 40, 35],
-    subAgents: [
-      { id: "forge-1", name: "Diseñador", model: "Claude Sonnet", status: "offline", description: "Crea interfaces y experiencias de usuario" },
-      { id: "forge-2", name: "Integrador", model: "Claude Haiku", status: "offline", description: "Conecta sistemas y APIs externas" },
-      { id: "forge-3", name: "Innovador", model: "Claude Opus", status: "offline", description: "Propone mejoras y nuevas funcionalidades" },
-    ],
-  },
-];
+import { mockAgents, AVAILABLE_MODELS } from "@/lib/api/mock/agents";
 
 type ViewMode = "grid" | "list";
 
 export default function AgentsPage() {
-  const [agents, setAgents] = useState<Agent[]>(initialAgents);
+  const [agents, setAgents] = useState<Agent[]>(mockAgents);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const filteredAgents = agents.filter((agent) => {
-    return agent.name.toLowerCase().includes(searchQuery.toLowerCase());
-  });
 
   const activeCount = agents.filter((a) => a.status === "active").length;
   const busyCount = agents.filter((a) => a.status === "busy").length;
@@ -187,37 +90,29 @@ export default function AgentsPage() {
         </Grid>
       </Section>
 
-      {/* Filters */}
+      {/* View Mode Toggle */}
       <Section>
-        <div className="flex items-center justify-between gap-4">
-          <Input
-            placeholder="Search agents..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-64"
-          />
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`p-2 rounded-sm transition-colors ${
-                viewMode === "grid"
-                  ? "bg-cyan-950 text-[#00d9ff]"
-                  : "text-zinc-500 hover:text-white"
-              }`}
-            >
-              ⊞
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`p-2 rounded-sm transition-colors ${
-                viewMode === "list"
-                  ? "bg-cyan-950 text-[#00d9ff]"
-                  : "text-zinc-500 hover:text-white"
-              }`}
-            >
-              ☰
-            </button>
-          </div>
+        <div className="flex items-center justify-end gap-2">
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`p-2 rounded-sm transition-colors ${
+              viewMode === "grid"
+                ? "bg-cyan-950 text-[#00d9ff]"
+                : "text-zinc-500 hover:text-white"
+            }`}
+          >
+            ⊞
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            className={`p-2 rounded-sm transition-colors ${
+              viewMode === "list"
+                ? "bg-cyan-950 text-[#00d9ff]"
+                : "text-zinc-500 hover:text-white"
+            }`}
+          >
+            ☰
+          </button>
         </div>
       </Section>
 
@@ -225,7 +120,7 @@ export default function AgentsPage() {
       <Section>
         {viewMode === "grid" ? (
           <Grid cols={3}>
-            {filteredAgents.map((agent) => (
+            {agents.map((agent) => (
               <AgentCard
                 key={agent.id}
                 agent={agent}
@@ -235,7 +130,7 @@ export default function AgentsPage() {
           </Grid>
         ) : (
           <div className="space-y-2">
-            {filteredAgents.map((agent) => (
+            {agents.map((agent) => (
               <AgentListItem
                 key={agent.id}
                 agent={agent}
@@ -263,42 +158,6 @@ export default function AgentsPage() {
     </div>
   );
 }
-
-// Determines if the model is efficient for the sub-agent's task type
-const getModelEfficiency = (subAgentName: string, model: string): { isEfficient: boolean; reason: string } => {
-  const name = subAgentName.toLowerCase();
-
-  // Tasks that require simpler/faster models (Haiku is efficient)
-  const simpleTasks = ["parser", "validator", "scanner", "monitor", "harvester", "integrador"];
-  // Tasks that require balanced models (Sonnet is efficient)
-  const mediumTasks = ["orchestrator", "curator", "synthesizer", "firewall", "cuantificador", "fundamental", "diseñador"];
-  // Tasks that require powerful models (Opus is efficient)
-  const complexTasks = ["estratega", "innovador"];
-
-  const isHaiku = model.toLowerCase().includes("haiku");
-  const isSonnet = model.toLowerCase().includes("sonnet");
-  const isOpus = model.toLowerCase().includes("opus");
-
-  if (simpleTasks.some(task => name.includes(task))) {
-    if (isHaiku) return { isEfficient: true, reason: "Optimal for simple tasks" };
-    return { isEfficient: false, reason: "Consider Haiku for better efficiency" };
-  }
-
-  if (mediumTasks.some(task => name.includes(task))) {
-    if (isSonnet) return { isEfficient: true, reason: "Optimal for medium complexity" };
-    if (isHaiku) return { isEfficient: false, reason: "May need more capability" };
-    return { isEfficient: false, reason: "Consider Sonnet for balance" };
-  }
-
-  if (complexTasks.some(task => name.includes(task))) {
-    if (isOpus) return { isEfficient: true, reason: "Optimal for complex tasks" };
-    return { isEfficient: false, reason: "Consider Opus for best results" };
-  }
-
-  // Default: Sonnet is a good balance
-  if (isSonnet) return { isEfficient: true, reason: "Good default choice" };
-  return { isEfficient: true, reason: "Model accepted" };
-};
 
 type TimeRange = "24h" | "7d" | "1m" | "1y";
 
