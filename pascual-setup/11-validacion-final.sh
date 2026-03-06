@@ -1,8 +1,8 @@
 #!/bin/bash
 # ============================================================================
-# PASCUAL-BOT: Sistema de Agente de IA Local Multi-Usuario
+# PASCUAL-BOT: Sistema de Agente de IA Local
 # ============================================================================
-# FASE 13: Validación Final
+# FASE 11: Validación Final
 # Autor: Claude
 # Fecha: 2026-03-05
 # Descripción: Verifica la instalación completa y genera reporte de estado
@@ -46,13 +46,25 @@ log_step() {
     echo "[STEP] $(date +"%Y-%m-%d %H:%M:%S") - $1" >> "$PASCUAL_LOG" 2>/dev/null || true
 }
 
+log_success() {
+    echo -e "${GREEN}[✓]${NC} $1"
+    echo "[SUCCESS] $(date +"%Y-%m-%d %H:%M:%S") - $1" >> "$PASCUAL_LOG" 2>/dev/null || true
+}
+
+log_failure() {
+    echo -e "${RED}[✗]${NC} $1"
+    echo "[FAILURE] $(date +"%Y-%m-%d %H:%M:%S") - $1" >> "$PASCUAL_LOG" 2>/dev/null || true
+}
+
 # Verificar estructura de directorios
 check_directory_structure() {
     log_step "Verificando estructura de directorios..."
     local error_count=0
 
-    # Directorios principales
-    for dir in "users" "shared" "config" "master" "sentinel" "workflows" "skills"; do
+    # Directorios básicos
+    local dirs=("core" "shared" "config" "master" "docs" "workflows" "skills" "dashboard")
+
+    for dir in "${dirs[@]}"; do
         if [ ! -d "$PASCUAL_DIR/$dir" ]; then
             log_error "Directorio faltante: $PASCUAL_DIR/$dir"
             error_count=$((error_count + 1))
@@ -62,7 +74,7 @@ check_directory_structure() {
     done
 
     # Archivos de configuración
-    for file in "routing.json" "sentinel_policy.json" ".env"; do
+    for file in ".env"; do
         if [ ! -f "$PASCUAL_CONFIG/$file" ]; then
             log_error "Archivo de configuración faltante: $PASCUAL_CONFIG/$file"
             error_count=$((error_count + 1))
@@ -81,81 +93,13 @@ check_directory_structure() {
     fi
 }
 
-# Verificar usuarios
-check_users() {
-    log_step "Verificando perfiles de usuario..."
-
-    # Cargar usuarios desde routing.json
-    local users_dir="$PASCUAL_DIR/users"
-    local routing_file="$PASCUAL_CONFIG/routing.json"
-    local registered_users=()
-
-    if [ -f "$routing_file" ]; then
-        # Usar Python para extraer usuarios registrados (más confiable que grep/sed)
-        if command -v python3 &> /dev/null; then
-            local users_json=$(python3 -c "import json; print(','.join(json.load(open('$routing_file'))['usuarios_registrados']))" 2>/dev/null)
-            IFS=',' read -ra registered_users <<< "$users_json"
-        else
-            # Fallback si no hay Python
-            registered_users=($(grep -o '"[^"]*"' "$routing_file" | grep -v "version\|telegram\|default\|wake_words\|rechazar\|priorizar" | tr -d '"' | sort -u))
-        fi
-    else
-        log_error "Archivo routing.json no encontrado"
-        return 1
-    fi
-
-    # Verificar que existan directorios para cada usuario
-    local error_count=0
-    for user in "${registered_users[@]}"; do
-        if [ ! -d "$users_dir/$user" ]; then
-            log_error "Directorio para usuario '$user' no encontrado"
-            error_count=$((error_count + 1))
-        else
-            # Verificar estructura interna
-            local subdirs=("config" "agents" "tasks" "data" "logs" "sandbox" "vector_index" "base_agent")
-            local missing_subdirs=0
-
-            for subdir in "${subdirs[@]}"; do
-                if [ ! -d "$users_dir/$user/$subdir" ]; then
-                    missing_subdirs=$((missing_subdirs + 1))
-                fi
-            done
-
-            if [ $missing_subdirs -gt 0 ]; then
-                log_warning "Usuario '$user': $missing_subdirs subdirectorios faltantes"
-            else
-                echo "  ✓ Usuario $user"
-            fi
-        fi
-    done
-
-    # Verificar permisos
-    for user_dir in "$users_dir"/*; do
-        if [ -d "$user_dir" ]; then
-            local perms=$(stat -c "%a" "$user_dir")
-            if [ "$perms" != "750" ]; then
-                log_warning "Directorio $user_dir tiene permisos incorrectos: $perms (debería ser 750)"
-            fi
-        fi
-    done
-
-    # Retornar resultado
-    if [ $error_count -eq 0 ]; then
-        log_info "Perfiles de usuario configurados correctamente"
-        return 0
-    else
-        log_error "Problemas en perfiles de usuario: $error_count errores encontrados"
-        return 1
-    fi
-}
-
 # Verificar servicios
 check_services() {
     log_step "Verificando estado de servicios..."
     local error_count=0
 
     # Servicios principales
-    local services=("pascual-maestro" "pascual-sentinel" "ollama")
+    local services=("pascual-maestro" "ollama")
 
     for service in "${services[@]}"; do
         if systemctl list-units --full -all | grep -q "$service.service"; then
@@ -319,7 +263,6 @@ generate_report() {
 | Componente | Estado | Versión |
 |------------|--------|---------|
 | Pascual-Maestro | $(systemctl is-active pascual-maestro.service 2>/dev/null || echo "No instalado") | ${PASCUAL_VERSION:-1.0.0} |
-| Sentinel | $(systemctl is-active pascual-sentinel.service 2>/dev/null || echo "No instalado") | ${PASCUAL_VERSION:-1.0.0} |
 | Ollama | $(systemctl is-active ollama.service 2>/dev/null || echo "No instalado") | $(ollama --version 2>/dev/null || echo "Desconocido") |
 | Python | Instalado | $(python3 --version 2>/dev/null || echo "Desconocido") |
 | Node.js | $(command -v node &> /dev/null && echo "Instalado" || echo "No instalado") | $(node --version 2>/dev/null || echo "Desconocido") |
@@ -328,14 +271,9 @@ generate_report() {
 
 $(ollama list 2>/dev/null || echo "No se pudieron listar los modelos")
 
-## 👤 Usuarios Configurados
-
-$(if [ -f "$PASCUAL_CONFIG/routing.json" ]; then python3 -c "import json; print('\n'.join(['- ' + u for u in json.load(open('$PASCUAL_CONFIG/routing.json'))['usuarios_registrados']]))" 2>/dev/null || echo "Error al parsear usuarios"; else echo "Archivo de routing no encontrado"; fi)
-
 ## 🧪 Resultados de Validación
 
 - **Estructura de Directorios**: $(check_directory_structure > /dev/null 2>&1 && echo "✅ Completa" || echo "❌ Incompleta")
-- **Perfiles de Usuario**: $(check_users > /dev/null 2>&1 && echo "✅ Correctos" || echo "❌ Problemas encontrados")
 - **Servicios**: $(check_services > /dev/null 2>&1 && echo "✅ Activos" || echo "❌ Problemas encontrados")
 - **Modelos de IA**: $(check_models > /dev/null 2>&1 && echo "✅ Instalados" || echo "❌ Incompletos")
 - **Herramientas de Voz**: $(check_voice_tools > /dev/null 2>&1 && echo "✅ Instaladas" || echo "❌ Incompletas")
@@ -345,7 +283,6 @@ $(if [ -f "$PASCUAL_CONFIG/routing.json" ]; then python3 -c "import json; print(
 1. **Verificar Servicios**:
    \`\`\`
    systemctl status pascual-maestro.service
-   systemctl status pascual-sentinel.service
    \`\`\`
 
 2. **Probar Reconocimiento de Voz**:
@@ -356,57 +293,61 @@ $(if [ -f "$PASCUAL_CONFIG/routing.json" ]; then python3 -c "import json; print(
 3. **Acceder al Dashboard**:
    \`\`\`
    cd ~/.pascual/dashboard && npm run dev
-   # Acceder a http://localhost:${DASHBOARD_PORT:-38472}
    \`\`\`
-
-4. **Configurar API Keys**:
-   - Editar \`~/.pascual/config/.env\` para configurar tokens de API
-
-## 🔗 Enlaces Útiles
-
-- **Documentación de Comandos de Voz**: \`~/.pascual/docs/comandos_voz.md\`
-- **Log de Instalación**: \`$PASCUAL_LOG\`
-- **Archivos de Configuración**: \`$PASCUAL_CONFIG/\`
+   Luego abra en su navegador: http://localhost:3000
 EOF
 
-    log_info "Reporte de instalación generado en $report_file"
+    # Aviso de finalización
+    log_info "Reporte generado en $report_file"
     return 0
 }
 
-# Verificar todos los componentes y generar reporte final
-verify_installation() {
-    log_step "Verificando instalación completa..."
-    local errors=0
+# Verificar instalación completa
+verificar_instalacion_completa() {
+    log_step "Verificando la instalación completa de Pascual-Bot..."
 
-    # Comprobar cada componente
-    check_directory_structure
-    errors=$((errors + $?))
+    # Realizar verificaciones
+    local check_results=0
+    check_directory_structure || check_results=$((check_results + 1))
+    check_services || check_results=$((check_results + 1))
+    check_models || check_results=$((check_results + 1))
+    check_voice_tools || check_results=$((check_results + 1))
 
-    check_users
-    errors=$((errors + $?))
-
-    check_services
-    errors=$((errors + $?))
-
-    check_models
-    errors=$((errors + $?))
-
-    check_voice_tools
-    errors=$((errors + $?))
-
-    # Generar reporte final
+    # Generar reporte
     generate_report
 
-    # Resumen
+    # Mostrar resultado final
     echo ""
-    if [ $errors -eq 0 ]; then
-        log_info "🎉 ¡Felicidades! Pascual-Bot se ha instalado correctamente"
+    echo "============================================================================"
+    echo "          PASCUAL-BOT: VERIFICACIÓN DE INSTALACIÓN COMPLETADA                "
+    echo "============================================================================"
+
+    if [ $check_results -eq 0 ]; then
+        log_success "¡Instalación completada con éxito!"
+        echo ""
+        echo "Todos los componentes han sido instalados correctamente."
+        echo "Puedes revisar el reporte detallado en: $PASCUAL_DIR/installation_report.md"
     else
-        log_warning "⚠️ Instalación completada con $errors problemas"
-        log_info "👉 Consulta el reporte para más detalles: $PASCUAL_DIR/installation_report.md"
+        log_warning "Instalación completada con advertencias ($check_results problemas)"
+        echo ""
+        echo "Se detectaron algunos problemas que deberías revisar."
+        echo "Revisa el reporte detallado en: $PASCUAL_DIR/installation_report.md"
     fi
 
-    return $errors
+    echo ""
+    log_info "Para comenzar a usar Pascual:"
+    echo "  1. Inicia los servicios requeridos"
+    echo "     systemctl start ollama.service"
+    echo "     systemctl start pascual-maestro.service"
+    echo ""
+    echo "  2. Inicia el dashboard web (opcional)"
+    echo "     cd $PASCUAL_DIR/dashboard && npm run dev"
+    echo ""
+    echo "  3. Prueba la interacción por voz"
+    echo "     python3 $PASCUAL_DIR/master/test-voice.py"
+    echo ""
+
+    return $check_results
 }
 
 # ============================================================================
@@ -415,44 +356,11 @@ verify_installation() {
 
 # Encabezado
 echo "============================================================================"
-echo "                  PASCUAL-BOT: VALIDACIÓN FINAL                            "
+echo "                PASCUAL-BOT: VALIDACIÓN FINAL                              "
 echo "============================================================================"
 echo ""
 
-# Verificar que las fases anteriores se hayan completado
-if [ ! -d "$PASCUAL_DIR" ] || [ ! -f "$PASCUAL_CONFIG/.env" ]; then
-    log_error "No se encontró una instalación de Pascual-Bot"
-    log_info "Debes ejecutar primero los scripts de instalación en orden"
-    exit 1
-fi
+# Verificación completa
+verificar_instalacion_completa
 
-# Ejecutar validación completa
-verify_installation
-exit_code=$?
-
-# Registrar fase completada
-if [ $exit_code -eq 0 ]; then
-    echo "FASE_13_COMPLETED=true" >> "$PASCUAL_CONFIG/.env"
-fi
-
-echo ""
-log_info "📝 Reporte de instalación disponible en: $PASCUAL_DIR/installation_report.md"
-log_info "📚 Documentación de comandos de voz: $PASCUAL_DIR/docs/comandos_voz.md"
-log_info "🌐 Repositorio del proyecto: https://github.com/usuario/pascual-bot"
-
-# Instrucciones finales
-echo ""
-echo -e "${BLUE}============================================================================${NC}"
-echo -e "${GREEN}¡Gracias por instalar Pascual-Bot!${NC}"
-echo -e "${BLUE}============================================================================${NC}"
-echo ""
-echo "Para comenzar a usar tu asistente de IA personal:"
-echo ""
-echo "1. Prueba los comandos de voz: ${GREEN}python3 ~/.pascual/master/test-voice.py${NC}"
-echo "2. Accede al dashboard web: ${GREEN}cd ~/.pascual/dashboard && npm run dev${NC}"
-echo "3. Configura integraciones opcionales editando: ${GREEN}~/.pascual/config/.env${NC}"
-echo ""
-echo -e "${YELLOW}¡Disfruta tu asistente de IA completamente local y privado!${NC}"
-echo ""
-
-exit $exit_code
+exit 0

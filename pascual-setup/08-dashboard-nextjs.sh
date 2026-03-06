@@ -1,12 +1,12 @@
 #!/bin/bash
 # ============================================================================
-# PASCUAL-BOT: Sistema de Agente de IA Local Multi-Usuario
+# PASCUAL-BOT: Sistema de Agente de IA Local
 # ============================================================================
-# FASE 10: Dashboard Web (NextJS)
+# FASE 8: Dashboard Web (NextJS)
 # Autor: Claude
 # Fecha: 2026-03-05
 # Descripción: Instala y configura un dashboard web basado en NextJS
-# Dependencias: Sentinel (09-sentinel-agente.sh)
+# Dependencias: Agente Base (07-agente-base.sh)
 # ============================================================================
 
 # Habilitar modo estricto - salir inmediatamente si cualquier comando falla
@@ -42,15 +42,15 @@ check_sudo() {
 check_previous_phase() {
     if [ ! -f "$PASCUAL_CONFIG/.env" ]; then
         log_error "No se encontró el archivo de configuración de Pascual-Bot"
-        log_info "Debes ejecutar primero: ./09-sentinel-agente.sh"
+        log_info "Debes ejecutar primero: ./07-agente-base.sh"
         exit 1
     fi
 
-    # Verificar que la fase 9 esté marcada como completada
+    # Verificar que la fase 7 esté marcada como completada
     source "$PASCUAL_CONFIG/.env"
-    if [ "$FASE_9_COMPLETED" != "true" ]; then
-        log_error "La fase 9 no se ha completado correctamente"
-        log_info "Debes ejecutar primero: ./09-sentinel-agente.sh"
+    if [ "$FASE_7_COMPLETED" != "true" ]; then
+        log_error "La fase 7 no se ha completado correctamente"
+        log_info "Debes ejecutar primero: ./07-agente-base.sh"
         exit 1
     fi
 }
@@ -92,7 +92,7 @@ cleanup() {
     if [ $? -ne 0 ]; then
         log_error "¡Instalación interrumpida! Error en la línea $BASH_LINENO"
         log_info "Para solucionar problemas, revise el log: $PASCUAL_LOG"
-        log_info "Para hacer rollback, ejecute: ./rollback/rollback-phase-10.sh"
+        log_info "Para hacer rollback, ejecute: ./rollback/rollback-phase-8.sh"
     fi
 }
 
@@ -196,8 +196,8 @@ configure_dashboard_structure() {
 
     # Crear estructura de directorios
     cd "$DASHBOARD_DIR"
-    mkdir -p app/{login,tasks,agents,security,settings,api/auth,api/users,api/sentinel,api/realtime}
-    mkdir -p components/{ui,layout,forms,charts,modals,security}
+    mkdir -p app/{login,tasks,agents,settings,api/auth,api/users,api/realtime}
+    mkdir -p components/{ui,layout,forms,charts,modals}
     mkdir -p lib/{auth,db,api,utils}
     mkdir -p public/icons
 
@@ -246,7 +246,6 @@ export const routes = {
   login: '/login',
   tasks: '/tasks',
   agents: '/agents',
-  security: '/security',
   settings: '/settings',
 };
 EOF
@@ -271,7 +270,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: config.appName,
-  description: "Panel de control para Pascual-Bot, tu asistente de IA personal multi-usuario",
+  description: "Panel de control para Pascual-Bot, tu asistente de IA personal",
 };
 
 export default function RootLayout({
@@ -333,8 +332,8 @@ export default function Home() {
             </div>
 
             <div className="p-4">
-              <h3 className="text-xl font-bold mb-2 text-blue-400">Multi-usuario</h3>
-              <p className="text-gray-300">Perfiles independientes para cada persona, con completo aislamiento de datos.</p>
+              <h3 className="text-xl font-bold mb-2 text-blue-400">Interfaz web</h3>
+              <p className="text-gray-300">Dashboard completo para gestionar tu asistente personal.</p>
             </div>
 
             <div className="p-4">
@@ -353,8 +352,8 @@ export default function Home() {
             </div>
 
             <div className="p-4">
-              <h3 className="text-xl font-bold mb-2 text-blue-400">Monitoreo seguro</h3>
-              <p className="text-gray-300">Sentinel vigila el sistema y protege tu información.</p>
+              <h3 className="text-xl font-bold mb-2 text-blue-400">Totalmente local</h3>
+              <p className="text-gray-300">Sin dependencia de servicios en la nube.</p>
             </div>
           </div>
         </div>
@@ -484,36 +483,121 @@ export async function GET() {
 EOF
 
     # Crear ruta para obtener estado del sistema
-    mkdir -p "$DASHBOARD_DIR/app/api/system"
+    mkdir -p "$DASHBOARD_DIR/app/api/system/status"
     cat > "$DASHBOARD_DIR/app/api/system/status/route.ts" << 'EOF'
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { execSync } from "child_process";
 
 export async function GET() {
   try {
-    const pascualDir = process.env.PASCUAL_DIR || "~/.pascual";
-    const statusPath = path.join(pascualDir, "sentinel", "status.json");
+    // Obtener información del sistema usando comandos del sistema
+    const systemInfo = {
+      timestamp: new Date().toISOString(),
+      status: "active",
+      cpu: {
+        usage: getCpuUsage(),
+        cores: getCpuCores(),
+        temperature: getCpuTemperature()
+      },
+      memory: getMemoryInfo(),
+      disk: getDiskInfo(),
+      uptime: getUptime()
+    };
 
-    // Verificar si el archivo existe
-    if (!fs.existsSync(statusPath)) {
-      return NextResponse.json(
-        { error: "Status file not found" },
-        { status: 404 }
-      );
-    }
-
-    // Leer archivo de estado
-    const statusData = fs.readFileSync(statusPath, "utf-8");
-    const status = JSON.parse(statusData);
-
-    return NextResponse.json(status);
+    return NextResponse.json(systemInfo);
   } catch (error) {
     console.error("Error reading system status:", error);
     return NextResponse.json(
       { error: "Error reading system status" },
       { status: 500 }
     );
+  }
+}
+
+// Funciones auxiliares para obtener información del sistema
+function getCpuUsage(): number {
+  try {
+    // En Linux, podemos usar top para obtener el uso de CPU
+    const output = execSync("top -bn1 | grep 'Cpu(s)' | sed 's/.*, *\\([0-9.]*\\)%* id.*/\\1/' | awk '{print 100 - $1}'").toString();
+    return parseFloat(output.trim());
+  } catch (error) {
+    return 0;
+  }
+}
+
+function getCpuCores(): number {
+  try {
+    const output = execSync("nproc").toString();
+    return parseInt(output.trim());
+  } catch (error) {
+    return 1;
+  }
+}
+
+function getCpuTemperature(): number {
+  try {
+    // Intentar leer la temperatura de la CPU (esto varía según el hardware)
+    const output = execSync("cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null || echo 0").toString();
+    return parseInt(output.trim()) / 1000; // Convertir de millicelsius a celsius
+  } catch (error) {
+    return 0;
+  }
+}
+
+function getMemoryInfo(): { total: number; used: number; free: number; usage: number } {
+  try {
+    const output = execSync("free -m").toString();
+    const lines = output.split('\n');
+    const memLine = lines[1].trim().split(/\s+/);
+
+    const total = parseInt(memLine[1]);
+    const used = parseInt(memLine[2]);
+    const free = parseInt(memLine[3]);
+    const usage = (used / total) * 100;
+
+    return { total, used, free, usage };
+  } catch (error) {
+    return { total: 0, used: 0, free: 0, usage: 0 };
+  }
+}
+
+function getDiskInfo(): { total: number; used: number; free: number; usage: number } {
+  try {
+    const output = execSync("df -m / | tail -n 1").toString();
+    const parts = output.trim().split(/\s+/);
+
+    const total = parseInt(parts[1]);
+    const used = parseInt(parts[2]);
+    const free = parseInt(parts[3]);
+    const usage = (used / total) * 100;
+
+    return { total, used, free, usage };
+  } catch (error) {
+    return { total: 0, used: 0, free: 0, usage: 0 };
+  }
+}
+
+function getUptime(): { system: number; pascual: number } {
+  try {
+    const uptimeOutput = execSync("cat /proc/uptime").toString();
+    const systemUptime = parseFloat(uptimeOutput.split(' ')[0]);
+
+    // Para el tiempo de pascual, podemos usar el tiempo desde que se inició el proceso maestro
+    let pascualUptime = 0;
+    try {
+      const pid = execSync("pgrep -f pascual-maestro.py").toString().trim();
+      if (pid) {
+        const processStartTime = execSync(`ps -o etimes= -p ${pid}`).toString();
+        pascualUptime = parseInt(processStartTime.trim());
+      }
+    } catch (e) {
+      // Si no podemos obtener el tiempo de pascual, usamos un valor predeterminado
+      pascualUptime = 0;
+    }
+
+    return { system: Math.floor(systemUptime), pascual: pascualUptime };
+  } catch (error) {
+    return { system: 0, pascual: 0 };
   }
 }
 EOF
@@ -543,8 +627,8 @@ EOF
     sudo tee /etc/systemd/system/pascual-dashboard.service > /dev/null << EOF
 [Unit]
 Description=Pascual-Bot Dashboard Web
-After=network.target pascual-sentinel.service
-Wants=pascual-sentinel.service
+After=network.target pascual-maestro.service
+Wants=pascual-maestro.service
 
 [Service]
 Type=simple
@@ -606,7 +690,7 @@ create_api_routes
 configure_dashboard_service
 
 # Registrar fase completada
-echo "FASE_10_COMPLETED=true" >> "$PASCUAL_CONFIG/.env"
+echo "FASE_8_COMPLETED=true" >> "$PASCUAL_CONFIG/.env"
 
 log_info "✅ Dashboard web NextJS instalado correctamente"
 log_info "Para iniciar el dashboard en modo desarrollo, ejecuta:"
@@ -615,7 +699,7 @@ echo ""
 log_info "El dashboard estará disponible en:"
 echo -e "${GREEN}   http://localhost:${DASHBOARD_PORT:-3000}${NC}"
 echo ""
-log_info "➡️  Siguiente paso: ejecutar ./11-workflows-orchestrator.sh"
+log_info "➡️  Siguiente paso: ejecutar ./09-workflows-orchestrator.sh"
 
 # Remover trap al finalizar correctamente
 trap - EXIT

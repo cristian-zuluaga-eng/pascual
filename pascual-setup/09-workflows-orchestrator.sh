@@ -1,12 +1,12 @@
 #!/bin/bash
 # ============================================================================
-# PASCUAL-BOT: Sistema de Agente de IA Local Multi-Usuario
+# PASCUAL-BOT: Sistema de Agente de IA Local
 # ============================================================================
-# FASE 11: Workflows Orchestrator (SDD)
+# FASE 9: Workflows Orchestrator (SDD)
 # Autor: Claude
 # Fecha: 2026-03-05
 # Descripción: Instala el motor para flujos multi-paso entre agentes
-# Dependencias: Dashboard (10-dashboard-nextjs.sh)
+# Dependencias: Dashboard (08-dashboard-nextjs.sh)
 # ============================================================================
 
 # Habilitar modo estricto - salir inmediatamente si cualquier comando falla
@@ -30,15 +30,15 @@ WORKFLOWS_DIR="$PASCUAL_DIR/workflows"
 check_previous_phase() {
     if [ ! -f "$PASCUAL_CONFIG/.env" ]; then
         log_error "No se encontró el archivo de configuración de Pascual-Bot"
-        log_info "Debes ejecutar primero: ./10-dashboard-nextjs.sh"
+        log_info "Debes ejecutar primero: ./08-dashboard-nextjs.sh"
         exit 1
     fi
 
-    # Verificar que la fase 10 esté marcada como completada
+    # Verificar que la fase 8 esté marcada como completada
     source "$PASCUAL_CONFIG/.env"
-    if [ "$FASE_10_COMPLETED" != "true" ]; then
-        log_error "La fase 10 no se ha completado correctamente"
-        log_info "Debes ejecutar primero: ./10-dashboard-nextjs.sh"
+    if [ "$FASE_8_COMPLETED" != "true" ]; then
+        log_error "La fase 8 no se ha completado correctamente"
+        log_info "Debes ejecutar primero: ./08-dashboard-nextjs.sh"
         exit 1
     fi
 }
@@ -80,7 +80,7 @@ cleanup() {
     if [ $? -ne 0 ]; then
         log_error "¡Instalación interrumpida! Error en la línea $BASH_LINENO"
         log_info "Para solucionar problemas, revise el log: $PASCUAL_LOG"
-        log_info "Para hacer rollback, ejecute: ./rollback/rollback-phase-11.sh"
+        log_info "Para hacer rollback, ejecute: ./rollback/rollback-phase-9.sh"
     fi
 }
 
@@ -120,7 +120,7 @@ create_orchestrator_directories() {
     return 0
 }
 
-# Crear archivos principales del orquestrador
+# Crear archivos principales del orquestador
 create_orchestrator_files() {
     log_step "Creando archivos del Orchestrator..."
 
@@ -344,7 +344,7 @@ class WorkflowOrchestrator:
             logger.error(f"Error al cargar workflow {workflow_id}: {e}")
             return None
 
-    def ejecutar(self, workflow_id: str, user_id: str, contexto_inicial: Optional[Dict[str, Any]] = None) -> Optional[str]:
+    def ejecutar(self, workflow_id: str, params: Optional[Dict[str, Any]] = None) -> Optional[str]:
         """
         Ejecutar workflow completo
 
@@ -358,9 +358,8 @@ class WorkflowOrchestrator:
         # Crear objeto workflow
         workflow = Workflow(workflow_id, definition)
         workflow.execution_context = {
-            "user_id": user_id,
             "initiated_at": datetime.datetime.now().isoformat(),
-            **contexto_inicial if contexto_inicial else {}
+            **(params or {})
         }
 
         # Registrar inicio
@@ -372,7 +371,7 @@ class WorkflowOrchestrator:
         with open(execution_file, "w") as f:
             json.dump(workflow.to_dict(), f, indent=2)
 
-        logger.info(f"Iniciado workflow {workflow_id} (ejecución {workflow.execution_id}) para usuario {user_id}")
+        logger.info(f"Iniciado workflow {workflow_id} (ejecución {workflow.execution_id})")
 
         # En un sistema real, se iniciaría un proceso separado o tarea en segundo plano
         # Por ahora, simular ejecución simple
@@ -435,7 +434,7 @@ def main():
     parser = argparse.ArgumentParser(description="Pascual-Bot Workflow Orchestrator")
     parser.add_argument("--list", action="store_true", help="Listar workflows disponibles")
     parser.add_argument("--execute", type=str, help="ID del workflow a ejecutar")
-    parser.add_argument("--user", type=str, help="ID de usuario para la ejecución")
+    parser.add_argument("--params", type=str, help="Parámetros para el workflow (JSON)")
     parser.add_argument("--status", type=str, help="ID de ejecución para ver estado")
 
     args = parser.parse_args()
@@ -448,15 +447,18 @@ def main():
             print(f"- {wf['id']}: {wf['description']} (v{wf['version']})")
 
     elif args.execute:
-        if not args.user:
-            print("Error: Se requiere un ID de usuario (--user)")
-            return
+        params = {}
+        if args.params:
+            try:
+                params = json.loads(args.params)
+            except json.JSONDecodeError:
+                print("Error: Los parámetros deben ser un JSON válido")
+                return
 
-        execution_id = orchestrator.ejecutar(args.execute, args.user)
+        execution_id = orchestrator.ejecutar(args.execute, params)
         if execution_id:
             print(f"\nWorkflow iniciado: {args.execute}")
             print(f"ID de ejecución: {execution_id}")
-            print(f"Usuario: {args.user}")
         else:
             print(f"Error al iniciar workflow {args.execute}")
 
@@ -518,51 +520,52 @@ class AgentExecutor:
         except Exception as e:
             logger.error(f"Error al cargar registro de agentes: {e}")
 
-        return {"base_agents": {}, "specialist_agents": {}}
+        return {"base_agent": "", "specialist_agents": {}}
 
-    def execute_agent(self, user_id: str, agent_type: str, agent_name: str, action: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    def execute_agent(self, agent_type: str, agent_name: str, action: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """Ejecutar un agente específico"""
         if agent_type == "base":
-            return self._execute_base_agent(user_id, action, params)
+            return self._execute_base_agent(action, params)
         elif agent_type == "specialist":
-            return self._execute_specialist_agent(user_id, agent_name, action, params)
+            return self._execute_specialist_agent(agent_name, action, params)
         else:
             return {"success": False, "error": f"Tipo de agente desconocido: {agent_type}"}
 
-    def _execute_base_agent(self, user_id: str, action: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        """Ejecutar agente base del usuario"""
-        # Verificar que el usuario existe
-        if user_id not in self.agents_registry.get("base_agents", {}):
-            return {"success": False, "error": f"Agente base no encontrado para usuario {user_id}"}
+    def _execute_base_agent(self, action: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Ejecutar agente base"""
+        # Verificar que existe el agente base
+        agent_path = self.agents_registry.get("base_agent", "")
+        if not agent_path:
+            return {"success": False, "error": "Agente base no configurado en el registro"}
 
-        agent_path = Path(self.agents_registry["base_agents"][user_id])
+        agent_path = Path(agent_path)
         if not agent_path.exists():
             return {"success": False, "error": f"Archivo de agente no encontrado: {agent_path}"}
 
         try:
             # Este es un placeholder - en producción usaríamos importlib para cargar el módulo
             # y ejecutar la función correspondiente
-            cmd = [sys.executable, str(agent_path), user_id, json.dumps(params)]
+            cmd = [sys.executable, str(agent_path), action, json.dumps(params)]
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             return {"success": True, "output": result.stdout}
         except subprocess.SubprocessError as e:
             return {"success": False, "error": f"Error al ejecutar agente: {str(e)}"}
 
-    def _execute_specialist_agent(self, user_id: str, agent_name: str, action: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _execute_specialist_agent(self, agent_name: str, action: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """Ejecutar agente especialista"""
         # Verificar que el agente especialista existe
-        agent_key = f"{user_id}/{agent_name}"
-        if agent_key not in self.agents_registry.get("specialist_agents", {}):
-            return {"success": False, "error": f"Agente especialista {agent_name} no encontrado para usuario {user_id}"}
+        specialist_agents = self.agents_registry.get("specialist_agents", {})
+        if agent_name not in specialist_agents:
+            return {"success": False, "error": f"Agente especialista {agent_name} no encontrado en el registro"}
 
-        agent_path = Path(self.agents_registry["specialist_agents"][agent_key])
+        agent_path = Path(specialist_agents[agent_name])
         if not agent_path.exists():
             return {"success": False, "error": f"Archivo de agente no encontrado: {agent_path}"}
 
         try:
             # Este es un placeholder - en producción usaríamos importlib para cargar el módulo
             # y ejecutar la función correspondiente
-            cmd = [sys.executable, str(agent_path), user_id, action, json.dumps(params)]
+            cmd = [sys.executable, str(agent_path), action, json.dumps(params)]
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             return {"success": True, "output": result.stdout}
         except subprocess.SubprocessError as e:
@@ -581,10 +584,10 @@ EOF
 create_workflow_templates() {
     log_step "Creando templates de workflows..."
 
-    # Template para onboarding de usuario
-    cat > "$WORKFLOWS_DIR/templates/onboarding_usuario.yaml" << 'EOF'
+    # Template para onboarding
+    cat > "$WORKFLOWS_DIR/templates/onboarding.yaml" << 'EOF'
 workflow:
-  id: "onboarding_usuario"
+  id: "onboarding"
   version: "1.0"
   description: "Configura nuevo usuario con preferencias y agentes básicos"
 
@@ -600,7 +603,6 @@ workflow:
       timeout: 30s
       retry: 2
       parameters:
-        user_id: "${user_id}"
         template: "welcome"
 
     - id: "setup_default_agents"
@@ -608,7 +610,6 @@ workflow:
       action: "assign_defaults"
       depends_on: ["welcome_message"]
       parameters:
-        user_id: "${user_id}"
         agents: ["calendar", "tasks"]
 
     - id: "create_initial_task"
@@ -616,7 +617,6 @@ workflow:
       action: "create_task"
       depends_on: ["setup_default_agents"]
       parameters:
-        user_id: "${user_id}"
         title: "Completar configuración de perfil"
         description: "Personaliza tu perfil con tus preferencias"
         due_date: "+7d"
@@ -630,7 +630,7 @@ EOF
 workflow:
   id: "backup_semanal"
   version: "1.0"
-  description: "Realiza backup de configuraciones y datos de usuarios"
+  description: "Realiza backup de configuraciones y datos"
 
   metadata:
     author: "Pascual-Bot"
@@ -640,7 +640,7 @@ workflow:
 
   steps:
     - id: "check_disk_space"
-      agent: "sentinel"
+      agent: "system"
       action: "check_resources"
       timeout: 30s
       parameters:
@@ -662,17 +662,18 @@ workflow:
         source: "${PASCUAL_DIR}/config"
         destination: "${PASCUAL_DIR}/shared/backups/${timestamp}/config"
 
-    - id: "backup_user_configs"
+    - id: "backup_core"
       agent: "system"
-      action: "copy_user_configs"
+      action: "copy_files"
       depends_on: ["create_backup_dir"]
       parameters:
-        destination: "${PASCUAL_DIR}/shared/backups/${timestamp}/users"
+        source: "${PASCUAL_DIR}/core"
+        destination: "${PASCUAL_DIR}/shared/backups/${timestamp}/core"
 
     - id: "compress_backup"
       agent: "system"
       action: "compress"
-      depends_on: ["backup_configs", "backup_user_configs"]
+      depends_on: ["backup_configs", "backup_core"]
       parameters:
         source: "${PASCUAL_DIR}/shared/backups/${timestamp}"
         destination: "${PASCUAL_DIR}/shared/backups/backup_${date}.tar.gz"
@@ -703,12 +704,12 @@ workflow:
 
   steps:
     - id: "collect_metrics"
-      agent: "sentinel"
+      agent: "monitoring"
       action: "collect_metrics"
       timeout: 60s
       parameters:
         period: "last_month"
-        metrics: ["system_usage", "user_activity", "resources"]
+        metrics: ["system_usage", "activity", "resources"]
 
     - id: "generate_charts"
       agent: "reporting"
@@ -733,7 +734,6 @@ workflow:
       action: "send_notification"
       depends_on: ["generate_html_report"]
       parameters:
-        user_id: "${admin_user_id}"
         channel: "dashboard"
         message: "Reporte mensual generado: ${generate_html_report.result.path}"
 
@@ -864,7 +864,7 @@ create_initial_workflows() {
     mkdir -p "$WORKFLOWS_DIR/definitions"
 
     # Copiar templates como workflows iniciales
-    cp "$WORKFLOWS_DIR/templates/onboarding_usuario.yaml" "$WORKFLOWS_DIR/definitions/"
+    cp "$WORKFLOWS_DIR/templates/onboarding.yaml" "$WORKFLOWS_DIR/definitions/"
     cp "$WORKFLOWS_DIR/templates/backup_semanal.yaml" "$WORKFLOWS_DIR/definitions/"
 
     log_info "Workflows iniciales creados ✓"
@@ -1091,7 +1091,7 @@ create_initial_workflows
 create_validator_tool
 
 # Registrar fase completada
-echo "FASE_11_COMPLETED=true" >> "$PASCUAL_CONFIG/.env"
+echo "FASE_9_COMPLETED=true" >> "$PASCUAL_CONFIG/.env"
 
 log_info "✅ Workflows Orchestrator instalado correctamente"
 log_info "Para listar workflows disponibles, ejecuta:"
@@ -1100,7 +1100,7 @@ echo ""
 log_info "Para validar workflows, ejecuta:"
 echo -e "${GREEN}   python3 $WORKFLOWS_DIR/validate_workflow.py --all${NC}"
 echo ""
-log_info "➡️  Siguiente paso: ejecutar ./12-skills-complementarios.sh"
+log_info "➡️  Siguiente paso: ejecutar ./10-skills-complementarios.sh"
 
 # Remover trap al finalizar correctamente
 trap - EXIT
