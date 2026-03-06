@@ -1,4 +1,4 @@
-# Node.js / Next.js
+# Node.js / Next.js (generales)
 node_modules/
 .next/
 out/
@@ -62,17 +62,21 @@ cypress/screenshots
 .tailwindcss-debug.css
 
 # Archivos específicos del dashboard Next.js
-pascual-dashboard/.next/
-pascual-dashboard/out/
-pascual-dashboard/node_modules/
-pascual-dashboard/.vercel/
-pascual-dashboard/coverage/
-pascual-dashboard/public/sw.js
-pascual-dashboard/public/workbox-*.js
-pascual-dashboard/public/worker-*.js
-pascual-dashboard/public/sw.js.map
-pascual-dashboard/public/workbox-*.js.map
-pascual-dashboard/public/worker-*.js.map
+/pascual-dashboard/.next/**
+/pascual-dashboard/.next
+/pascual-dashboard/node_modules/**
+/pascual-dashboard/node_modules
+/pascual-dashboard/out/**
+/pascual-dashboard/out
+/pascual-dashboard/.vercel/**
+/pascual-dashboard/.vercel
+/pascual-dashboard/coverage/**
+/pascual-dashboard/coverage
+/pascual-dashboard/public/sw.js*
+/pascual-dashboard/public/workbox-*.js*
+/pascual-dashboard/public/worker-*.js*
+/pascual-dashboard/.next/cache/**
+/pascual-dashboard/.next/cache
 
 # Archivos específicos de Pascual para NO ignorar
 !pascual-setup/*.sh
