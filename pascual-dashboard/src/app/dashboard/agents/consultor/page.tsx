@@ -54,10 +54,11 @@ export default function ConsultorDashboard() {
       />
 
       <PascualFeedbackBar
+        agentId={data.id}
         agentName={data.name}
+        agentIcon={data.icon}
         quickActions={data.quickActions}
         placeholder="¿En qué área necesitas asesoría?"
-        onSendMessage={(msg) => console.log("Message:", msg)}
       />
 
       {/* KPIs */}

@@ -64,10 +64,11 @@ export default function SentinelDashboard() {
       />
 
       <PascualFeedbackBar
+        agentId={data.id}
         agentName={data.name}
+        agentIcon={data.icon}
         quickActions={data.quickActions}
         placeholder="¿Qué necesitas verificar en seguridad?"
-        onSendMessage={(msg) => console.log("Message:", msg)}
       />
 
       {/* KPIs */}

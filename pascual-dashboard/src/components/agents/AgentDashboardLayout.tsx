@@ -73,26 +73,57 @@ export function AgentHeader({ name, icon, lema, status, onRefresh, onSettings, o
 // ============================================================================
 
 interface PascualFeedbackBarProps {
+  agentId: string;
   agentName: string;
+  agentIcon: string;
   quickActions: QuickAction[];
   placeholder?: string;
   onSendMessage?: (message: string) => void;
 }
 
-export function PascualFeedbackBar({ agentName, quickActions, placeholder, onSendMessage }: PascualFeedbackBarProps) {
+export function PascualFeedbackBar({ agentId, agentName, agentIcon, quickActions, placeholder, onSendMessage }: PascualFeedbackBarProps) {
   const [message, setMessage] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // Import growl hook dynamically to avoid circular deps
+  const [sendToAgent, setSendToAgent] = useState<((agentId: string, agentName: string, agentIcon: string, message: string) => void) | null>(null);
+
+  useState(() => {
+    import("@/components/growl").then(({ useGrowl }) => {
+      // This is a workaround - we'll use the hook properly in each page
+    });
+  });
+
   const handleSend = () => {
-    if (message.trim() && onSendMessage) {
-      onSendMessage(message);
+    if (message.trim()) {
+      // Trigger growl via custom event (will be handled by GrowlContainer)
+      window.dispatchEvent(new CustomEvent("pascual:sendToAgent", {
+        detail: { agentId, agentName, agentIcon, message: message.trim() }
+      }));
+
+      if (onSendMessage) {
+        onSendMessage(message);
+      }
       setMessage("");
+      setIsExpanded(false);
     }
   };
 
   const handleQuickAction = (action: QuickAction) => {
+    // Trigger growl via custom event
+    window.dispatchEvent(new CustomEvent("pascual:sendToAgent", {
+      detail: { agentId, agentName, agentIcon, message: action.prompt }
+    }));
+
     if (onSendMessage) {
       onSendMessage(action.prompt);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   };
 
@@ -130,6 +161,7 @@ export function PascualFeedbackBar({ agentName, quickActions, placeholder, onSen
               placeholder={placeholder || `Escribe tu solicitud para ${agentName}...`}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="flex-1 min-h-[60px]"
             />
             <Button variant="primary" onClick={handleSend} disabled={!message.trim()}>

@@ -67,10 +67,11 @@ export default function AudiovisualDashboard() {
       />
 
       <PascualFeedbackBar
+        agentId={data.id}
         agentName={data.name}
+        agentIcon={data.icon}
         quickActions={data.quickActions}
         placeholder="¿Qué contenido necesitas crear?"
-        onSendMessage={(msg) => console.log("Message:", msg)}
       />
 
       {/* KPIs */}

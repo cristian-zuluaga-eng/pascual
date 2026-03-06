@@ -52,10 +52,11 @@ export default function NexusDashboard() {
       />
 
       <PascualFeedbackBar
+        agentId={data.id}
         agentName={data.name}
+        agentIcon={data.icon}
         quickActions={data.quickActions}
         placeholder="¿Qué necesitas desarrollar?"
-        onSendMessage={(msg) => console.log("Message:", msg)}
       />
 
       {/* KPIs */}

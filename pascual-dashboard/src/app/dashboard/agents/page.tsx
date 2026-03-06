@@ -5,12 +5,13 @@ import { PageHeader, Section, SectionHeader, Grid } from "@/components/layout/Ma
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardBody, CardFooter } from "@/components/ui/Card";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
-import { Input, Select } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Input";
 import { AgentCard, AgentListItem, Agent, getModelEfficiency } from "@/components/dashboard/AgentCard";
 import { LineChart } from "@/components/charts/LineChart";
 import { CircularProgress } from "@/components/charts/CircularProgress";
 import { Tooltip } from "@/components/ui/Tooltip";
-import { mockAgents, AVAILABLE_MODELS } from "@/lib/api/mock/agents";
+import { mockAgents, AVAILABLE_MODELS, agentCapabilities } from "@/lib/api/mock/agents";
+import { PascualInput } from "@/components/pascual";
 
 type ViewMode = "grid" | "list";
 
@@ -156,10 +157,6 @@ export default function AgentsPage() {
           onAgentModelChange={handleAgentModelChange}
           onSubAgentModelChange={handleSubAgentModelChange}
           availableModels={AVAILABLE_MODELS}
-          onNewTask={(agentId, task) => {
-            console.log(`New task for ${agentId}: ${task}`);
-            // TODO: Implement task submission logic
-          }}
         />
       )}
     </div>
@@ -181,16 +178,13 @@ function AgentDetailModal({
   onAgentModelChange,
   onSubAgentModelChange,
   availableModels,
-  onNewTask,
 }: {
   agent: Agent;
   onClose: () => void;
   onAgentModelChange: (agentId: string, newModel: string) => void;
   onSubAgentModelChange: (agentId: string, subAgentId: string, newModel: string) => void;
   availableModels: string[];
-  onNewTask?: (agentId: string, task: string) => void;
 }) {
-  const [taskInput, setTaskInput] = useState("");
   const [timeRange, setTimeRange] = useState<TimeRange>("24h");
 
   // Simulate different data lengths based on time range
@@ -207,13 +201,6 @@ function AgentDetailModal({
         return [...baseData, ...baseData, ...baseData, ...baseData].slice(-12).map((value, index) => ({ name: `M${index + 1}`, value }));
       default:
         return baseData.map((value, index) => ({ name: `${index}h`, value }));
-    }
-  };
-
-  const handleNewTask = () => {
-    if (taskInput.trim() && onNewTask) {
-      onNewTask(agent.id, taskInput.trim());
-      setTaskInput("");
     }
   };
 
@@ -321,29 +308,9 @@ function AgentDetailModal({
             </div>
           )}
 
-          {/* New Task - moved below sub-agents */}
+          {/* Pascual Input */}
           <div>
-            <SectionHeader title="New Task" />
-            <div className="flex gap-2">
-              <Input
-                placeholder="Describe the task for this agent..."
-                value={taskInput}
-                onChange={(e) => setTaskInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && taskInput.trim() && handleNewTask()}
-                className="flex-1"
-              />
-              <Button
-                variant="primary"
-                onClick={handleNewTask}
-                disabled={!taskInput.trim()}
-                className={!taskInput.trim() ? "opacity-50 cursor-not-allowed" : ""}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span>▶</span>
-                  <span>Send</span>
-                </span>
-              </Button>
-            </div>
+            <PascualInput context="agents" />
           </div>
 
           {/* Performance with time range selector */}
@@ -388,10 +355,9 @@ function AgentDetailModal({
           <div>
             <SectionHeader title="Capabilities" />
             <div className="flex flex-wrap gap-2">
-              <Badge variant="info">Natural Language</Badge>
-              <Badge variant="info">Code Analysis</Badge>
-              <Badge variant="info">Data Processing</Badge>
-              <Badge variant="success">Active Learning</Badge>
+              {(agentCapabilities[agent.id] || ["Natural Language", "Data Processing"]).map((cap, index) => (
+                <Badge key={cap} variant={index === 0 ? "success" : "info"}>{cap}</Badge>
+              ))}
             </div>
           </div>
         </CardBody>

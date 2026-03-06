@@ -6,6 +6,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/Input";
+import { PascualInputButton } from "@/components/pascual";
 
 type TaskStatus = "queued" | "in_progress" | "review" | "done";
 type Priority = "critical" | "high" | "medium" | "low";
@@ -102,12 +103,11 @@ export default function TaskQueuePage() {
         title="Task Queue"
         description="Gestiona las tareas de todos los agentes del ecosistema"
         actions={
-          <Button variant="primary">
-            <span className="flex items-center gap-2">
-              <span>+</span>
-              <span>New Task</span>
-            </span>
-          </Button>
+          <PascualInputButton
+            label="New Task"
+            placeholder="Describe la nueva tarea para Pascual..."
+            context="tasks"
+          />
         }
       />
 

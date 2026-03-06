@@ -1,16 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StatCard } from "@/components/ui/Card";
 import { Grid, Section, SectionHeader } from "@/components/layout/MainContent";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { ChatWindow, ChatMessage } from "@/components/chat/ChatWindow";
 import { MessageInput } from "@/components/chat/MessageInput";
 import { mockActivities, mockMessages, mockDashboardStats } from "@/lib/api/mock/dashboard";
+import { useGrowl } from "@/components/growl";
 
 export default function DashboardPage() {
   const [messages, setMessages] = useState<ChatMessage[]>(mockMessages);
   const [isTyping, setIsTyping] = useState(false);
+  const { chatHistory } = useGrowl();
+
+  // Merge growl chat history with main chat
+  useEffect(() => {
+    if (chatHistory.length > 0) {
+      const growlMessages: ChatMessage[] = chatHistory.map(entry => ({
+        id: entry.id,
+        role: entry.role,
+        content: entry.content,
+        timestamp: entry.timestamp,
+        agentName: entry.agentName,
+      }));
+
+      // Add new growl messages that aren't already in the chat
+      setMessages(prev => {
+        const existingIds = new Set(prev.map(m => m.id));
+        const newMessages = growlMessages.filter(m => !existingIds.has(m.id));
+        if (newMessages.length > 0) {
+          return [...prev, ...newMessages];
+        }
+        return prev;
+      });
+    }
+  }, [chatHistory]);
 
   const handleSendMessage = (content: string) => {
     const newMessage: ChatMessage = {

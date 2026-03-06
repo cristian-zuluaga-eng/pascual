@@ -54,10 +54,11 @@ export default function ScoutDashboard() {
       />
 
       <PascualFeedbackBar
+        agentId={data.id}
         agentName={data.name}
+        agentIcon={data.icon}
         quickActions={data.quickActions}
         placeholder="¿Qué información necesitas buscar?"
-        onSendMessage={(msg) => console.log("Message:", msg)}
       />
 
       {/* KPIs */}
