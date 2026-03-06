@@ -22,6 +22,7 @@ export default function AgentsPage() {
   const activeCount = agents.filter((a) => a.status === "active").length;
   const busyCount = agents.filter((a) => a.status === "busy").length;
   const offlineCount = agents.filter((a) => a.status === "offline").length;
+  const totalSubAgents = agents.reduce((acc, agent) => acc + (agent.subAgents?.length || 0), 0);
 
   const handleAgentModelChange = (agentId: string, newModel: string) => {
     setAgents(prev => prev.map(agent =>
@@ -62,11 +63,17 @@ export default function AgentsPage() {
 
       {/* Stats Overview */}
       <Section>
-        <Grid cols={4}>
+        <Grid cols={5}>
           <Card>
             <CardBody className="text-center">
               <p className="text-3xl font-mono font-bold text-white">{agents.length}</p>
               <p className="text-xs font-mono text-zinc-500 mt-1">Total Agents</p>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardBody className="text-center">
+              <p className="text-3xl font-mono font-bold text-[#00d9ff]">{totalSubAgents}</p>
+              <p className="text-xs font-mono text-zinc-500 mt-1">Sub-agents</p>
             </CardBody>
           </Card>
           <Card variant="success">

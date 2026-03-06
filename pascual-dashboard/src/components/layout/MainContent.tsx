@@ -9,16 +9,13 @@ export function MainContent({ children, className = "" }: MainContentProps) {
   return (
     <main
       className={`
-        flex-1 overflow-hidden
+        flex-1 overflow-y-auto
         bg-zinc-950 bg-grid
         p-6
-        flex flex-col
         ${className}
       `}
     >
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        {children}
-      </div>
+      {children}
     </main>
   );
 }

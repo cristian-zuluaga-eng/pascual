@@ -20,8 +20,20 @@ export function Header({ title = "Dashboard", systemStatus = "active" }: HeaderP
         <StatusBadge status={systemStatus} />
       </div>
 
-      {/* Right: Actions */}
-      <div className="flex items-center gap-3">
+      {/* Right: System Status & Actions */}
+      <div className="flex items-center gap-4">
+        {/* System Status Indicators */}
+        <div className="flex items-center gap-4">
+          <div className="w-3 h-3 rounded-full bg-[#39ff14] status-pulse" />
+          <span className="font-mono text-xs text-zinc-400">
+            Uptime: <span className="text-[#39ff14]">99.8%</span>
+          </span>
+          <span className="text-zinc-600">|</span>
+          <span className="font-mono text-xs text-zinc-400">
+            Last sync: <span className="text-[#00d9ff]">2s ago</span>
+          </span>
+        </div>
+
         {/* Notifications */}
         <div className="relative">
           <IconButton
