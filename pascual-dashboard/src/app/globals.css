@@ -1,26 +1,365 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Neo-punk color palette */
+@theme {
+  --color-neo-bg: #0a0a0a;
+  --color-neo-surface: #171717;
+  --color-neo-border: #262626;
+  --color-neo-text: #ededed;
+  --color-neo-muted: #6b7280;
+
+  --color-neo-accent-cyan: #00d9ff;
+  --color-neo-accent-pink: #ff006e;
+  --color-neo-accent-green: #39ff14;
+  --color-neo-accent-yellow: #ffaa00;
+
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+    Monaco, Consolas, monospace;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+
+  /* Custom animations */
+  --animate-glow: glow 1.5s ease-in-out infinite alternate;
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-glitch: glitch 1s linear infinite alternate;
+  --animate-scanline: scanline 6s linear infinite;
+
+  /* Custom shadows */
+  --shadow-neo: 0 0 15px rgba(0, 217, 255, 0.5);
+  --shadow-neo-pink: 0 0 15px rgba(255, 0, 110, 0.5);
+  --shadow-neo-green: 0 0 15px rgba(57, 255, 20, 0.5);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes glow {
+  from {
+    box-shadow: 0 0 5px rgba(0, 217, 255, 0.5);
   }
+  to {
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.8);
+  }
+}
+
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+  }
+  60% {
+    transform: translate(2px, 2px);
+  }
+  80% {
+    transform: translate(2px, -2px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(2000%);
+  }
+}
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --accent-cyan: #00d9ff;
+  --accent-pink: #ff006e;
+  --accent-green: #39ff14;
+  --accent-yellow: #ffaa00;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #262626;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* Glitch effect */
+.glitch {
+  position: relative;
+  animation: glitch 2s linear infinite alternate;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch::before {
+  left: 2px;
+  text-shadow: -2px 0 var(--accent-pink);
+  clip: rect(24px, 550px, 90px, 0);
+  animation: glitch-anim 5s linear infinite alternate-reverse;
+}
+
+.glitch::after {
+  left: -2px;
+  text-shadow: -2px 0 var(--accent-cyan);
+  clip: rect(85px, 550px, 140px, 0);
+  animation: glitch-anim 2s linear infinite alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% {
+    clip: rect(30px, 9999px, 10px, 0);
+  }
+  5% {
+    clip: rect(54px, 9999px, 98px, 0);
+  }
+  10% {
+    clip: rect(49px, 9999px, 35px, 0);
+  }
+  15% {
+    clip: rect(75px, 9999px, 95px, 0);
+  }
+  20% {
+    clip: rect(36px, 9999px, 70px, 0);
+  }
+  25% {
+    clip: rect(45px, 9999px, 15px, 0);
+  }
+  30% {
+    clip: rect(72px, 9999px, 85px, 0);
+  }
+  35% {
+    clip: rect(10px, 9999px, 60px, 0);
+  }
+  40% {
+    clip: rect(85px, 9999px, 25px, 0);
+  }
+  45% {
+    clip: rect(28px, 9999px, 75px, 0);
+  }
+  50% {
+    clip: rect(65px, 9999px, 45px, 0);
+  }
+  55% {
+    clip: rect(12px, 9999px, 80px, 0);
+  }
+  60% {
+    clip: rect(55px, 9999px, 30px, 0);
+  }
+  65% {
+    clip: rect(82px, 9999px, 65px, 0);
+  }
+  70% {
+    clip: rect(20px, 9999px, 90px, 0);
+  }
+  75% {
+    clip: rect(50px, 9999px, 20px, 0);
+  }
+  80% {
+    clip: rect(78px, 9999px, 50px, 0);
+  }
+  85% {
+    clip: rect(25px, 9999px, 78px, 0);
+  }
+  90% {
+    clip: rect(60px, 9999px, 40px, 0);
+  }
+  95% {
+    clip: rect(42px, 9999px, 88px, 0);
+  }
+  100% {
+    clip: rect(90px, 9999px, 55px, 0);
+  }
+}
+
+/* Scanline effect */
+.scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanline::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background-color: rgba(57, 255, 20, 0.1);
+  animation: scanline 6s linear infinite;
+  pointer-events: none;
+}
+
+/* Neon text effects */
+.neon-text-cyan {
+  color: var(--accent-cyan);
+  text-shadow: 0 0 5px rgba(0, 217, 255, 0.5), 0 0 10px rgba(0, 217, 255, 0.3);
+}
+
+.neon-text-pink {
+  color: var(--accent-pink);
+  text-shadow: 0 0 5px rgba(255, 0, 110, 0.5), 0 0 10px rgba(255, 0, 110, 0.3);
+}
+
+.neon-text-green {
+  color: var(--accent-green);
+  text-shadow: 0 0 5px rgba(57, 255, 20, 0.5), 0 0 10px rgba(57, 255, 20, 0.3);
+}
+
+.neon-text-yellow {
+  color: var(--accent-yellow);
+  text-shadow: 0 0 5px rgba(255, 170, 0, 0.5), 0 0 10px rgba(255, 170, 0, 0.3);
+}
+
+/* Neo-punk button effect */
+.btn-neo {
+  position: relative;
+  background-color: transparent;
+  color: var(--accent-cyan);
+  border: 1px solid var(--accent-cyan);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0.5rem 1rem;
+  overflow: hidden;
+  transition: all 0.3s;
+  z-index: 1;
+}
+
+.btn-neo::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background-color: var(--accent-cyan);
+  transition: all 0.3s;
+  z-index: -1;
+}
+
+.btn-neo:hover {
+  color: var(--background);
+  box-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
+}
+
+.btn-neo:hover::before {
+  width: 100%;
+}
+
+/* Variant: pink */
+.btn-neo-pink {
+  color: var(--accent-pink);
+  border-color: var(--accent-pink);
+}
+
+.btn-neo-pink::before {
+  background-color: var(--accent-pink);
+}
+
+.btn-neo-pink:hover {
+  box-shadow: 0 0 15px rgba(255, 0, 110, 0.5);
+}
+
+/* Variant: green */
+.btn-neo-green {
+  color: var(--accent-green);
+  border-color: var(--accent-green);
+}
+
+.btn-neo-green::before {
+  background-color: var(--accent-green);
+}
+
+.btn-neo-green:hover {
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.5);
+}
+
+/* Card glow effects */
+.card-glow {
+  transition: box-shadow 0.3s ease;
+}
+
+.card-glow:hover {
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
+}
+
+.card-glow-pink:hover {
+  box-shadow: 0 0 20px rgba(255, 0, 110, 0.2);
+}
+
+.card-glow-green:hover {
+  box-shadow: 0 0 20px rgba(57, 255, 20, 0.2);
+}
+
+/* Grid background pattern */
+.bg-grid {
+  background-image: linear-gradient(to right, #1a1a1a 1px, transparent 1px),
+    linear-gradient(to bottom, #1a1a1a 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Status indicator pulse */
+.status-pulse {
+  animation: status-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Focus ring for accessibility */
+.focus-neo:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-cyan);
+}
+
+.focus-neo:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-cyan);
+}
+
+/* Shadow utility classes */
+.shadow-neo {
+  box-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
+}
+
+.shadow-neo-pink {
+  box-shadow: 0 0 15px rgba(255, 0, 110, 0.5);
+}
+
+.shadow-neo-green {
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.5);
 }

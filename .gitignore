@@ -44,6 +44,9 @@ yarn-error.log*
 .env.test
 .env.production
 
+#references
+references/
+
 # vercel
 .vercel/
 
