@@ -13,8 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PASCUAL Dashboard",
+  title: "PASCUAL",
   description: "Multi-agent AI assistant control center",
+  icons: {
+    icon: "/pascual-bot.svg",
+    apple: "/pascual-bot.svg",
+  },
 };
 
 export default function RootLayout({

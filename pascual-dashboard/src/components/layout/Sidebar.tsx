@@ -10,6 +10,7 @@ const navItems = [
   { name: "Finance", path: "/dashboard/finance", icon: "◈" },
   { name: "Assistant", path: "/dashboard/assistant", icon: "☰" },
   { name: "Development", path: "/dashboard/development", icon: "⟨/⟩" },
+  { name: "Templates", path: "/dashboard/templates", icon: "⬡" },
 ];
 
 // Mando de Control - Agent Ecosystem Navigation
