@@ -783,6 +783,26 @@ export function SubAgentStatusGrid({ subAgents, title = "Sub-Agentes", showTitle
     return "bg-[#ff006e]/20 text-[#ff006e] border-[#ff006e]/30";
   };
 
+  const getStatusBadgeColor = (s: AgentStatus) => {
+    switch (s) {
+      case "active": return "bg-[#39ff14]/10 text-[#39ff14]";
+      case "busy": return "bg-amber-400/10 text-amber-400";
+      case "idle": return "bg-zinc-500/10 text-zinc-400";
+      case "offline": return "bg-zinc-600/10 text-zinc-500";
+      case "error": return "bg-[#ff006e]/10 text-[#ff006e]";
+    }
+  };
+
+  const getStatusLabel = (s: AgentStatus) => {
+    switch (s) {
+      case "active": return "Activo";
+      case "busy": return "Ocupado";
+      case "idle": return "Inactivo";
+      case "offline": return "Offline";
+      case "error": return "Error";
+    }
+  };
+
   return (
     <div className={`bg-zinc-950 border border-zinc-800 rounded-sm p-3 ${className}`}>
       {/* Inline header - compact */}
@@ -810,7 +830,11 @@ export function SubAgentStatusGrid({ subAgents, title = "Sub-Agentes", showTitle
         {subAgents.map((sub) => (
           <div
             key={sub.id}
-            className="group relative p-2.5 bg-zinc-900 rounded-sm border border-zinc-800 hover:border-zinc-700 transition-colors"
+            className={`group relative p-2.5 bg-zinc-900 rounded-sm border transition-colors ${
+              sub.status === "busy"
+                ? "border-busy-flash"
+                : "border-zinc-800 hover:border-zinc-700"
+            }`}
           >
             {/* Tooltip */}
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-sm shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 w-64 pointer-events-none">
@@ -818,7 +842,7 @@ export function SubAgentStatusGrid({ subAgents, title = "Sub-Agentes", showTitle
               <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-700" />
             </div>
 
-            {/* Row 1: Name - Model | Score Badge + Status */}
+            {/* Row 1: Name - Model | Score Badge + Status Badge */}
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs text-white truncate">
                 {sub.name} <span className="text-zinc-500">- {sub.model.split(" ")[1]}</span>
@@ -827,7 +851,10 @@ export function SubAgentStatusGrid({ subAgents, title = "Sub-Agentes", showTitle
                 <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded border ${getScoreColor(sub.score)}`}>
                   {sub.score}%
                 </span>
-                <div className={`w-2 h-2 rounded-full ${getStatusColor(sub.status)} ${sub.status === "active" ? "status-pulse" : ""}`} />
+                <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 ${getStatusBadgeColor(sub.status)}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${getStatusColor(sub.status)} ${sub.status === "active" ? "status-pulse" : ""}`} />
+                  {getStatusLabel(sub.status)}
+                </span>
               </div>
             </div>
             {/* Row 2: Description | Last Activity */}
@@ -1071,6 +1098,7 @@ interface FilterTabsProps<T extends string> {
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
+  searchOnly?: boolean;
   className?: string;
 }
 
@@ -1081,6 +1109,7 @@ export function FilterTabs<T extends string>({
   searchValue,
   onSearchChange,
   searchPlaceholder = "Buscar...",
+  searchOnly = false,
   className = ""
 }: FilterTabsProps<T>) {
   return (
@@ -1094,21 +1123,23 @@ export function FilterTabs<T extends string>({
           className="px-2 py-0.5 w-32 font-mono text-[10px] bg-zinc-900 border border-zinc-700 rounded-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-[#00d9ff]/50"
         />
       )}
-      <div className="flex items-center gap-1">
-        {options.map((option) => (
-          <button
-            key={option.value}
-            onClick={() => onChange(option.value)}
-            className={`px-2 py-0.5 font-mono text-[10px] rounded-sm border transition-colors ${
-              value === option.value
-                ? "bg-[#00d9ff]/20 border-[#00d9ff]/50 text-[#00d9ff]"
-                : "bg-transparent border-zinc-700 text-zinc-500 hover:border-zinc-600 hover:text-zinc-400"
-            }`}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
+      {!searchOnly && options.length > 0 && (
+        <div className="flex items-center gap-1">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => onChange(option.value)}
+              className={`px-2 py-0.5 font-mono text-[10px] rounded-sm border transition-colors ${
+                value === option.value
+                  ? "bg-[#00d9ff]/20 border-[#00d9ff]/50 text-[#00d9ff]"
+                  : "bg-transparent border-zinc-700 text-zinc-500 hover:border-zinc-600 hover:text-zinc-400"
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

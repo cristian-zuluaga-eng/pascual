@@ -286,6 +286,9 @@ export interface SentinelMetrics {
   failedLogins24h: number;
   activeApiKeys: number;
   activeSessions: number;
+  diskUsage: number; // Disk usage percentage
+  diskTotal: string; // Total disk space
+  diskUsed: string; // Used disk space
 }
 
 export interface ThreatEvent {
@@ -295,6 +298,18 @@ export interface ThreatEvent {
   description: string;
   timestamp: string;
   status: "active" | "resolved" | "investigating";
+  details?: {
+    source?: string;
+    targetSystem?: string;
+    attackVector?: string;
+    affectedUsers?: number;
+    mitigationSteps?: string;
+    detectedBy?: string;
+    responseTime?: string;
+    relatedIncidents?: number;
+    riskLevel?: string;
+    recommendations?: string;
+  };
 }
 
 export interface SystemResource {
@@ -327,6 +342,26 @@ export interface BackupStatus {
   size: string;
 }
 
+export interface ImplementedImprovement {
+  id: string;
+  title: string;
+  description: string;
+  implementedAt: string;
+  implementedBy: string;
+  category: "security" | "performance" | "resilience" | "compliance" | "optimization";
+  impact: "high" | "medium" | "low";
+  details?: {
+    beforeState?: string;
+    afterState?: string;
+    metricsImproved?: string;
+    affectedSystems?: string;
+    testingStatus?: string;
+    rollbackPlan?: string;
+    documentation?: string;
+    nextSteps?: string;
+  };
+}
+
 export interface SentinelData extends AgentBase {
   metrics: SentinelMetrics;
   threats: ThreatEvent[];
@@ -334,6 +369,7 @@ export interface SentinelData extends AgentBase {
   accessLogs: AccessLog[];
   vulnerabilities: VulnerabilityScan;
   backup: BackupStatus;
+  improvements: ImplementedImprovement[];
 }
 
 export const sentinelData: SentinelData = {
@@ -369,11 +405,111 @@ export const sentinelData: SentinelData = {
     failedLogins24h: 7,
     activeApiKeys: 12,
     activeSessions: 3,
+    diskUsage: 71,
+    diskTotal: "500GB",
+    diskUsed: "355GB",
   },
   threats: [
-    { id: "1", severity: "warning", title: "Unusual login pattern", description: "Multiple login attempts from new location", timestamp: "hace 2m", status: "investigating" },
-    { id: "2", severity: "info", title: "Firewall rule updated", description: "New rule added for API protection", timestamp: "hace 15m", status: "resolved" },
-    { id: "3", severity: "warning", title: "Rate limit triggered", description: "API rate limit exceeded for endpoint /api/search", timestamp: "hace 32m", status: "resolved" },
+    {
+      id: "1",
+      severity: "warning",
+      title: "Unusual login pattern",
+      description: "Multiple login attempts from new location",
+      timestamp: "hace 2m",
+      status: "investigating",
+      details: {
+        source: "IP 185.234.72.19 (Russia)",
+        targetSystem: "Auth Service",
+        attackVector: "Brute Force",
+        affectedUsers: 1,
+        mitigationSteps: "IP bloqueada temporalmente, MFA habilitado",
+        detectedBy: "Monitor",
+        responseTime: "< 30s",
+        relatedIncidents: 3,
+        riskLevel: "Medium",
+        recommendations: "Considerar bloqueo permanente de IP range",
+      },
+    },
+    {
+      id: "2",
+      severity: "info",
+      title: "Firewall rule updated",
+      description: "New rule added for API protection",
+      timestamp: "hace 15m",
+      status: "resolved",
+      details: {
+        source: "Admin Console",
+        targetSystem: "API Gateway",
+        attackVector: "N/A",
+        affectedUsers: 0,
+        mitigationSteps: "Regla aplicada correctamente",
+        detectedBy: "Warden",
+        responseTime: "Inmediato",
+        relatedIncidents: 0,
+        riskLevel: "Low",
+        recommendations: "Monitorear tráfico por 24h",
+      },
+    },
+    {
+      id: "3",
+      severity: "warning",
+      title: "Rate limit triggered",
+      description: "API rate limit exceeded for endpoint /api/search",
+      timestamp: "hace 32m",
+      status: "resolved",
+      details: {
+        source: "Client App v2.1.0",
+        targetSystem: "Scout API",
+        attackVector: "Request Flooding",
+        affectedUsers: 12,
+        mitigationSteps: "Rate limit ajustado, cliente notificado",
+        detectedBy: "Custodian",
+        responseTime: "2m 15s",
+        relatedIncidents: 5,
+        riskLevel: "Low",
+        recommendations: "Implementar backoff exponencial en cliente",
+      },
+    },
+    {
+      id: "4",
+      severity: "critical",
+      title: "SQL Injection attempt blocked",
+      description: "Malicious query detected in search parameter",
+      timestamp: "hace 1h",
+      status: "resolved",
+      details: {
+        source: "IP 203.0.113.45 (Unknown)",
+        targetSystem: "Database Layer",
+        attackVector: "SQL Injection",
+        affectedUsers: 0,
+        mitigationSteps: "Query sanitizada, IP bloqueada permanentemente",
+        detectedBy: "Cipher",
+        responseTime: "< 1s",
+        relatedIncidents: 0,
+        riskLevel: "Critical",
+        recommendations: "Auditar todos los inputs de usuario",
+      },
+    },
+    {
+      id: "5",
+      severity: "info",
+      title: "Certificate renewal completed",
+      description: "SSL certificate renewed for api.pascual.ai",
+      timestamp: "hace 2h",
+      status: "resolved",
+      details: {
+        source: "Automated Process",
+        targetSystem: "SSL/TLS",
+        attackVector: "N/A",
+        affectedUsers: 0,
+        mitigationSteps: "Certificado actualizado sin downtime",
+        detectedBy: "Guardian",
+        responseTime: "N/A",
+        relatedIncidents: 0,
+        riskLevel: "None",
+        recommendations: "Ninguna acción requerida",
+      },
+    },
   ],
   systemResources: [
     { name: "CPU", usage: 78, status: "ok" },
@@ -399,6 +535,122 @@ export const sentinelData: SentinelData = {
     recoveryTestStatus: "passed",
     size: "4.2GB",
   },
+  improvements: [
+    {
+      id: "1",
+      title: "Defensa en profundidad mejorada",
+      description: "Implementación de múltiples capas de firewall con reglas adaptativas",
+      implementedAt: "hace 2 días",
+      implementedBy: "Cipher",
+      category: "security",
+      impact: "high",
+      details: {
+        beforeState: "Firewall único con reglas estáticas",
+        afterState: "3 capas de firewall con ML para detección de anomalías",
+        metricsImproved: "Reducción de 85% en intentos de intrusión exitosos",
+        affectedSystems: "API Gateway, Auth Service, Database Layer",
+        testingStatus: "Completado - 100% tests pasados",
+        rollbackPlan: "Restaurar configuración anterior via backup config-v2.3",
+        documentation: "docs/security/firewall-layers.md",
+        nextSteps: "Monitorear por 7 días antes de optimizar reglas",
+      },
+    },
+    {
+      id: "2",
+      title: "Optimización de caché distribuido",
+      description: "Migración a Redis Cluster para mejor rendimiento y disponibilidad",
+      implementedAt: "hace 5 días",
+      implementedBy: "Custodian",
+      category: "performance",
+      impact: "high",
+      details: {
+        beforeState: "Redis standalone con 2GB RAM",
+        afterState: "Redis Cluster 3 nodos con 6GB total y replicación",
+        metricsImproved: "Latencia reducida de 45ms a 8ms, 99.99% disponibilidad",
+        affectedSystems: "Scout, Nexus, API Gateway",
+        testingStatus: "Completado - Load testing 10k req/s",
+        rollbackPlan: "Failover automático a instancia standalone backup",
+        documentation: "docs/infrastructure/redis-cluster.md",
+        nextSteps: "Implementar sharding por tipo de dato",
+      },
+    },
+    {
+      id: "3",
+      title: "Autenticación MFA obligatoria",
+      description: "Habilitación de autenticación multifactor para todos los usuarios admin",
+      implementedAt: "hace 1 semana",
+      implementedBy: "Warden",
+      category: "compliance",
+      impact: "high",
+      details: {
+        beforeState: "MFA opcional, solo 40% de admins lo usaban",
+        afterState: "MFA obligatorio con TOTP y backup codes",
+        metricsImproved: "100% cobertura MFA, 0 accesos no autorizados",
+        affectedSystems: "Auth Service, Admin Console, API Keys",
+        testingStatus: "Completado - Auditoría de seguridad aprobada",
+        rollbackPlan: "No recomendado - Mantener MFA activo",
+        documentation: "docs/security/mfa-policy.md",
+        nextSteps: "Evaluar WebAuthn/FIDO2 para Q2",
+      },
+    },
+    {
+      id: "4",
+      title: "Sistema de backups incrementales",
+      description: "Implementación de backups incrementales cada hora con retención de 30 días",
+      implementedAt: "hace 2 semanas",
+      implementedBy: "Guardian",
+      category: "resilience",
+      impact: "medium",
+      details: {
+        beforeState: "Backup completo diario, 7 días retención",
+        afterState: "Backup incremental horario, 30 días retención, verificación automática",
+        metricsImproved: "RPO reducido de 24h a 1h, RTO de 4h a 30min",
+        affectedSystems: "Database, File Storage, Configuration",
+        testingStatus: "Completado - Recovery test mensual programado",
+        rollbackPlan: "N/A - Sistema de backup anterior desactivado",
+        documentation: "docs/disaster-recovery/backup-strategy.md",
+        nextSteps: "Implementar geo-replicación para DR",
+      },
+    },
+    {
+      id: "5",
+      title: "Monitoreo de anomalías con ML",
+      description: "Modelo de machine learning para detección de patrones anómalos en tiempo real",
+      implementedAt: "hace 3 semanas",
+      implementedBy: "Monitor",
+      category: "security",
+      impact: "medium",
+      details: {
+        beforeState: "Alertas basadas en umbrales estáticos",
+        afterState: "Detección de anomalías con modelo LSTM entrenado",
+        metricsImproved: "MTTD reducido de 15min a 30s, falsos positivos -60%",
+        affectedSystems: "Logging, Metrics, Alert System",
+        testingStatus: "En producción - Ajuste continuo del modelo",
+        rollbackPlan: "Fallback a sistema de umbrales legacy",
+        documentation: "docs/monitoring/ml-anomaly-detection.md",
+        nextSteps: "Entrenar modelo específico para cada servicio",
+      },
+    },
+    {
+      id: "6",
+      title: "Rate limiting adaptativo",
+      description: "Sistema de rate limiting que ajusta límites según comportamiento del usuario",
+      implementedAt: "hace 1 mes",
+      implementedBy: "Custodian",
+      category: "optimization",
+      impact: "medium",
+      details: {
+        beforeState: "Límite fijo de 100 req/min para todos",
+        afterState: "Límites dinámicos basados en historial y tipo de usuario",
+        metricsImproved: "Usuarios legítimos +40% capacidad, abuso -90%",
+        affectedSystems: "API Gateway, Scout API, Auth Service",
+        testingStatus: "Completado - A/B testing positivo",
+        rollbackPlan: "Revertir a límites fijos via feature flag",
+        documentation: "docs/api/adaptive-rate-limiting.md",
+        nextSteps: "Extender a endpoints internos",
+      },
+    },
+  ],
 };
 
 // ============================================================================
@@ -591,6 +843,18 @@ export interface Asset {
   thumbnail?: string;
   usageCount: number;
   createdAt: string;
+  details?: {
+    requestedBy?: string;
+    requestedByIcon?: string;
+    prompt?: string;
+    dimensions?: string;
+    duration?: string;
+    fileSize?: string;
+    format?: string;
+    tags?: string[];
+    lastUsed?: string;
+    quality?: number;
+  };
 }
 
 export interface AssetLibraryStats {
@@ -645,10 +909,114 @@ export const audiovisualData: AudiovisualData = {
     { id: "3", title: "Video tutorial", type: "video", status: "queued", priority: "medium" },
   ],
   recentAssets: [
-    { id: "1", name: "Logo principal", type: "image", usageCount: 45, createdAt: "hace 2d" },
-    { id: "2", name: "Banner hero", type: "image", usageCount: 23, createdAt: "hace 3d" },
-    { id: "3", name: "Jingle intro", type: "audio", usageCount: 12, createdAt: "hace 1w" },
-    { id: "4", name: "Script promo", type: "text", usageCount: 8, createdAt: "hace 1w" },
+    {
+      id: "1",
+      name: "Logo principal",
+      type: "image",
+      usageCount: 45,
+      createdAt: "hace 2d",
+      details: {
+        requestedBy: "Nexus",
+        requestedByIcon: "⚡",
+        prompt: "Genera un logo minimalista para el dashboard de Pascual con estética neo-punk",
+        dimensions: "1024x1024",
+        fileSize: "245 KB",
+        format: "SVG",
+        tags: ["logo", "branding", "principal"],
+        lastUsed: "hace 1h",
+        quality: 98,
+      },
+    },
+    {
+      id: "2",
+      name: "Banner hero",
+      type: "image",
+      usageCount: 23,
+      createdAt: "hace 3d",
+      details: {
+        requestedBy: "Scout",
+        requestedByIcon: "🔍",
+        prompt: "Banner promocional para landing page con gradientes cyan y rosa",
+        dimensions: "1920x600",
+        fileSize: "1.2 MB",
+        format: "PNG",
+        tags: ["banner", "hero", "landing"],
+        lastUsed: "hace 4h",
+        quality: 94,
+      },
+    },
+    {
+      id: "3",
+      name: "Jingle intro",
+      type: "audio",
+      usageCount: 12,
+      createdAt: "hace 1w",
+      details: {
+        requestedBy: "Asistente",
+        requestedByIcon: "👤",
+        prompt: "Jingle corto de 5 segundos para notificaciones del asistente",
+        duration: "5s",
+        fileSize: "120 KB",
+        format: "MP3",
+        tags: ["jingle", "notificación", "intro"],
+        lastUsed: "hace 2d",
+        quality: 92,
+      },
+    },
+    {
+      id: "4",
+      name: "Script promo",
+      type: "text",
+      usageCount: 8,
+      createdAt: "hace 1w",
+      details: {
+        requestedBy: "Consultor",
+        requestedByIcon: "🎓",
+        prompt: "Script para video promocional de servicios de consultoría financiera",
+        fileSize: "4 KB",
+        format: "TXT",
+        tags: ["script", "promo", "finanzas"],
+        lastUsed: "hace 3d",
+        quality: 96,
+      },
+    },
+    {
+      id: "5",
+      name: "Video explicativo",
+      type: "video",
+      usageCount: 5,
+      createdAt: "hace 2w",
+      details: {
+        requestedBy: "Sentinel",
+        requestedByIcon: "🛡️",
+        prompt: "Video tutorial de 60 segundos explicando las medidas de seguridad del sistema",
+        dimensions: "1920x1080",
+        duration: "60s",
+        fileSize: "45 MB",
+        format: "MP4",
+        tags: ["tutorial", "seguridad", "explicativo"],
+        lastUsed: "hace 1w",
+        quality: 88,
+      },
+    },
+    {
+      id: "6",
+      name: "Icono notificación",
+      type: "image",
+      usageCount: 67,
+      createdAt: "hace 3w",
+      details: {
+        requestedBy: "Pascual",
+        requestedByIcon: "🧠",
+        prompt: "Set de iconos para notificaciones del sistema en estilo neo-punk",
+        dimensions: "64x64",
+        fileSize: "12 KB",
+        format: "SVG",
+        tags: ["icono", "notificación", "UI"],
+        lastUsed: "hace 30m",
+        quality: 95,
+      },
+    },
   ],
   libraryStats: {
     images: { count: 89, size: "1.2 GB" },

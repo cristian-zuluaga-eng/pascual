@@ -462,3 +462,100 @@ body {
 .animate-chat-expand {
   animation: chat-expand 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+
+/* Busy border flash animation */
+.border-busy-flash {
+  animation: border-flash 1.2s ease-in-out infinite;
+}
+
+@keyframes border-flash {
+  0%, 100% {
+    border-color: #27272a;
+  }
+  50% {
+    border-color: #f59e0b;
+  }
+}
+
+/* Busy border animation - spark traveling around border */
+.border-busy-animate {
+  position: relative;
+  border-color: rgba(255, 170, 0, 0.3) !important;
+  overflow: hidden;
+}
+
+.border-busy-animate::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    transparent 25%,
+    rgba(255, 170, 0, 0.8) 50%,
+    transparent 75%,
+    transparent 100%
+  );
+  background-size: 200% 200%;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  padding: 1px;
+  border-radius: 2px;
+  animation: spark-travel 2s linear infinite;
+}
+
+@keyframes spark-travel {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Alternative: Conic gradient spark for more dynamic effect */
+.border-spark-animate {
+  position: relative;
+  border-color: transparent !important;
+  background: #18181b;
+  background-clip: padding-box;
+}
+
+.border-spark-animate::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 3px;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--spark-angle, 0deg),
+    transparent 0%,
+    transparent 70%,
+    #ffaa00 80%,
+    #ffdd00 85%,
+    #ffaa00 90%,
+    transparent 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: spark-rotate 2s linear infinite;
+  z-index: -1;
+}
+
+@keyframes spark-rotate {
+  0% {
+    --spark-angle: 0deg;
+    transform: rotate(0deg);
+  }
+  100% {
+    --spark-angle: 360deg;
+    transform: rotate(360deg);
+  }
+}
