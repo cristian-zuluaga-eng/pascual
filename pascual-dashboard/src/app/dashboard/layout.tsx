@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { MainContent } from "@/components/layout/MainContent";
 import { GrowlProvider, GrowlContainer } from "@/components/growl";
+import { ChatTransitionProvider, ChatTransitionOverlay } from "@/components/chat/ChatTransition";
 
 export default function DashboardLayout({
   children,
@@ -12,14 +13,17 @@ export default function DashboardLayout({
 }) {
   return (
     <GrowlProvider>
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar />
-        <div className="flex flex-col flex-1 overflow-hidden">
-          <Header />
-          <MainContent>{children}</MainContent>
+      <ChatTransitionProvider>
+        <div className="flex h-screen overflow-hidden">
+          <Sidebar />
+          <div className="flex flex-col flex-1 overflow-hidden">
+            <Header />
+            <MainContent>{children}</MainContent>
+          </div>
+          <GrowlContainer />
+          <ChatTransitionOverlay />
         </div>
-        <GrowlContainer />
-      </div>
+      </ChatTransitionProvider>
     </GrowlProvider>
   );
 }

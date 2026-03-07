@@ -13,10 +13,12 @@ export interface SubAgentStatus {
   id: string;
   name: string;
   description: string;
+  detailedDescription: string; // Detailed description for tooltip
   model: string;
   status: AgentStatus;
   activeTasks: number;
   lastActivity: string;
+  score: number; // 0-100 score
 }
 
 export interface QuickAction {
@@ -108,9 +110,9 @@ export const asistenteData: AsistenteData = {
   status: "active",
   lastSync: "hace 2s",
   subAgents: [
-    { id: "chronos", name: "Chronos", description: "Gestión de Tiempo y Tareas", model: "Claude Sonnet", status: "active", activeTasks: 2, lastActivity: "hace 1m" },
-    { id: "proactive", name: "Proactive", description: "Anticipación Proactiva", model: "Claude Haiku", status: "active", activeTasks: 1, lastActivity: "hace 5m" },
-    { id: "domus", name: "Domus", description: "Gestión Doméstica", model: "Claude Haiku", status: "idle", activeTasks: 0, lastActivity: "hace 15m" },
+    { id: "chronos", name: "Chronos", description: "Gestión de Tiempo y Tareas", detailedDescription: "Organiza calendarios, programa recordatorios, prioriza tareas y optimiza la distribución del tiempo diario para maximizar productividad.", model: "Claude Sonnet", status: "active", activeTasks: 2, lastActivity: "hace 1m", score: 94 },
+    { id: "proactive", name: "Proactive", description: "Anticipación Proactiva", detailedDescription: "Analiza patrones de comportamiento para anticipar necesidades, genera sugerencias contextuales y previene olvidos importantes.", model: "Claude Haiku", status: "active", activeTasks: 1, lastActivity: "hace 5m", score: 87 },
+    { id: "domus", name: "Domus", description: "Gestión Doméstica", detailedDescription: "Administra inventarios del hogar, programa mantenimientos, genera listas de compras y coordina servicios domésticos.", model: "Claude Haiku", status: "idle", activeTasks: 0, lastActivity: "hace 15m", score: 91 },
   ],
   quickActions: [
     { id: "plan-day", label: "Planificar mi día", icon: "📅", prompt: "Pascual, ayúdame a organizar mi día de hoy" },
@@ -214,14 +216,14 @@ export const nexusData: NexusData = {
   status: "active",
   lastSync: "hace 5m",
   subAgents: [
-    { id: "explorer", name: "Explorer", description: "Analista de Código", model: "Claude Sonnet", status: "active", activeTasks: 1, lastActivity: "hace 2m" },
-    { id: "proposer", name: "Proposer", description: "Estratega Técnico", model: "Claude Opus", status: "active", activeTasks: 0, lastActivity: "hace 10m" },
-    { id: "spec-writer", name: "Spec Writer", description: "Especificador", model: "Claude Sonnet", status: "active", activeTasks: 1, lastActivity: "hace 5m" },
-    { id: "designer", name: "Designer", description: "Arquitecto", model: "Claude Opus", status: "busy", activeTasks: 2, lastActivity: "hace 1m" },
-    { id: "task-planner", name: "Task Planner", description: "Planificador", model: "Claude Sonnet", status: "idle", activeTasks: 0, lastActivity: "hace 30m" },
-    { id: "implementador", name: "Implementador", description: "Desarrollador", model: "Claude Sonnet", status: "active", activeTasks: 1, lastActivity: "hace 3m" },
-    { id: "verificador", name: "Verificador QA", description: "Control de Calidad", model: "Claude Haiku", status: "active", activeTasks: 0, lastActivity: "hace 15m" },
-    { id: "auditor", name: "Auditor", description: "Evaluador Técnico", model: "Claude Sonnet", status: "idle", activeTasks: 0, lastActivity: "hace 1h" },
+    { id: "explorer", name: "Explorer", description: "Analista de Código", detailedDescription: "Explora y analiza bases de código existentes, identifica patrones, dependencias y áreas de mejora en la arquitectura del software.", model: "Claude Sonnet", status: "active", activeTasks: 1, lastActivity: "hace 2m", score: 92 },
+    { id: "proposer", name: "Proposer", description: "Estratega Técnico", detailedDescription: "Diseña estrategias técnicas, propone soluciones arquitectónicas y evalúa trade-offs entre diferentes enfoques de implementación.", model: "Claude Opus", status: "active", activeTasks: 0, lastActivity: "hace 10m", score: 88 },
+    { id: "spec-writer", name: "Spec Writer", description: "Especificador", detailedDescription: "Redacta especificaciones técnicas detalladas, documenta requisitos funcionales y define criterios de aceptación.", model: "Claude Sonnet", status: "active", activeTasks: 1, lastActivity: "hace 5m", score: 95 },
+    { id: "designer", name: "Designer", description: "Arquitecto", detailedDescription: "Diseña arquitecturas de software escalables, define interfaces entre componentes y establece patrones de diseño.", model: "Claude Opus", status: "busy", activeTasks: 2, lastActivity: "hace 1m", score: 78 },
+    { id: "task-planner", name: "Task Planner", description: "Planificador", detailedDescription: "Descompone features en tareas manejables, estima complejidad, define secuencias de trabajo y asigna prioridades.", model: "Claude Sonnet", status: "idle", activeTasks: 0, lastActivity: "hace 30m", score: 85 },
+    { id: "implementador", name: "Implementador", description: "Desarrollador", detailedDescription: "Escribe código de producción siguiendo especificaciones, implementa features y resuelve problemas técnicos.", model: "Claude Sonnet", status: "active", activeTasks: 1, lastActivity: "hace 3m", score: 91 },
+    { id: "verificador", name: "Verificador QA", description: "Control de Calidad", detailedDescription: "Ejecuta pruebas automatizadas, valida funcionalidad, detecta regresiones y asegura estándares de calidad.", model: "Claude Haiku", status: "active", activeTasks: 0, lastActivity: "hace 15m", score: 96 },
+    { id: "auditor", name: "Auditor", description: "Evaluador Técnico", detailedDescription: "Revisa código, evalúa cumplimiento de estándares, identifica deuda técnica y sugiere refactorizaciones.", model: "Claude Sonnet", status: "idle", activeTasks: 0, lastActivity: "hace 1h", score: 82 },
   ],
   quickActions: [
     { id: "analyze", label: "Analizar código", icon: "🔍", prompt: "Pascual, analiza el código de [componente] y sugiere mejoras" },
@@ -343,11 +345,11 @@ export const sentinelData: SentinelData = {
   status: "active",
   lastSync: "tiempo real",
   subAgents: [
-    { id: "cipher", name: "Cipher", description: "Director de Seguridad Digital", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 30s" },
-    { id: "monitor", name: "Monitor", description: "Supervisor de Rendimiento", model: "Claude Haiku", status: "active", activeTasks: 1, lastActivity: "hace 10s" },
-    { id: "guardian", name: "Guardian", description: "Responsable de Resiliencia", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 2m" },
-    { id: "warden", name: "Warden", description: "Gestor de Acceso", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 5m" },
-    { id: "custodian", name: "Custodian", description: "Administrador de Recursos", model: "Claude Haiku", status: "busy", activeTasks: 1, lastActivity: "hace 1m" },
+    { id: "cipher", name: "Cipher", description: "Director de Seguridad Digital", detailedDescription: "Gestiona encriptación, certificados SSL, políticas de seguridad y protocolos de protección de datos sensibles.", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 30s", score: 98 },
+    { id: "monitor", name: "Monitor", description: "Supervisor de Rendimiento", detailedDescription: "Monitorea métricas del sistema en tiempo real, detecta anomalías, genera alertas y analiza tendencias de rendimiento.", model: "Claude Haiku", status: "active", activeTasks: 1, lastActivity: "hace 10s", score: 94 },
+    { id: "guardian", name: "Guardian", description: "Responsable de Resiliencia", detailedDescription: "Gestiona backups, planes de recuperación ante desastres, redundancia de sistemas y continuidad operativa.", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 2m", score: 96 },
+    { id: "warden", name: "Warden", description: "Gestor de Acceso", detailedDescription: "Administra autenticación, autorización, control de acceso basado en roles y auditoría de sesiones de usuario.", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 5m", score: 92 },
+    { id: "custodian", name: "Custodian", description: "Administrador de Recursos", detailedDescription: "Optimiza uso de recursos del sistema, gestiona cuotas, balancea cargas y escala infraestructura según demanda.", model: "Claude Haiku", status: "busy", activeTasks: 1, lastActivity: "hace 1m", score: 89 },
   ],
   quickActions: [
     { id: "scan", label: "Escaneo completo", icon: "🔍", prompt: "Pascual, ejecuta un escaneo de seguridad completo" },
@@ -420,6 +422,17 @@ export interface SearchResult {
   resultCount: number;
   timestamp: string;
   status: "completed" | "processing" | "failed";
+  // Extended details for expandable view
+  details?: {
+    source?: string;
+    url?: string;
+    searchTime?: string;
+    dataSize?: string;
+    agent?: string;
+    relevanceScore?: number;
+    cachedResult?: boolean;
+    tags?: string[];
+  };
 }
 
 export interface MonitoredTrend {
@@ -455,11 +468,11 @@ export const scoutData: ScoutData = {
   status: "active",
   lastSync: "continua",
   subAgents: [
-    { id: "hunter", name: "Hunter", description: "Especialista en Búsqueda", model: "Claude Sonnet", status: "busy", activeTasks: 2, lastActivity: "hace 30s" },
-    { id: "harvester", name: "Harvester", description: "Experto en Extracción", model: "Claude Haiku", status: "active", activeTasks: 1, lastActivity: "hace 1m" },
-    { id: "curator", name: "Curator", description: "Gestor de Calidad", model: "Claude Haiku", status: "active", activeTasks: 0, lastActivity: "hace 5m" },
-    { id: "synthesizer", name: "Synthesizer", description: "Procesador de Información", model: "Claude Sonnet", status: "busy", activeTasks: 1, lastActivity: "hace 2m" },
-    { id: "satelite", name: "Satelite", description: "Vigilante de Tendencias", model: "Claude Haiku", status: "active", activeTasks: 0, lastActivity: "hace 10m" },
+    { id: "hunter", name: "Hunter", description: "Especialista en Búsqueda", detailedDescription: "Ejecuta búsquedas avanzadas en múltiples fuentes, optimiza queries, rankea resultados por relevancia y filtra información.", model: "Claude Sonnet", status: "busy", activeTasks: 2, lastActivity: "hace 30s", score: 93 },
+    { id: "harvester", name: "Harvester", description: "Experto en Extracción", detailedDescription: "Extrae datos estructurados de páginas web, APIs y documentos, normaliza formatos y valida integridad de datos.", model: "Claude Haiku", status: "active", activeTasks: 1, lastActivity: "hace 1m", score: 88 },
+    { id: "curator", name: "Curator", description: "Gestor de Calidad", detailedDescription: "Evalúa calidad y confiabilidad de datos, elimina duplicados, verifica fuentes y mantiene estándares de precisión.", model: "Claude Haiku", status: "active", activeTasks: 0, lastActivity: "hace 5m", score: 95 },
+    { id: "synthesizer", name: "Synthesizer", description: "Procesador de Información", detailedDescription: "Combina información de múltiples fuentes, genera resúmenes, identifica patrones y crea reportes consolidados.", model: "Claude Sonnet", status: "busy", activeTasks: 1, lastActivity: "hace 2m", score: 86 },
+    { id: "satelite", name: "Satelite", description: "Vigilante de Tendencias", detailedDescription: "Monitorea feeds en tiempo real, detecta tendencias emergentes, trackea cambios y genera alertas de actualización.", model: "Claude Haiku", status: "active", activeTasks: 0, lastActivity: "hace 10m", score: 91 },
   ],
   quickActions: [
     { id: "search", label: "Buscar datos", icon: "🔍", prompt: "Pascual, busca información sobre [tema]" },
@@ -479,9 +492,57 @@ export const scoutData: ScoutData = {
     dailyQuotaUsed: 62,
   },
   recentSearches: [
-    { id: "1", query: "AI market trends 2025", resultCount: 156, timestamp: "hace 2m", status: "completed" },
-    { id: "2", query: "React 19 features", resultCount: 89, timestamp: "hace 15m", status: "completed" },
-    { id: "3", query: "Colombian economy 2025", resultCount: 234, timestamp: "hace 1h", status: "completed" },
+    {
+      id: "1",
+      query: "AI market trends 2025",
+      resultCount: 156,
+      timestamp: "hace 2m",
+      status: "completed",
+      details: {
+        source: "NewsAPI, Google Scholar",
+        url: "https://api.newsapi.org/v2/everything?q=AI+market",
+        searchTime: "1.2s",
+        dataSize: "2.4 MB",
+        agent: "Hunter",
+        relevanceScore: 94,
+        cachedResult: false,
+        tags: ["AI", "market", "trends", "2025"],
+      },
+    },
+    {
+      id: "2",
+      query: "React 19 features",
+      resultCount: 89,
+      timestamp: "hace 15m",
+      status: "completed",
+      details: {
+        source: "GitHub, Dev.to, Medium",
+        url: "https://api.github.com/search/repositories?q=react+19",
+        searchTime: "0.8s",
+        dataSize: "1.1 MB",
+        agent: "Hunter",
+        relevanceScore: 98,
+        cachedResult: true,
+        tags: ["React", "JavaScript", "frontend"],
+      },
+    },
+    {
+      id: "3",
+      query: "Colombian economy 2025",
+      resultCount: 234,
+      timestamp: "hace 1h",
+      status: "completed",
+      details: {
+        source: "Financial APIs, Reuters",
+        url: "https://api.financialdata.com/economy/colombia",
+        searchTime: "2.1s",
+        dataSize: "4.7 MB",
+        agent: "Harvester",
+        relevanceScore: 87,
+        cachedResult: false,
+        tags: ["Colombia", "economy", "finance", "LATAM"],
+      },
+    },
   ],
   monitoredTrends: [
     { id: "1", name: "Bitcoin price", icon: "📈", change: "+2.3%", direction: "up" },
@@ -557,11 +618,11 @@ export const audiovisualData: AudiovisualData = {
   status: "active",
   lastSync: "por demanda",
   subAgents: [
-    { id: "imagen", name: "Imagen", description: "Especialista Visual", model: "DALL-E 3", status: "busy", activeTasks: 1, lastActivity: "hace 1m" },
-    { id: "video", name: "Video", description: "Productor Videográfico", model: "Runway", status: "idle", activeTasks: 0, lastActivity: "hace 2h" },
-    { id: "audio", name: "Audio", description: "Especialista Sonoro", model: "ElevenLabs", status: "active", activeTasks: 0, lastActivity: "hace 30m" },
-    { id: "texto", name: "Texto", description: "Experto en Narrativa", model: "Claude Opus", status: "active", activeTasks: 0, lastActivity: "hace 15m" },
-    { id: "bibliotecario", name: "Bibliotecario", description: "Gestor de Recursos", model: "Claude Haiku", status: "active", activeTasks: 0, lastActivity: "hace 5m" },
+    { id: "imagen", name: "Imagen", description: "Especialista Visual", detailedDescription: "Genera imágenes con IA, edita fotografías, crea ilustraciones y mantiene coherencia visual con la marca.", model: "DALL-E 3", status: "busy", activeTasks: 1, lastActivity: "hace 1m", score: 89 },
+    { id: "video", name: "Video", description: "Productor Videográfico", detailedDescription: "Produce videos con IA, edita clips, genera animaciones y crea contenido audiovisual profesional.", model: "Runway", status: "idle", activeTasks: 0, lastActivity: "hace 2h", score: 76 },
+    { id: "audio", name: "Audio", description: "Especialista Sonoro", detailedDescription: "Genera voces sintéticas, crea efectos de sonido, produce música y optimiza audio para diferentes plataformas.", model: "ElevenLabs", status: "active", activeTasks: 0, lastActivity: "hace 30m", score: 92 },
+    { id: "texto", name: "Texto", description: "Experto en Narrativa", detailedDescription: "Redacta contenido creativo, adapta tono y estilo, genera copy publicitario y crea narrativas persuasivas.", model: "Claude Opus", status: "active", activeTasks: 0, lastActivity: "hace 15m", score: 94 },
+    { id: "bibliotecario", name: "Bibliotecario", description: "Gestor de Recursos", detailedDescription: "Organiza biblioteca de assets, gestiona versiones, optimiza almacenamiento y facilita búsqueda de recursos.", model: "Claude Haiku", status: "active", activeTasks: 0, lastActivity: "hace 5m", score: 97 },
   ],
   quickActions: [
     { id: "image", label: "Crear imagen", icon: "🖼️", prompt: "Pascual, genera una imagen de [descripción]" },
@@ -658,11 +719,11 @@ export const consultorData: ConsultorData = {
   status: "active",
   lastSync: "por consulta",
   subAgents: [
-    { id: "financiero", name: "Financiero", description: "Asesor Económico", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 10m" },
-    { id: "crianza", name: "Crianza", description: "Experto en Desarrollo Infantil", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 2h" },
-    { id: "emprendimiento", name: "Emprendimiento", description: "Especialista en Negocios", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 30m" },
-    { id: "carrera", name: "Carrera", description: "Experto en Desarrollo Profesional", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 1h" },
-    { id: "bienestar", name: "Bienestar", description: "Especialista en Salud Integral", model: "Claude Sonnet", status: "idle", activeTasks: 0, lastActivity: "hace 3h" },
+    { id: "financiero", name: "Financiero", description: "Asesor Económico", detailedDescription: "Analiza finanzas personales, optimiza presupuestos, planifica inversiones y asesora en decisiones económicas.", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 10m", score: 91 },
+    { id: "crianza", name: "Crianza", description: "Experto en Desarrollo Infantil", detailedDescription: "Asesora en desarrollo infantil, sugiere actividades educativas, orienta en disciplina positiva y apoya rutinas familiares.", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 2h", score: 88 },
+    { id: "emprendimiento", name: "Emprendimiento", description: "Especialista en Negocios", detailedDescription: "Desarrolla planes de negocio, valida ideas, asesora en estrategia comercial y optimiza modelos de monetización.", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 30m", score: 85 },
+    { id: "carrera", name: "Carrera", description: "Experto en Desarrollo Profesional", detailedDescription: "Orienta desarrollo de carrera, prepara para entrevistas, optimiza currículum y planifica crecimiento profesional.", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 1h", score: 90 },
+    { id: "bienestar", name: "Bienestar", description: "Especialista en Salud Integral", detailedDescription: "Diseña rutinas de bienestar, sugiere hábitos saludables, monitorea objetivos de salud y promueve balance vida-trabajo.", model: "Claude Sonnet", status: "idle", activeTasks: 0, lastActivity: "hace 3h", score: 93 },
   ],
   quickActions: [
     { id: "finance", label: "Finanzas", icon: "💰", prompt: "Pascual, necesito asesoría financiera sobre [tema]" },
@@ -762,11 +823,11 @@ export const gambitoData: GambitoData = {
   status: "active",
   lastSync: "cada 1h",
   subAgents: [
-    { id: "analyst", name: "Analyst", description: "Modelador Estadístico", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 15m" },
-    { id: "evaluator", name: "Evaluator", description: "Validador de Modelos", model: "Claude Sonnet", status: "active", activeTasks: 1, lastActivity: "hace 30m" },
-    { id: "optimizer", name: "Optimizer", description: "Ajustador de Modelos", model: "Claude Sonnet", status: "busy", activeTasks: 1, lastActivity: "hace 5m" },
-    { id: "manager", name: "Manager", description: "Gestor de Capital", model: "Claude Opus", status: "active", activeTasks: 0, lastActivity: "hace 1h" },
-    { id: "monitor-g", name: "Monitor", description: "Seguimiento de Resultados", model: "Claude Haiku", status: "active", activeTasks: 0, lastActivity: "hace 10m" },
+    { id: "analyst", name: "Analyst", description: "Modelador Estadístico", detailedDescription: "Desarrolla modelos predictivos, analiza datos históricos, calcula probabilidades y genera proyecciones estadísticas.", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 15m", score: 87 },
+    { id: "evaluator", name: "Evaluator", description: "Validador de Modelos", detailedDescription: "Valida precisión de modelos, ejecuta backtesting, compara rendimiento y detecta overfitting o sesgos.", model: "Claude Sonnet", status: "active", activeTasks: 1, lastActivity: "hace 30m", score: 92 },
+    { id: "optimizer", name: "Optimizer", description: "Ajustador de Modelos", detailedDescription: "Calibra parámetros de modelos, optimiza hiperparámetros, ajusta pesos y mejora accuracy de predicciones.", model: "Claude Sonnet", status: "busy", activeTasks: 1, lastActivity: "hace 5m", score: 79 },
+    { id: "manager", name: "Manager", description: "Gestor de Capital", detailedDescription: "Administra bankroll, calcula stakes óptimos con Kelly, gestiona riesgo y protege capital ante drawdowns.", model: "Claude Opus", status: "active", activeTasks: 0, lastActivity: "hace 1h", score: 94 },
+    { id: "monitor-g", name: "Monitor", description: "Seguimiento de Resultados", detailedDescription: "Trackea resultados en tiempo real, actualiza ROI, registra performance histórico y genera reportes de rendimiento.", model: "Claude Haiku", status: "active", activeTasks: 0, lastActivity: "hace 10m", score: 96 },
   ],
   quickActions: [
     { id: "analyze", label: "Analizar partido", icon: "⚽", prompt: "Pascual, analiza el partido [equipo1] vs [equipo2]" },
@@ -881,11 +942,11 @@ export const condor360Data: Condor360Data = {
   status: "active",
   lastSync: "real-time (markets)",
   subAgents: [
-    { id: "cuantificador", name: "Cuantificador", description: "Analista Numérico", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 5m" },
-    { id: "fundamental", name: "Fundamental", description: "Evaluador Empresarial", model: "Claude Opus", status: "active", activeTasks: 0, lastActivity: "hace 15m" },
-    { id: "estratega", name: "Estratega", description: "Optimizador de Portafolios", model: "Claude Opus", status: "busy", activeTasks: 1, lastActivity: "hace 2m" },
-    { id: "newswire", name: "Newswire", description: "Analista de Noticias", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 10m" },
-    { id: "simulador", name: "Simulador", description: "Validador de Estrategias", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 30m" },
+    { id: "cuantificador", name: "Cuantificador", description: "Analista Numérico", detailedDescription: "Realiza análisis técnico avanzado, calcula indicadores, detecta patrones de precio y genera señales cuantitativas.", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 5m", score: 95 },
+    { id: "fundamental", name: "Fundamental", description: "Evaluador Empresarial", detailedDescription: "Analiza estados financieros, evalúa ratios fundamentales, estudia ventajas competitivas y valora empresas.", model: "Claude Opus", status: "active", activeTasks: 0, lastActivity: "hace 15m", score: 89 },
+    { id: "estratega", name: "Estratega", description: "Optimizador de Portafolios", detailedDescription: "Diseña allocations óptimas, balancea riesgo-retorno, rebalancea posiciones y maximiza Sharpe ratio.", model: "Claude Opus", status: "busy", activeTasks: 1, lastActivity: "hace 2m", score: 82 },
+    { id: "newswire", name: "Newswire", description: "Analista de Noticias", detailedDescription: "Monitorea noticias financieras, analiza sentiment de mercado, detecta catalizadores y evalúa impacto en precios.", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 10m", score: 91 },
+    { id: "simulador", name: "Simulador", description: "Validador de Estrategias", detailedDescription: "Ejecuta simulaciones Monte Carlo, backtests estrategias, stress-tests portafolios y valida modelos de riesgo.", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 30m", score: 87 },
   ],
   quickActions: [
     { id: "analyze", label: "Analizar activo", icon: "📊", prompt: "Pascual, analiza [ticker] con análisis técnico y fundamental" },
@@ -997,11 +1058,11 @@ export const optimusData: OptimusData = {
   status: "active",
   lastSync: "tiempo real",
   subAgents: [
-    { id: "designer-o", name: "Designer", description: "Especialista UX/UI", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 5m" },
-    { id: "integrator", name: "Integrator", description: "Experto en APIs", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 15m" },
-    { id: "innovator", name: "Innovator", description: "Prototipador", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 30m" },
-    { id: "communicator", name: "Communicator", description: "Visualizador de Datos", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 20m" },
-    { id: "conservator", name: "Conservator", description: "Gestor de Componentes", model: "Claude Haiku", status: "active", activeTasks: 0, lastActivity: "hace 10m" },
+    { id: "designer-o", name: "Designer", description: "Especialista UX/UI", detailedDescription: "Diseña interfaces intuitivas, crea sistemas de diseño, optimiza flujos de usuario y asegura consistencia visual.", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 5m", score: 93 },
+    { id: "integrator", name: "Integrator", description: "Experto en APIs", detailedDescription: "Integra servicios externos, diseña arquitecturas de API, gestiona autenticación y optimiza comunicación entre sistemas.", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 15m", score: 90 },
+    { id: "innovator", name: "Innovator", description: "Prototipador", detailedDescription: "Desarrolla prototipos rápidos, experimenta con nuevas tecnologías, valida conceptos y propone innovaciones UX.", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 30m", score: 86 },
+    { id: "communicator", name: "Communicator", description: "Visualizador de Datos", detailedDescription: "Crea dashboards informativos, diseña gráficos claros, transforma datos en insights visuales y optimiza reportes.", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 20m", score: 91 },
+    { id: "conservator", name: "Conservator", description: "Gestor de Componentes", detailedDescription: "Mantiene biblioteca de componentes, documenta patrones de uso, versiona cambios y asegura reutilización eficiente.", model: "Claude Haiku", status: "active", activeTasks: 0, lastActivity: "hace 10m", score: 98 },
   ],
   quickActions: [
     { id: "component", label: "Nuevo componente", icon: "🧩", prompt: "Pascual, diseña un componente para [propósito]" },

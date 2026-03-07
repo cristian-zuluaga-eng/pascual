@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 
-export interface GrowlMessage {
+export interface ChatMessage {
   id: string;
   type: "user" | "assistant" | "system";
   content: string;
@@ -11,70 +11,72 @@ export interface GrowlMessage {
   agentIcon?: string;
   timestamp: string;
   isTyping?: boolean;
+  source: "main" | "growl";
 }
 
-export interface ChatHistoryEntry {
-  id: string;
-  role: "user" | "assistant" | "system";
-  content: string;
-  timestamp: string;
-  agentName?: string;
-  agentIcon?: string;
-  source: "chat" | "growl";
-}
-
-interface GrowlContextType {
-  messages: GrowlMessage[];
-  chatHistory: ChatHistoryEntry[];
-  addMessage: (message: Omit<GrowlMessage, "id" | "timestamp">) => string;
-  removeMessage: (id: string) => void;
-  clearMessages: () => void;
+interface PascualChatContextType {
+  messages: ChatMessage[];
+  isTyping: boolean;
+  sendMessage: (content: string, source?: "main" | "growl") => void;
   sendToAgent: (agentId: string, agentName: string, agentIcon: string, userMessage: string) => void;
-  sendToPascual: (userMessage: string, context?: string) => void;
-  addToChatHistory: (entry: Omit<ChatHistoryEntry, "id" | "timestamp">) => void;
+  clearMessages: () => void;
 }
 
-const GrowlContext = createContext<GrowlContextType | undefined>(undefined);
+const PascualChatContext = createContext<PascualChatContextType | undefined>(undefined);
 
 export function GrowlProvider({ children }: { children: ReactNode }) {
-  const [messages, setMessages] = useState<GrowlMessage[]>([]);
-  const [chatHistory, setChatHistory] = useState<ChatHistoryEntry[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    // Initial welcome message
+    {
+      id: "welcome-1",
+      type: "assistant",
+      content: "Hola, soy Pascual, tu asistente del ecosistema. ¿En qué puedo ayudarte hoy?",
+      agentName: "Pascual",
+      agentIcon: "◉",
+      timestamp: new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }),
+      source: "main",
+    }
+  ]);
+  const [isTyping, setIsTyping] = useState(false);
 
-  const generateId = () => `growl-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const generateId = () => `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-  const addMessage = useCallback((message: Omit<GrowlMessage, "id" | "timestamp">) => {
-    const id = generateId();
-    const timestamp = new Date().toLocaleTimeString("es-CO", {
-      hour: "2-digit",
-      minute: "2-digit"
-    });
+  const getTimestamp = () => new Date().toLocaleTimeString("es-CO", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 
-    const newMessage: GrowlMessage = {
-      ...message,
-      id,
-      timestamp,
+  const sendMessage = useCallback((content: string, source: "main" | "growl" = "main") => {
+    // Add user message
+    const userMessage: ChatMessage = {
+      id: generateId(),
+      type: "user",
+      content,
+      agentName: "Tú",
+      timestamp: getTimestamp(),
+      source,
     };
 
-    setMessages(prev => [...prev, newMessage]);
-    return id;
-  }, []);
+    setMessages(prev => [...prev, userMessage]);
+    setIsTyping(true);
 
-  const removeMessage = useCallback((id: string) => {
-    setMessages(prev => prev.filter(msg => msg.id !== id));
-  }, []);
+    // Simulate Pascual response after delay
+    setTimeout(() => {
+      setIsTyping(false);
 
-  const clearMessages = useCallback(() => {
-    setMessages([]);
-  }, []);
+      const response = generatePascualResponse(content);
+      const assistantMessage: ChatMessage = {
+        id: generateId(),
+        type: "assistant",
+        content: response,
+        agentName: "Pascual",
+        agentIcon: "◉",
+        timestamp: getTimestamp(),
+        source,
+      };
 
-  const addToChatHistory = useCallback((entry: Omit<ChatHistoryEntry, "id" | "timestamp">) => {
-    const id = generateId();
-    const timestamp = new Date().toLocaleTimeString("es-CO", {
-      hour: "2-digit",
-      minute: "2-digit"
-    });
-
-    setChatHistory(prev => [...prev, { ...entry, id, timestamp }]);
+      setMessages(prev => [...prev, assistantMessage]);
+    }, 1200 + Math.random() * 800);
   }, []);
 
   const sendToAgent = useCallback((
@@ -83,144 +85,89 @@ export function GrowlProvider({ children }: { children: ReactNode }) {
     agentIcon: string,
     userMessage: string
   ) => {
-    // Add user message to growl
-    addMessage({
+    // Add user message to chat
+    const userMsg: ChatMessage = {
+      id: generateId(),
       type: "user",
-      content: userMessage,
-      agentId,
-      agentName,
-      agentIcon,
-    });
-
-    // Add to chat history
-    addToChatHistory({
-      role: "user",
       content: `[Para ${agentName}]: ${userMessage}`,
-      agentName,
-      agentIcon,
+      agentName: "Tú",
+      timestamp: getTimestamp(),
       source: "growl",
-    });
+    };
 
-    // Show typing indicator
-    const typingId = addMessage({
-      type: "assistant",
-      content: "",
-      agentId,
-      agentName,
-      agentIcon,
-      isTyping: true,
-    });
+    setMessages(prev => [...prev, userMsg]);
+    setIsTyping(true);
 
     // Simulate agent response after delay
     setTimeout(() => {
-      removeMessage(typingId);
+      setIsTyping(false);
 
       const response = generateAgentResponse(agentId, agentName, userMessage);
-
-      addMessage({
+      const assistantMessage: ChatMessage = {
+        id: generateId(),
         type: "assistant",
         content: response,
         agentId,
         agentName,
         agentIcon,
-      });
-
-      addToChatHistory({
-        role: "assistant",
-        content: response,
-        agentName,
-        agentIcon,
+        timestamp: getTimestamp(),
         source: "growl",
-      });
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
     }, 1500 + Math.random() * 1000);
-  }, [addMessage, removeMessage, addToChatHistory]);
+  }, []);
 
-  const sendToPascual = useCallback((userMessage: string, context?: string) => {
-    // Add user message to growl
-    addMessage({
-      type: "user",
-      content: userMessage,
-      agentName: "Pascual",
-      agentIcon: "◉",
-    });
-
-    // Add to chat history
-    addToChatHistory({
-      role: "user",
-      content: userMessage,
-      agentName: "Pascual",
-      agentIcon: "◉",
-      source: "growl",
-    });
-
-    // Show typing indicator
-    const typingId = addMessage({
+  const clearMessages = useCallback(() => {
+    // Keep only the welcome message
+    setMessages([{
+      id: "welcome-1",
       type: "assistant",
-      content: "",
+      content: "Hola, soy Pascual, tu asistente del ecosistema. ¿En qué puedo ayudarte hoy?",
       agentName: "Pascual",
       agentIcon: "◉",
-      isTyping: true,
-    });
+      timestamp: getTimestamp(),
+      source: "main",
+    }]);
+  }, []);
 
-    // Simulate Pascual response after delay
-    setTimeout(() => {
-      removeMessage(typingId);
-
-      const response = generatePascualResponse(userMessage, context);
-
-      addMessage({
-        type: "assistant",
-        content: response,
-        agentName: "Pascual",
-        agentIcon: "◉",
-      });
-
-      addToChatHistory({
-        role: "assistant",
-        content: response,
-        agentName: "Pascual",
-        agentIcon: "◉",
-        source: "growl",
-      });
-    }, 1200 + Math.random() * 800);
-  }, [addMessage, removeMessage, addToChatHistory]);
-
-  // Listen for pascual:message events from PascualInput components
+  // Listen for pascual:message events from PascualInput components (growl inputs)
   useEffect(() => {
     const handlePascualMessage = (event: CustomEvent<{ message: string; context?: string }>) => {
-      const { message, context } = event.detail;
-      sendToPascual(message, context);
+      const { message } = event.detail;
+      sendMessage(message, "growl");
     };
 
     window.addEventListener("pascual:message", handlePascualMessage as EventListener);
     return () => {
       window.removeEventListener("pascual:message", handlePascualMessage as EventListener);
     };
-  }, [sendToPascual]);
+  }, [sendMessage]);
 
   return (
-    <GrowlContext.Provider value={{
+    <PascualChatContext.Provider value={{
       messages,
-      chatHistory,
-      addMessage,
-      removeMessage,
-      clearMessages,
+      isTyping,
+      sendMessage,
       sendToAgent,
-      sendToPascual,
-      addToChatHistory,
+      clearMessages,
     }}>
       {children}
-    </GrowlContext.Provider>
+    </PascualChatContext.Provider>
   );
 }
 
+// Keep the original hook name for compatibility
 export function useGrowl() {
-  const context = useContext(GrowlContext);
+  const context = useContext(PascualChatContext);
   if (!context) {
     throw new Error("useGrowl must be used within a GrowlProvider");
   }
   return context;
 }
+
+// Alias for clearer naming
+export const usePascualChat = useGrowl;
 
 // Simulated responses based on agent type
 function generateAgentResponse(agentId: string, agentName: string, userMessage: string): string {
@@ -291,25 +238,8 @@ function generateAgentResponse(agentId: string, agentName: string, userMessage: 
 }
 
 // Simulated responses from Pascual (main orchestrator)
-function generatePascualResponse(userMessage: string, context?: string): string {
+function generatePascualResponse(userMessage: string): string {
   const lowerMessage = userMessage.toLowerCase();
-
-  if (context === "tasks") {
-    return [
-      "Entendido. He creado la tarea y la he asignado al agente más adecuado. Puedes ver el progreso en el tablero Kanban.",
-      "Tarea registrada. Nexus se encargará de coordinar su ejecución. Te notificaré cuando haya actualizaciones.",
-      "He agregado eso a la cola de tareas. Prioridad asignada automáticamente basada en tu historial.",
-      "Tarea creada exitosamente. El agente correspondiente comenzará a trabajar en ella pronto.",
-    ][Math.floor(Math.random() * 4)];
-  }
-
-  if (context === "agents") {
-    return [
-      "He enviado tu solicitud al agente. Pronto recibirás una respuesta con los resultados.",
-      "Mensaje enviado. El agente está procesando tu solicitud en este momento.",
-      "Recibido. He delegado esta tarea al sub-agente especializado correspondiente.",
-    ][Math.floor(Math.random() * 3)];
-  }
 
   if (lowerMessage.includes("tarea") || lowerMessage.includes("task")) {
     return "He registrado tu solicitud. La tarea será asignada al agente más apropiado según su naturaleza.";
@@ -323,6 +253,10 @@ function generatePascualResponse(userMessage: string, context?: string): string 
     return "Todos los sistemas operando normalmente. 8 de 9 agentes activos. No hay alertas críticas pendientes.";
   }
 
+  if (lowerMessage.includes("hola") || lowerMessage.includes("hi") || lowerMessage.includes("hey")) {
+    return "¡Hola! ¿En qué puedo ayudarte hoy? Tengo acceso a los 9 agentes del ecosistema PASCUAL.";
+  }
+
   const defaultResponses = [
     "Entendido. He procesado tu solicitud y estoy coordinando con los agentes necesarios.",
     "Recibido. Voy a delegar esto al agente especializado correspondiente.",
@@ -333,3 +267,7 @@ function generatePascualResponse(userMessage: string, context?: string): string 
 
   return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
 }
+
+// Type exports for backwards compatibility
+export type GrowlMessage = ChatMessage;
+export type ChatHistoryEntry = ChatMessage;

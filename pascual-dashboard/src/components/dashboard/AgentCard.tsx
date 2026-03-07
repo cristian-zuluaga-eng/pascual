@@ -214,19 +214,19 @@ export function AgentCard({ agent, onExpand }: AgentCardProps) {
             </button>
           </div>
         </div>
-        <div className="text-xs text-zinc-400 font-mono mb-3">
+        <div className="text-xs text-zinc-400 font-mono">
           <span className="text-zinc-500">ROLE:</span>{" "}
           <span style={{ color: roleColor }}>{agent.role.toUpperCase()}</span>
         </div>
 
-        {/* Two column layout */}
-        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-zinc-800">
-          {/* Column 1: Sub-agents list with RAM */}
-          <div className="min-w-0">
-            <p className="text-[10px] font-mono text-zinc-500 uppercase mb-2">Sub-agents</p>
-            {agent.subAgents && agent.subAgents.length > 0 ? (
+        {/* Only show sub-agents and usage section if agent has sub-agents */}
+        {agent.subAgents && agent.subAgents.length > 0 && (
+          <div className="grid grid-cols-3 gap-3 pt-3 mt-3 border-t border-zinc-800">
+            {/* Column 1: First 5 sub-agents */}
+            <div className="min-w-0">
+              <p className="text-[10px] font-mono text-zinc-500 uppercase mb-2">Sub-agents</p>
               <div className="space-y-1.5">
-                {agent.subAgents.map((subAgent) => (
+                {agent.subAgents.slice(0, 5).map((subAgent) => (
                   <Tooltip key={subAgent.id} content={subAgent.description} position="right">
                     <div className="flex items-center gap-1.5 text-xs font-mono cursor-help">
                       <span className="text-[9px] text-zinc-600 w-8 flex-shrink-0">{getSubAgentRam(subAgent.id)}%</span>
@@ -236,36 +236,54 @@ export function AgentCard({ agent, onExpand }: AgentCardProps) {
                   </Tooltip>
                 ))}
               </div>
-            ) : (
-              <p className="text-xs font-mono text-zinc-600">No sub-agents</p>
-            )}
-          </div>
+            </div>
 
-          {/* Column 2: Usage chart with time range slider */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] font-mono text-zinc-500 uppercase">Usage</p>
-              <div className="flex gap-0.5">
-                {(Object.keys(TIME_RANGE_LABELS) as TimeRange[]).map((range) => (
-                  <button
-                    key={range}
-                    onClick={() => setTimeRange(range)}
-                    className={`px-1.5 py-0.5 text-[9px] font-mono rounded-sm transition-colors ${
-                      timeRange === range
-                        ? "bg-zinc-700 text-white"
-                        : "text-zinc-500 hover:text-zinc-300"
-                    }`}
-                  >
-                    {TIME_RANGE_LABELS[range]}
-                  </button>
-                ))}
+            {/* Column 2: Remaining sub-agents (6+) */}
+            <div className="min-w-0">
+              {agent.subAgents.length > 5 && (
+                <>
+                  <p className="text-[10px] font-mono text-zinc-500 uppercase mb-2 opacity-0">-</p>
+                  <div className="space-y-1.5">
+                    {agent.subAgents.slice(5, 10).map((subAgent) => (
+                      <Tooltip key={subAgent.id} content={subAgent.description} position="right">
+                        <div className="flex items-center gap-1.5 text-xs font-mono cursor-help">
+                          <span className="text-[9px] text-zinc-600 w-8 flex-shrink-0">{getSubAgentRam(subAgent.id)}%</span>
+                          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${getStatusColor(subAgent.status)}`} />
+                          <span className="text-zinc-400 truncate">{subAgent.name}</span>
+                        </div>
+                      </Tooltip>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Column 3: Usage chart with time range slider */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] font-mono text-zinc-500 uppercase">Usage</p>
+                <div className="flex gap-0.5">
+                  {(Object.keys(TIME_RANGE_LABELS) as TimeRange[]).map((range) => (
+                    <button
+                      key={range}
+                      onClick={() => setTimeRange(range)}
+                      className={`px-1.5 py-0.5 text-[9px] font-mono rounded-sm transition-colors ${
+                        timeRange === range
+                          ? "bg-zinc-700 text-white"
+                          : "text-zinc-500 hover:text-zinc-300"
+                      }`}
+                    >
+                      {TIME_RANGE_LABELS[range]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="h-[50px]">
+                <Sparkline data={getDataForRange(timeRange)} color={roleColor} height={50} />
               </div>
             </div>
-            <div className="h-[50px]">
-              <Sparkline data={getDataForRange(timeRange)} color={roleColor} height={50} />
-            </div>
           </div>
-        </div>
+        )}
       </CardBody>
     </Card>
   );

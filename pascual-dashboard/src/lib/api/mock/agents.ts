@@ -14,6 +14,17 @@ export const AVAILABLE_MODELS = [
 
 export const mockAgents: Agent[] = [
   {
+    id: "pascual",
+    name: "Pascual",
+    icon: "🧠",
+    description: "Agente Maestro - Orquestador principal del ecosistema, coordinación de agentes especializados y toma de decisiones estratégicas",
+    model: "Claude Opus",
+    role: "general",
+    status: "active",
+    activeTasks: 12,
+    usageHistory: [85, 88, 92, 90, 95, 98, 96, 99, 97, 100],
+  },
+  {
     id: "asistente",
     name: "Asistente",
     icon: "👤",
@@ -180,6 +191,7 @@ export const mockAgents: Agent[] = [
 
 // Agent capabilities (used in agent detail modal)
 export const agentCapabilities: Record<string, string[]> = {
+  pascual: ["Agent Orchestration", "Strategic Decision Making", "Cross-Agent Coordination", "System Intelligence"],
   asistente: ["Task Management", "Calendar Integration", "Proactive Suggestions", "Home Automation"],
   nexus: ["Code Analysis", "Architecture Design", "Code Review", "CI/CD Automation"],
   sentinel: ["Threat Detection", "Access Control", "Vulnerability Scanning", "Backup Management"],

@@ -13,7 +13,7 @@ export function Header({ title = "Dashboard", systemStatus = "active" }: HeaderP
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   return (
-    <header className="h-16 bg-zinc-950 border-b border-zinc-800 px-6 flex items-center justify-between">
+    <header className="h-16 bg-zinc-950 border-b border-zinc-800 px-6 pr-24 flex items-center justify-between">
       {/* Left: Title */}
       <div className="flex items-center gap-4">
         <h2 className="text-lg font-mono font-bold text-white">{title}</h2>

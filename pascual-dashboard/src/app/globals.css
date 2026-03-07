@@ -102,6 +102,25 @@ body {
   background: #3f3f46;
 }
 
+/* Thin scrollbar for inner containers */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
 /* Glitch effect */
 .glitch {
   position: relative;
@@ -391,4 +410,55 @@ body {
 
 .animate-robot-idle {
   animation: robot-idle 2s ease-in-out infinite;
+}
+
+/* Chat transition animations */
+@keyframes chat-compact {
+  0% {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 500px;
+    opacity: 1;
+  }
+  100% {
+    bottom: 24px;
+    right: 24px;
+    top: auto;
+    left: auto;
+    transform: translate(0, 0);
+    width: 180px;
+    height: 52px;
+    opacity: 1;
+  }
+}
+
+@keyframes chat-expand {
+  0% {
+    bottom: 24px;
+    right: 24px;
+    top: auto;
+    left: auto;
+    transform: translate(0, 0);
+    width: 180px;
+    height: 52px;
+    opacity: 1;
+  }
+  100% {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 500px;
+    opacity: 0;
+  }
+}
+
+.animate-chat-compact {
+  animation: chat-compact 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-chat-expand {
+  animation: chat-expand 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }

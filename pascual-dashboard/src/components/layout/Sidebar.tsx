@@ -4,7 +4,7 @@ import { useState } from "react";
 import { NavLink } from "../ui/NavLink";
 
 const navItems = [
-  { name: "Dashboard", path: "/dashboard", icon: "⊞" },
+  { name: "Home", path: "/dashboard", icon: "⊞" },
   { name: "Agents", path: "/dashboard/agents", icon: "◎" },
   { name: "Security", path: "/dashboard/security", icon: "⛊" },
   { name: "Finance", path: "/dashboard/finance", icon: "◈" },
