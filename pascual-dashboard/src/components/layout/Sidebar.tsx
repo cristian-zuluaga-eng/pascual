@@ -25,7 +25,7 @@ const agentDashboardItems = [
   { name: "Consultor", path: "/dashboard/agents/consultor", icon: "📚" },
   { name: "Gambito", path: "/dashboard/agents/gambito", icon: "🎯" },
   { name: "Cóndor360", path: "/dashboard/agents/condor360", icon: "📈" },
-  { name: "Optimus", path: "/dashboard/agents/optimus", icon: "🎨" },
+  { name: "Picasso", path: "/dashboard/agents/picasso", icon: "🎨" },
 ];
 
 interface SystemMetrics {

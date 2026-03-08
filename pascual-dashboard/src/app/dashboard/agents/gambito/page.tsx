@@ -17,6 +17,8 @@ import { gambitoData } from "@/lib/api/mock/pascual-agents";
 export default function GambitoDashboard() {
   const [data] = useState(gambitoData);
   const { sendToAgent } = useGrowl();
+  const [sportFilter, setSportFilter] = useState<string>("all");
+  const [predictionSearch, setPredictionSearch] = useState("");
 
   // Usar el hook reutilizable para configuración del agente
   const {
@@ -46,10 +48,10 @@ export default function GambitoDashboard() {
     }
   };
 
-  const getRoiColor = (roi: number) => {
-    if (roi >= 10) return "text-[#39ff14]";
-    if (roi >= 5) return "text-[#00d9ff]";
-    if (roi >= 0) return "text-zinc-400";
+  const getPrecisionColor = (accuracy: number) => {
+    if (accuracy >= 80) return "text-[#39ff14]";
+    if (accuracy >= 70) return "text-[#00d9ff]";
+    if (accuracy >= 60) return "text-[#ffaa00]";
     return "text-[#ff006e]";
   };
 
@@ -136,34 +138,122 @@ export default function GambitoDashboard() {
           <SectionCard
             title="Predicciones Activas"
             action={
-              <Badge variant="info">{data.metrics.highConfidenceCount} alta convicción</Badge>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Buscar predicción..."
+                  value={predictionSearch}
+                  onChange={(e) => setPredictionSearch(e.target.value)}
+                  className="px-2 py-1 bg-zinc-800 border border-zinc-700 rounded-sm font-mono text-[10px] text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#00d9ff] w-32"
+                />
+                <select
+                  value={sportFilter}
+                  onChange={(e) => setSportFilter(e.target.value)}
+                  className="px-2 py-1 bg-zinc-800 border border-zinc-700 rounded text-white text-xs font-mono"
+                >
+                  <option value="all">Todos</option>
+                  <option value="⚽">⚽ Fútbol</option>
+                  <option value="🎾">🎾 Tenis</option>
+                  <option value="🏀">🏀 Basket</option>
+                  <option value="⚾">⚾ Baseball</option>
+                  <option value="🥊">🥊 MMA</option>
+                </select>
+              </div>
             }
-            maxHeight="320px"
+            maxHeight="380px"
           >
-            <div className="space-y-3">
-              {data.activePredictions.map((pred) => (
+            <div className="divide-y divide-zinc-800">
+              {data.activePredictions
+                .filter(pred =>
+                  (sportFilter === "all" || pred.sportIcon === sportFilter) &&
+                  (predictionSearch === "" ||
+                    pred.match.toLowerCase().includes(predictionSearch.toLowerCase()) ||
+                    pred.prediction.toLowerCase().includes(predictionSearch.toLowerCase()))
+                )
+                .map((pred) => (
                 <div
                   key={pred.id}
-                  className={`p-3 rounded-sm border ${getConvictionColor(pred.confidence)}`}
+                  className="py-2 px-2"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{pred.sportIcon}</span>
-                      <span className="font-mono text-xs text-zinc-400">{pred.sport}</span>
-                      {getConvictionBadge(pred.confidence)}
+                  <div className="flex items-center justify-between">
+                    {/* Left: Teams */}
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-base">{pred.sportIcon}</span>
+                      <Badge variant="default" className="text-xs">{pred.sport}</Badge>
+                      <div className="flex gap-1 items-center">
+                        <span className={`font-mono text-xs font-bold ${pred.predictedWinner === "1" ? "text-white" : "text-zinc-400"}`}>{pred.team1}</span>
+                      </div>
+                      <span className="font-mono text-xs text-zinc-500">vs</span>
+                      <div className="flex gap-1 items-center">
+                        <span className={`font-mono text-xs font-bold ${pred.predictedWinner === "2" ? "text-white" : "text-zinc-400"}`}>{pred.team2}</span>
+                      </div>
+                      <span className="font-mono text-xs px-2 py-0.5 bg-zinc-800 rounded text-zinc-300 ml-1">{pred.timestamp} {pred.matchTime}</span>
                     </div>
-                    <span className="font-mono text-[10px] text-zinc-500">{pred.timestamp}</span>
-                  </div>
-                  <p className="font-mono text-sm text-white mb-1">{pred.match}</p>
-                  <p className="font-mono text-[10px] text-zinc-500 mb-2">{pred.odds}</p>
-                  <div className="flex items-center justify-between pt-2 border-t border-zinc-700/50">
-                    <span className="font-mono text-xs text-[#00d9ff]">{pred.prediction}</span>
-                    <span className={`font-mono text-xs ${pred.value > 0.05 ? "text-[#39ff14]" : "text-zinc-400"}`}>
-                      EV: +{(pred.value * 100).toFixed(1)}%
-                    </span>
+
+                    {/* Right: Prediction info */}
+                    <div className="flex items-center gap-3 bg-zinc-900 px-2 py-1 rounded">
+                      <div className="flex items-center gap-1">
+                        <span className="font-mono text-xs text-[#00d9ff]">{pred.prediction}</span>
+                        <span className="font-mono text-xs text-white">({pred.team1} {pred.possibleScore.split("-")[0]} - {pred.possibleScore.split("-")[1]} {pred.team2})</span>
+                      </div>
+                      <span className="text-zinc-600">|</span>
+                      <div className="flex items-center gap-1">
+                        <span className="font-mono text-xs text-zinc-400">Mercado:</span>
+                        {pred.sport === "Fútbol" ? (
+                          <span className="font-mono text-xs text-zinc-300">
+                            {pred.marketDistribution.team1Pct}%-{pred.marketDistribution.drawPct}%-{pred.marketDistribution.team2Pct}%
+                          </span>
+                        ) : (
+                          <span className="font-mono text-xs text-zinc-300">
+                            {pred.marketDistribution.team1Pct}%-{pred.marketDistribution.team2Pct}%
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-zinc-600">|</span>
+                      <div className="flex items-center gap-1">
+                        <div className={`h-2 w-2 rounded-full ${
+                          pred.modelConfidence >= 75 ? "bg-[#39ff14]" :
+                          pred.modelConfidence >= 60 ? "bg-[#ffaa00]" :
+                          "bg-[#ff006e]"}`}
+                        />
+                        <span className="font-mono text-sm font-bold text-white">{pred.modelConfidence}%</span>
+                      </div>
+                      <span className="text-zinc-600">|</span>
+                      {/* Value Bet Indicator */}
+                      <div className={`flex items-center gap-1 px-2 py-0.5 rounded ${
+                        pred.valueBet.recommendation === "strong" ? "bg-[#39ff14]/20" :
+                        pred.valueBet.recommendation === "moderate" ? "bg-[#00d9ff]/20" :
+                        pred.valueBet.recommendation === "low" ? "bg-[#ffaa00]/20" :
+                        "bg-zinc-800"
+                      }`}>
+                        <span className="font-mono text-[10px] text-zinc-400">Edge:</span>
+                        <span className={`font-mono text-sm font-bold ${
+                          pred.valueBet.edge >= 25 ? "text-[#39ff14]" :
+                          pred.valueBet.edge >= 15 ? "text-[#00d9ff]" :
+                          pred.valueBet.edge >= 5 ? "text-[#ffaa00]" :
+                          "text-zinc-400"
+                        }`}>+{pred.valueBet.edge}%</span>
+                        {pred.valueBet.recommendation === "strong" && (
+                          <span className="text-[#39ff14] text-xs ml-1">🔥</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
+
+              {data.activePredictions
+                .filter(pred =>
+                  (sportFilter === "all" || pred.sportIcon === sportFilter) &&
+                  (predictionSearch === "" ||
+                    pred.match.toLowerCase().includes(predictionSearch.toLowerCase()) ||
+                    pred.prediction.toLowerCase().includes(predictionSearch.toLowerCase()))
+                )
+                .length === 0 && (
+                <p className="font-mono text-[10px] text-zinc-500 text-center py-4">
+                  No hay predicciones que coincidan con los criterios de búsqueda
+                </p>
+              )}
             </div>
           </SectionCard>
         </div>
@@ -208,21 +298,24 @@ export default function GambitoDashboard() {
           </div>
         </SectionCard>
 
-        {/* Market Performance */}
-        <SectionCard title="Rendimiento por Mercado" maxHeight="320px">
+        {/* Sport Precision */}
+        <SectionCard title="Precisión por Deporte" maxHeight="320px">
           <div className="space-y-2">
-            {data.marketPerformance.map((market) => (
+            {data.sportConfidence.map((sport) => (
               <div
-                key={market.market}
-                className="flex items-center justify-between p-2 bg-zinc-900 rounded-sm"
+                key={sport.sport}
+                className="p-2 bg-zinc-900 rounded-sm"
               >
-                <div className="flex items-center gap-2">
-                  <span>{market.icon}</span>
-                  <span className="font-mono text-xs text-white">{market.market}</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span>{sport.icon}</span>
+                    <span className="font-mono text-xs text-white">{sport.sport}</span>
+                    <span className="font-mono text-[10px] text-[#00d9ff]">({sport.bestModel})</span>
+                  </div>
+                  <span className={`font-mono text-sm font-bold ${getPrecisionColor(sport.accuracy)}`}>
+                    {sport.accuracy}%
+                  </span>
                 </div>
-                <span className={`font-mono text-sm font-bold ${getRoiColor(market.roi)}`}>
-                  {market.roi > 0 ? "+" : ""}{market.roi}%
-                </span>
               </div>
             ))}
           </div>

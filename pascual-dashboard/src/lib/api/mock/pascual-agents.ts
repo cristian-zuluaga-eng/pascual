@@ -1146,17 +1146,36 @@ export interface Prediction {
   sport: string;
   sportIcon: string;
   match: string;
+  team1: string;
+  team2: string;
   odds: string;
   prediction: string;
+  predictedWinner: "1" | "X" | "2" | "none";
+  modelConfidence: number;
+  possibleScore: string;
+  marketStatus: string;
+  marketDistribution: {
+    team1Pct: number;
+    drawPct?: number;
+    team2Pct: number;
+  };
   value: number;
   confidence: ConvictionLevel;
   timestamp: string;
+  matchTime: string;
+  valueBet: {
+    edge: number; // Diferencia entre confianza del modelo y mercado (positivo = oportunidad)
+    potentialProfit: number; // Profit potencial estimado
+    recommendation: "strong" | "moderate" | "low" | "none"; // Recomendación de apuesta
+  };
 }
 
-export interface MarketPerformance {
-  market: string;
+export interface SportConfidence {
+  sport: string;
   icon: string;
-  roi: number;
+  confidence: number;
+  bestModel: string;
+  accuracy: number;
 }
 
 export interface ModelStats {
@@ -1177,7 +1196,7 @@ export interface BankrollInfo {
 export interface GambitoData extends AgentBase {
   metrics: GambitoMetrics;
   activePredictions: Prediction[];
-  marketPerformance: MarketPerformance[];
+  sportConfidence: SportConfidence[];
   modelStats: ModelStats[];
   bankroll: BankrollInfo;
 }
@@ -1215,16 +1234,150 @@ export const gambitoData: GambitoData = {
     highConfidenceCount: 3,
   },
   activePredictions: [
-    { id: "1", sport: "Fútbol", sportIcon: "⚽", match: "Real Madrid vs Barcelona", odds: "1: 2.10 | X: 3.40 | 2: 3.20", prediction: "1 (45%)", value: 0.08, confidence: "high", timestamp: "En 3h" },
-    { id: "2", sport: "Tenis", sportIcon: "🎾", match: "Djokovic vs Alcaraz", odds: "1: 1.85 | 2: 2.05", prediction: "2 (52%)", value: 0.04, confidence: "medium", timestamp: "Mañana" },
-    { id: "3", sport: "Basket", sportIcon: "🏀", match: "Lakers vs Celtics", odds: "Spread: -3.5 | Total: 224.5", prediction: "Over", value: 0.03, confidence: "medium", timestamp: "En 6h" },
+    {
+      id: "1",
+      sport: "Fútbol",
+      sportIcon: "⚽",
+      match: "Real Madrid vs Barcelona",
+      team1: "Real Madrid",
+      team2: "Barcelona",
+      odds: "1: 2.10 | X: 3.40 | 2: 3.20",
+      prediction: "Victoria Local",
+      predictedWinner: "1",
+      modelConfidence: 78,
+      possibleScore: "2-1",
+      marketStatus: "Mercado a favor del local: -20%",
+      marketDistribution: {
+        team1Pct: 40,
+        drawPct: 20,
+        team2Pct: 40
+      },
+      value: 0.08,
+      confidence: "high",
+      timestamp: "Hoy",
+      matchTime: "20:45",
+      valueBet: {
+        edge: 38, // Modelo: 78% vs Mercado: 40% = +38% edge
+        potentialProfit: 2.10,
+        recommendation: "strong"
+      }
+    },
+    {
+      id: "2",
+      sport: "Tenis",
+      sportIcon: "🎾",
+      match: "Djokovic vs Alcaraz",
+      team1: "Djokovic",
+      team2: "Alcaraz",
+      odds: "1: 1.85 | 2: 2.05",
+      prediction: "Victoria Visitante",
+      predictedWinner: "2",
+      modelConfidence: 67,
+      possibleScore: "1-3",
+      marketStatus: "Mercado equilibrado: +5%",
+      marketDistribution: {
+        team1Pct: 52,
+        team2Pct: 48
+      },
+      value: 0.04,
+      confidence: "medium",
+      timestamp: "Mañana",
+      matchTime: "16:30",
+      valueBet: {
+        edge: 19, // Modelo: 67% vs Mercado: 48% = +19% edge
+        potentialProfit: 2.05,
+        recommendation: "moderate"
+      }
+    },
+    {
+      id: "3",
+      sport: "Basket",
+      sportIcon: "🏀",
+      match: "Lakers vs Celtics",
+      team1: "Lakers",
+      team2: "Celtics",
+      odds: "Spread: -3.5 | Total: 224.5",
+      prediction: "Over 224.5",
+      predictedWinner: "none",
+      modelConfidence: 62,
+      possibleScore: "118-112",
+      marketStatus: "Mercado under: -15%",
+      marketDistribution: {
+        team1Pct: 45,
+        team2Pct: 55
+      },
+      value: 0.03,
+      confidence: "medium",
+      timestamp: "Hoy",
+      matchTime: "01:15",
+      valueBet: {
+        edge: 7, // Modelo: 62% vs Mercado: 55% = +7% edge
+        potentialProfit: 1.90,
+        recommendation: "low"
+      }
+    },
+    {
+      id: "4",
+      sport: "Fútbol",
+      sportIcon: "⚽",
+      match: "Liverpool vs Man City",
+      team1: "Liverpool",
+      team2: "Man City",
+      odds: "1: 2.80 | X: 3.60 | 2: 2.30",
+      prediction: "Empate",
+      predictedWinner: "X",
+      modelConfidence: 58,
+      possibleScore: "1-1",
+      marketStatus: "Mercado a favor visitante: -10%",
+      marketDistribution: {
+        team1Pct: 25,
+        drawPct: 30,
+        team2Pct: 45
+      },
+      value: 0.05,
+      confidence: "medium",
+      timestamp: "Mañana",
+      matchTime: "18:00",
+      valueBet: {
+        edge: 28, // Modelo: 58% vs Mercado: 30% = +28% edge
+        potentialProfit: 3.60,
+        recommendation: "strong"
+      }
+    },
+    {
+      id: "5",
+      sport: "Tenis",
+      sportIcon: "🎾",
+      match: "Nadal vs Federer",
+      team1: "Nadal",
+      team2: "Federer",
+      odds: "1: 1.75 | 2: 2.15",
+      prediction: "Victoria Local",
+      predictedWinner: "1",
+      modelConfidence: 81,
+      possibleScore: "3-1",
+      marketStatus: "Mercado a favor: +8%",
+      marketDistribution: {
+        team1Pct: 58,
+        team2Pct: 42
+      },
+      value: 0.07,
+      confidence: "high",
+      timestamp: "Pasado mañana",
+      matchTime: "14:00",
+      valueBet: {
+        edge: 23, // Modelo: 81% vs Mercado: 58% = +23% edge
+        potentialProfit: 1.75,
+        recommendation: "moderate"
+      }
+    }
   ],
-  marketPerformance: [
-    { market: "Fútbol", icon: "⚽", roi: 12 },
-    { market: "Tenis", icon: "🎾", roi: 6 },
-    { market: "Basket", icon: "🏀", roi: 8 },
-    { market: "Baseball", icon: "⚾", roi: 4 },
-    { market: "MMA", icon: "🥊", roi: 2 },
+  sportConfidence: [
+    { sport: "Fútbol", icon: "⚽", confidence: 84, bestModel: "Poisson Model", accuracy: 78 },
+    { sport: "Tenis", icon: "🎾", confidence: 76, bestModel: "ELO Dynamic", accuracy: 71 },
+    { sport: "Basket", icon: "🏀", confidence: 81, bestModel: "ML Ensemble", accuracy: 79 },
+    { sport: "Baseball", icon: "⚾", confidence: 68, bestModel: "Dixon-Coles", accuracy: 82 },
+    { sport: "MMA", icon: "🥊", confidence: 72, bestModel: "ML Ensemble", accuracy: 79 },
   ],
   modelStats: [
     { name: "Poisson Model", accuracy: 78, lastCalibration: "hace 2h" },
@@ -1417,10 +1570,10 @@ export interface OptimusMetrics {
   activeSessions: number;
 }
 
-export interface WebVital {
-  name: string;
-  value: string;
-  status: "good" | "needs_improvement" | "poor";
+export interface UxNeed {
+  title: string;
+  description: string;
+  priority: "high" | "medium" | "low";
 }
 
 export interface ComponentUsage {
@@ -1429,11 +1582,13 @@ export interface ComponentUsage {
   isNew?: boolean;
 }
 
-export interface InnovationProposal {
+export interface ImplementationLog {
   id: string;
-  title: string;
-  status: "approved" | "review" | "concept" | "development";
-  description: string;
+  componentName: string;
+  agentName: string;
+  agentIcon: string;
+  implementationDetails: string;
+  timestamp: string;
 }
 
 export interface AccessibilityIssue {
@@ -1442,11 +1597,11 @@ export interface AccessibilityIssue {
   severity: "high" | "medium" | "low";
 }
 
-export interface OptimusData extends AgentBase {
+export interface PicassoData extends AgentBase {
   metrics: OptimusMetrics;
-  webVitals: WebVital[];
+  uxNeeds: UxNeed[];
   componentsUsage: ComponentUsage[];
-  innovationProposals: InnovationProposal[];
+  implementationLogs: ImplementationLog[];
   accessibilityReport: {
     wcagCompliance: number;
     checks: { name: string; passed: boolean }[];
@@ -1455,9 +1610,9 @@ export interface OptimusData extends AgentBase {
   lighthouseScore: number;
 }
 
-export const optimusData: OptimusData = {
-  id: "optimus",
-  name: "Optimus",
+export const picassoData: PicassoData = {
+  id: "picasso",
+  name: "Picasso",
   icon: "🎨",
   lema: "Información valiosa, perfectamente presentada",
   description: "Sistema de Interfaces y Experiencia de Usuario",
@@ -1486,10 +1641,22 @@ export const optimusData: OptimusData = {
     errorRate: 0.2,
     activeSessions: 12,
   },
-  webVitals: [
-    { name: "LCP", value: "1.8s", status: "good" },
-    { name: "FID", value: "45ms", status: "good" },
-    { name: "CLS", value: "0.08", status: "good" },
+  uxNeeds: [
+    {
+      title: "Simplificación de flujo de checkout",
+      description: "Los usuarios abandonan el proceso de compra por su complejidad. Se necesita un rediseño que reduzca los pasos de 5 a máximo 3, con autollenado de datos y vista previa del total en cada etapa.",
+      priority: "high"
+    },
+    {
+      title: "Coherencia en el lenguaje visual",
+      description: "El equipo de marketing necesita un sistema de diseño unificado para todas las comunicaciones. La inconsistencia actual causa confusión en la identidad de marca y ralentiza la producción de nuevos materiales.",
+      priority: "medium"
+    },
+    {
+      title: "Visualización de datos financieros",
+      description: "El área financiera necesita una forma más clara de presentar indicadores clave. Los reportes actuales son difíciles de interpretar y requieren demasiado tiempo para extraer conclusiones importantes.",
+      priority: "high"
+    },
   ],
   componentsUsage: [
     { name: "Card", instances: 234 },
@@ -1499,10 +1666,39 @@ export const optimusData: OptimusData = {
     { name: "PascualFeedbackBar", instances: 9, isNew: true },
     { name: "AgentStatusGrid", instances: 5, isNew: true },
   ],
-  innovationProposals: [
-    { id: "1", title: "Dark mode toggle", status: "development", description: "Add system-wide dark mode support" },
-    { id: "2", title: "Voice commands", status: "review", description: "Prototype ready for voice interaction" },
-    { id: "3", title: "Gesture navigation", status: "concept", description: "Research phase for mobile gestures" },
+  implementationLogs: [
+    {
+      id: "1",
+      componentName: "AgentStatusGrid",
+      agentName: "Cóndor360",
+      agentIcon: "📈",
+      implementationDetails: "Ajuste de componente para soportar indicadores de confianza del modelo por sector. Adición de filtro de texto y cambio en el sistema de visualización de métricas.",
+      timestamp: "hace 1h"
+    },
+    {
+      id: "2",
+      componentName: "SectionCard",
+      agentName: "Sentinel",
+      agentIcon: "🛡️",
+      implementationDetails: "Modificación de altura máxima y comportamiento de scroll para adaptarse a visualizaciones de eventos de seguridad. Añadido soporte para destacar amenazas críticas.",
+      timestamp: "hace 3h"
+    },
+    {
+      id: "3",
+      componentName: "Canvas",
+      agentName: "Asistente",
+      agentIcon: "👤",
+      implementationDetails: "Integración de quick prompts específicos para gestión personal y adición de soporte para respuestas estructuradas con tareas pendientes.",
+      timestamp: "hace 6h"
+    },
+    {
+      id: "4",
+      componentName: "ProgressBar",
+      agentName: "Gambito",
+      agentIcon: "🎯",
+      implementationDetails: "Adaptación del componente para visualizar rangos de confianza en predicciones deportivas y ajuste de la escala de colores según el tipo de mercado.",
+      timestamp: "ayer"
+    },
   ],
   accessibilityReport: {
     wcagCompliance: 98,
@@ -1534,7 +1730,7 @@ export const allAgentsData = {
   consultor: consultorData,
   gambito: gambitoData,
   condor360: condor360Data,
-  optimus: optimusData,
+  picasso: picassoData,
 };
 
 export type AgentId = keyof typeof allAgentsData;

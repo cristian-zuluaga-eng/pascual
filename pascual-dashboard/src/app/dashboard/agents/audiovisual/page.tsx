@@ -117,13 +117,6 @@ export default function AudiovisualDashboard() {
             values: { "24h": data.metrics.storageUsed, "7d": "2.1 GB", "1m": "1.8 GB", "1y": "1.2 GB" },
             status: "neutral",
           },
-          {
-            label: "Coherencia",
-            value: `${data.metrics.brandCoherenceScore}%`,
-            values: { "24h": `${data.metrics.brandCoherenceScore}%`, "7d": "92%", "1m": "90%", "1y": "88%" },
-            status: data.metrics.brandCoherenceScore >= 90 ? "good" : "warning",
-            statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "warning" },
-          },
         ]}
       />
 
@@ -133,7 +126,7 @@ export default function AudiovisualDashboard() {
         onSettings={openConfig}
       />
 
-      {/* Canvas, Biblioteca, Cola de Producción, Assets Recientes & Brand Coherence - Grid */}
+      {/* Canvas, Biblioteca, Cola de Producción & Assets Recientes - Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Canvas - Lienzo de respuestas de Pascual */}
         <Canvas
@@ -316,42 +309,6 @@ export default function AudiovisualDashboard() {
           </div>
         </SectionCard>
 
-        {/* Coherencia de Marca */}
-        <SectionCard title="Coherencia de Marca" maxHeight="320px">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-2 bg-zinc-900 rounded-sm">
-              <span className="font-mono text-xs text-zinc-400">🎨 Paleta de Colores</span>
-              <span className={`font-mono text-xs ${data.brandCoherence.colorPalette ? "text-[#39ff14]" : "text-[#ff006e]"}`}>
-                {data.brandCoherence.colorPalette ? "✓ Consistente" : "✕ Problemas"}
-              </span>
-            </div>
-            <div className="flex items-center justify-between p-2 bg-zinc-900 rounded-sm">
-              <span className="font-mono text-xs text-zinc-400">🔤 Tipografía</span>
-              <span className={`font-mono text-xs ${data.brandCoherence.typography ? "text-[#39ff14]" : "text-[#ff006e]"}`}>
-                {data.brandCoherence.typography ? "✓ Consistente" : "✕ Problemas"}
-              </span>
-            </div>
-            <div className="flex items-center justify-between p-2 bg-zinc-900 rounded-sm">
-              <span className="font-mono text-xs text-zinc-400">◉ Uso de Logo</span>
-              <span className={`font-mono text-xs ${data.brandCoherence.logoUsage ? "text-[#39ff14]" : "text-[#ff006e]"}`}>
-                {data.brandCoherence.logoUsage ? "✓ Correcto" : "✕ Problemas"}
-              </span>
-            </div>
-            <div className="flex items-center justify-between p-2 bg-zinc-900 rounded-sm">
-              <span className="font-mono text-xs text-zinc-400">💬 Tono de Voz</span>
-              <span className={`font-mono text-xs ${data.brandCoherence.toneOfVoice ? "text-[#39ff14]" : "text-[#ff006e]"}`}>
-                {data.brandCoherence.toneOfVoice ? "✓ On-brand" : "✕ Off-brand"}
-              </span>
-            </div>
-          </div>
-          <div className="mt-4 pt-4 border-t border-zinc-800">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs text-zinc-500">Tasa de Reutilización</span>
-              <span className="font-mono text-sm text-white">{data.metrics.assetReuseRate}%</span>
-            </div>
-            <ProgressBar label="" value={data.metrics.assetReuseRate} color="#39ff14" showValue={false} />
-          </div>
-        </SectionCard>
       </div>
 
       {/* Agent Configuration Modal - usando componente reutilizable */}

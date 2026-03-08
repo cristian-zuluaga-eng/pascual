@@ -11,10 +11,10 @@ import {
   useAgentConfig,
 } from "@/components/agents";
 import { useGrowl } from "@/components/growl";
-import { optimusData } from "@/lib/api/mock/pascual-agents";
+import { picassoData } from "@/lib/api/mock/pascual-agents";
 
-export default function OptimusDashboard() {
-  const [data] = useState(optimusData);
+export default function PicassoDashboard() {
+  const [data] = useState(picassoData);
   const { sendToAgent } = useGrowl();
 
   // Usar el hook reutilizable para configuración del agente
@@ -25,25 +25,8 @@ export default function OptimusDashboard() {
     handleSubAgentModelChange,
     openConfig,
     closeConfig,
-  } = useAgentConfig("optimus");
+  } = useAgentConfig("picasso");
 
-  const getVitalStatusColor = (status: string) => {
-    switch (status) {
-      case "good": return "text-[#39ff14]";
-      case "needs_improvement": return "text-[#ffaa00]";
-      case "poor": return "text-[#ff006e]";
-      default: return "text-zinc-400";
-    }
-  };
-
-  const getVitalStatusBadge = (status: string) => {
-    switch (status) {
-      case "good": return <Badge variant="success" className="text-[9px]">Bueno</Badge>;
-      case "needs_improvement": return <Badge variant="warning" className="text-[9px]">Mejorar</Badge>;
-      case "poor": return <Badge variant="danger" className="text-[9px]">Deficiente</Badge>;
-      default: return null;
-    }
-  };
 
   const getProposalStatusColor = (status: string) => {
     switch (status) {
@@ -133,7 +116,7 @@ export default function OptimusDashboard() {
         <Canvas
           title="Canvas"
           placeholder="¿Qué necesitas diseñar o analizar?"
-          onSendMessage={(msg) => sendToAgent("optimus", "Optimus", "🎨", msg)}
+          onSendMessage={(msg) => sendToAgent("picasso", "Picasso", "🎨", msg)}
           minHeight="180px"
           quickPrompts={[
             { label: "Auditar UI", prompt: "Ejecuta una auditoría de UI/UX" },
@@ -142,42 +125,29 @@ export default function OptimusDashboard() {
           ]}
         />
 
-        {/* Web Vitals */}
-        <SectionCard title="Core Web Vitals" maxHeight="320px">
-          <div className="space-y-3">
-            {data.webVitals.map((vital) => (
-              <div
-                key={vital.name}
-                className="flex items-center justify-between p-3 bg-zinc-900 rounded-sm"
-              >
-                <div>
-                  <p className="font-mono text-sm text-white">{vital.name}</p>
-                  <p className="font-mono text-[10px] text-zinc-500">
-                    {vital.name === "LCP" ? "Largest Contentful Paint" :
-                     vital.name === "FID" ? "First Input Delay" :
-                     "Cumulative Layout Shift"}
-                  </p>
+        {/* UX Sugerencias */}
+        <SectionCard title="Sugerencias" maxHeight="320px">
+          <div className="space-y-4">
+            {data.uxSuggestions.map((suggestion) => {
+              const getPriorityColor = (priority: string) => {
+                switch (priority) {
+                  case "high": return "border-[#ff006e]/40";
+                  case "medium": return "border-[#ffaa00]/40";
+                  case "low": return "border-[#39ff14]/40";
+                  default: return "border-zinc-700";
+                }
+              };
+
+              return (
+                <div
+                  key={suggestion.title}
+                  className={`p-3 bg-zinc-900 rounded-sm border-l-2 ${getPriorityColor(suggestion.priority)}`}
+                >
+                  <p className="font-mono text-sm text-white mb-2">{suggestion.title}</p>
+                  <p className="font-mono text-[10px] text-zinc-400">{suggestion.description}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className={`font-mono text-lg font-bold ${getVitalStatusColor(vital.status)}`}>
-                    {vital.value}
-                  </span>
-                  {getVitalStatusBadge(vital.status)}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 pt-4 border-t border-zinc-800 grid grid-cols-2 gap-4">
-            <div>
-              <p className="font-mono text-[10px] text-zinc-500">Tasa de Error</p>
-              <p className={`font-mono text-lg ${data.metrics.errorRate < 1 ? "text-[#39ff14]" : "text-[#ff006e]"}`}>
-                {data.metrics.errorRate}%
-              </p>
-            </div>
-            <div>
-              <p className="font-mono text-[10px] text-zinc-500">Sesiones Activas</p>
-              <p className="font-mono text-lg text-white">{data.metrics.activeSessions}</p>
-            </div>
+              );
+            })}
           </div>
         </SectionCard>
 

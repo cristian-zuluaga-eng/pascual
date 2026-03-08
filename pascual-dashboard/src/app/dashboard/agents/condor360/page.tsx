@@ -94,27 +94,6 @@ export default function Condor360Dashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "good" },
           },
           {
-            label: "Sharpe",
-            value: data.metrics.sharpeRatio.toFixed(2),
-            values: { "24h": data.metrics.sharpeRatio.toFixed(2), "7d": "1.72", "1m": "1.58", "1y": "1.85" },
-            status: data.metrics.sharpeRatio > 1.5 ? "good" : "warning",
-            statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "good" },
-          },
-          {
-            label: "Alpha",
-            value: `${data.metrics.alpha > 0 ? "+" : ""}${data.metrics.alpha}%`,
-            values: { "24h": `${data.metrics.alpha > 0 ? "+" : ""}${data.metrics.alpha}%`, "7d": "+3.8%", "1m": "+2.5%", "1y": "+5.2%" },
-            status: data.metrics.alpha > 2 ? "good" : "neutral",
-            statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "good" },
-          },
-          {
-            label: "Drawdown",
-            value: `${data.metrics.maxDrawdown}%`,
-            values: { "24h": `${data.metrics.maxDrawdown}%`, "7d": "-5.8%", "1m": "-8.2%", "1y": "-11.5%" },
-            status: data.metrics.maxDrawdown > -10 ? "good" : "critical",
-            statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "warning" },
-          },
-          {
             label: "Precisión",
             value: `${data.metrics.predictionAccuracy}%`,
             values: { "24h": `${data.metrics.predictionAccuracy}%`, "7d": "72%", "1m": "68%", "1y": "66%" },
