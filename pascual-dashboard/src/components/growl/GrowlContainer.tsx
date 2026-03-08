@@ -5,10 +5,12 @@ import { useEffect, useState, useRef } from "react";
 import { PascualInput } from "@/components/pascual";
 import { useChatTransitionContext } from "@/components/chat/ChatTransition";
 import { RobotIcon } from "@/components/ui/Icons";
+import { useDashboardConfig } from "@/lib/context/DashboardConfigContext";
 
 export function GrowlContainer() {
   const { messages, isTyping, clearMessages } = useGrowl();
   const { showMinimizedGrowl, isAnimating, isOnDashboard } = useChatTransitionContext();
+  const { config } = useDashboardConfig();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [manuallyOpened, setManuallyOpened] = useState(false);
@@ -75,6 +77,8 @@ export function GrowlContainer() {
     setManuallyOpened(true);
   };
 
+  // Don't render if chat emergente is disabled
+  if (!config.views.chatEmergente) return null;
   // Don't render during animation or if on dashboard (unless manually opened)
   if (isAnimating) return null;
   if (!isOpen) return null;

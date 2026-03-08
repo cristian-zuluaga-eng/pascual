@@ -18,6 +18,7 @@ interface HeatMapProps {
   gap?: number;
   showTimeRange?: boolean;
   title?: string;
+  fullWidth?: boolean; // Si true, las celdas se expanden para llenar el ancho disponible
 }
 
 function interpolateColor(color1: string, color2: string, factor: number): string {
@@ -52,6 +53,7 @@ export function HeatMap({
   gap = 2,
   showTimeRange = false,
   title,
+  fullWidth = false,
 }: HeatMapProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("24h");
 
@@ -108,14 +110,14 @@ export function HeatMap({
       {/* X Labels */}
       {xLabels && (
         <div
-          className="flex mb-1"
-          style={{ marginLeft: yLabels ? 40 : 0, gap }}
+          className={`flex mb-1 ${fullWidth ? "w-full" : ""}`}
+          style={{ marginLeft: yLabels ? (fullWidth ? 28 : 40) : 0, gap }}
         >
           {xLabels.map((label, i) => (
             <div
               key={i}
-              className="text-zinc-500 text-[10px] text-center"
-              style={{ width: cellSize }}
+              className={`text-zinc-500 text-[10px] text-center ${fullWidth ? "flex-1" : ""}`}
+              style={fullWidth ? undefined : { width: cellSize }}
             >
               {label}
             </div>
@@ -124,13 +126,13 @@ export function HeatMap({
       )}
 
       {/* Grid */}
-      <div className="flex flex-col" style={{ gap }}>
+      <div className={`flex flex-col ${fullWidth ? "w-full" : ""}`} style={{ gap }}>
         {chartData.map((row, rowIndex) => (
-          <div key={rowIndex} className="flex items-center" style={{ gap }}>
+          <div key={rowIndex} className={`flex items-center ${fullWidth ? "w-full" : ""}`} style={{ gap }}>
             {/* Y Label */}
             {yLabels && (
               <div
-                className="text-zinc-500 text-[10px] w-10 text-right pr-2"
+                className={`text-zinc-500 text-[10px] text-right pr-1 flex-shrink-0 ${fullWidth ? "w-7" : "w-10 pr-2"}`}
               >
                 {yLabels[rowIndex]}
               </div>
@@ -144,10 +146,10 @@ export function HeatMap({
               return (
                 <div
                   key={colIndex}
-                  className="rounded-sm transition-all duration-200 hover:scale-110 cursor-pointer group relative"
+                  className={`rounded-sm transition-all duration-200 hover:scale-105 cursor-pointer group relative ${fullWidth ? "flex-1" : ""}`}
                   style={{
-                    width: cellSize,
-                    height: cellSize,
+                    width: fullWidth ? undefined : cellSize,
+                    height: fullWidth ? 28 : cellSize,
                     backgroundColor: bgColor,
                     boxShadow: factor > 0.7 ? `0 0 8px ${maxColor}50` : "none",
                   }}

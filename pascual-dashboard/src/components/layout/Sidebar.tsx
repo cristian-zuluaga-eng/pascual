@@ -2,30 +2,28 @@
 
 import { useState } from "react";
 import { NavLink } from "../ui/NavLink";
+import { useDashboardConfig, DashboardConfig } from "@/lib/context/DashboardConfigContext";
 
 const navItems = [
-  { name: "Home", path: "/dashboard", icon: "⊞" },
-  { name: "Planificador", path: "/dashboard/tasks", icon: "☑" },
-  { name: "Agents", path: "/dashboard/agents", icon: "◎" },
-  { name: "Security", path: "/dashboard/security", icon: "⛊" },
-  { name: "Finance", path: "/dashboard/finance", icon: "◈" },
-  { name: "Assistant", path: "/dashboard/assistant", icon: "☰" },
-  { name: "Development", path: "/dashboard/development", icon: "⟨/⟩" },
-  { name: "Templates", path: "/dashboard/templates", icon: "⬡" },
+  { name: "Home", path: "/dashboard", icon: "⊞", configKey: "home" as keyof DashboardConfig["views"] },
+  { name: "Administración", path: "/dashboard/administracion", icon: "⚙", configKey: null }, // Siempre visible
+  { name: "Planificador", path: "/dashboard/tasks", icon: "☑", configKey: "planificador" as keyof DashboardConfig["views"] },
+  { name: "Agents", path: "/dashboard/agents", icon: "◎", configKey: "agents" as keyof DashboardConfig["views"] },
+  { name: "Development", path: "/dashboard/development", icon: "⟨/⟩", configKey: "development" as keyof DashboardConfig["views"] },
 ];
 
 
 // Agentes Especializados - Individual Agent Dashboards
 const agentDashboardItems = [
-  { name: "Asistente", path: "/dashboard/agents/asistente", icon: "👤" },
-  { name: "Nexus", path: "/dashboard/agents/nexus", icon: "🔧" },
-  { name: "Sentinel", path: "/dashboard/agents/sentinel", icon: "🛡️" },
-  { name: "Scout", path: "/dashboard/agents/scout", icon: "🔍" },
-  { name: "Audiovisual", path: "/dashboard/agents/audiovisual", icon: "🎬" },
-  { name: "Consultor", path: "/dashboard/agents/consultor", icon: "📚" },
-  { name: "Gambito", path: "/dashboard/agents/gambito", icon: "🎯" },
-  { name: "Cóndor360", path: "/dashboard/agents/condor360", icon: "📈" },
-  { name: "Picasso", path: "/dashboard/agents/picasso", icon: "🎨" },
+  { name: "Asistente", path: "/dashboard/agents/asistente", icon: "👤", configKey: "asistente" as keyof DashboardConfig["agentViews"] },
+  { name: "Nexus", path: "/dashboard/agents/nexus", icon: "🔧", configKey: "nexus" as keyof DashboardConfig["agentViews"] },
+  { name: "Sentinel", path: "/dashboard/agents/sentinel", icon: "🛡️", configKey: "sentinel" as keyof DashboardConfig["agentViews"] },
+  { name: "Scout", path: "/dashboard/agents/scout", icon: "🔍", configKey: "scout" as keyof DashboardConfig["agentViews"] },
+  { name: "Audiovisual", path: "/dashboard/agents/audiovisual", icon: "🎬", configKey: "audiovisual" as keyof DashboardConfig["agentViews"] },
+  { name: "Consultor", path: "/dashboard/agents/consultor", icon: "📚", configKey: "consultor" as keyof DashboardConfig["agentViews"] },
+  { name: "Gambito", path: "/dashboard/agents/gambito", icon: "🎯", configKey: "gambito" as keyof DashboardConfig["agentViews"] },
+  { name: "Cóndor360", path: "/dashboard/agents/condor360", icon: "📈", configKey: "condor360" as keyof DashboardConfig["agentViews"] },
+  { name: "Picasso", path: "/dashboard/agents/picasso", icon: "🎨", configKey: "picasso" as keyof DashboardConfig["agentViews"] },
 ];
 
 interface SystemMetrics {
@@ -40,6 +38,7 @@ interface SidebarProps {
 
 export function Sidebar({ metrics }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const { config } = useDashboardConfig();
 
   const defaultMetrics: SystemMetrics = {
     cpu: 24,
@@ -77,43 +76,47 @@ export function Sidebar({ metrics }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 p-2 overflow-y-auto">
         {/* Main Navigation Items */}
-        {navItems.map((item) => {
-          // Renderizamos los items de navegación principal
-          const isAgentsItem = item.name === "Agents";
+        {navItems
+          .filter((item) => item.configKey === null || config.views[item.configKey])
+          .map((item) => {
+            // Renderizamos los items de navegación principal
+            const isAgentsItem = item.name === "Agents";
 
-          return (
-            <div key={item.path}>
-              <NavLink
-                href={item.path}
-                icon={item.icon}
-                collapsed={collapsed}
-              >
-                {item.name}
-              </NavLink>
+            return (
+              <div key={item.path}>
+                <NavLink
+                  href={item.path}
+                  icon={item.icon}
+                  collapsed={collapsed}
+                >
+                  {item.name}
+                </NavLink>
 
-              {/* Si es Agents, insertamos la sección de agentes especializados justo después */}
-              {isAgentsItem && (
-                <div className="ml-4">
-                  {!collapsed && (
-                    <div className="px-3 py-2 text-xs font-mono text-zinc-500 uppercase tracking-wider">
-                      Agentes
-                    </div>
-                  )}
-                  {agentDashboardItems.map((agentItem) => (
-                    <NavLink
-                      key={agentItem.path}
-                      href={agentItem.path}
-                      icon={agentItem.icon}
-                      collapsed={collapsed}
-                    >
-                      {agentItem.name}
-                    </NavLink>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
+                {/* Si es Agents, insertamos la sección de agentes especializados justo después */}
+                {isAgentsItem && (
+                  <div className="ml-4">
+                    {!collapsed && (
+                      <div className="px-3 py-2 text-xs font-mono text-zinc-500 uppercase tracking-wider">
+                        Agentes
+                      </div>
+                    )}
+                    {agentDashboardItems
+                      .filter((agentItem) => config.agentViews[agentItem.configKey])
+                      .map((agentItem) => (
+                        <NavLink
+                          key={agentItem.path}
+                          href={agentItem.path}
+                          icon={agentItem.icon}
+                          collapsed={collapsed}
+                        >
+                          {agentItem.name}
+                        </NavLink>
+                      ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
       </nav>
 

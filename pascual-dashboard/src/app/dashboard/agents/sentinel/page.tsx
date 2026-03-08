@@ -13,6 +13,7 @@ import {
   AgentConfigModal,
   useAgentConfig,
 } from "@/components/agents";
+import { HeatMap } from "@/components/charts/HeatMap";
 import { useGrowl } from "@/components/growl";
 import { sentinelData } from "@/lib/api/mock/pascual-agents";
 
@@ -289,6 +290,10 @@ export default function SentinelDashboard() {
           </div>
         </SectionCard>
 
+      </div>
+
+      {/* Mejoras Implementadas + Mapa de Actividad - Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Mejoras Implementadas */}
         <SectionCard
           title="Mejoras Implementadas"
@@ -343,6 +348,39 @@ export default function SentinelDashboard() {
                 No hay mejoras {improvementSearch && `que contengan "${improvementSearch}"`}
               </p>
             )}
+          </div>
+        </SectionCard>
+
+        {/* Activity Heatmap - Mapa de calor de actividad de seguridad */}
+        <SectionCard
+          title="Mapa de Actividad"
+          action={
+            <span className="font-mono text-[10px] text-zinc-500">7 días</span>
+          }
+          maxHeight="320px"
+        >
+          <HeatMap
+            data={data.activityHeatmap.data}
+            xLabels={["0", "", "", "3", "", "", "6", "", "", "9", "", "", "12", "", "", "15", "", "", "18", "", "", "21", "", ""]}
+            yLabels={data.activityHeatmap.yLabels}
+            maxColor="#ff006e"
+            gap={2}
+            fullWidth
+          />
+          <div className="flex items-center justify-between mt-3 pt-2 border-t border-zinc-800">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-sm bg-zinc-800" />
+                <span className="font-mono text-[9px] text-zinc-500">Baja</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-sm bg-[#ff006e]" />
+                <span className="font-mono text-[9px] text-zinc-500">Alta</span>
+              </div>
+            </div>
+            <span className="font-mono text-[9px] text-zinc-400">
+              Pico: <span className="text-[#ff006e]">Jue 15h</span>
+            </span>
           </div>
         </SectionCard>
       </div>

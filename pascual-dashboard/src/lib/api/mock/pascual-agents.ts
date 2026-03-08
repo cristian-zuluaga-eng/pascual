@@ -362,6 +362,12 @@ export interface ImplementedImprovement {
   };
 }
 
+export interface ActivityHeatmapData {
+  data: { value: number; label?: string }[][];
+  xLabels: string[];
+  yLabels: string[];
+}
+
 export interface SentinelData extends AgentBase {
   metrics: SentinelMetrics;
   threats: ThreatEvent[];
@@ -370,6 +376,7 @@ export interface SentinelData extends AgentBase {
   vulnerabilities: VulnerabilityScan;
   backup: BackupStatus;
   improvements: ImplementedImprovement[];
+  activityHeatmap: ActivityHeatmapData;
 }
 
 export const sentinelData: SentinelData = {
@@ -534,6 +541,75 @@ export const sentinelData: SentinelData = {
     nextBackup: "en 4h",
     recoveryTestStatus: "passed",
     size: "4.2GB",
+  },
+  activityHeatmap: {
+    data: [
+      // Lunes - horas 0-23
+      [
+        { value: 12, label: "12 eventos" }, { value: 8, label: "8 eventos" }, { value: 5, label: "5 eventos" }, { value: 3, label: "3 eventos" },
+        { value: 2, label: "2 eventos" }, { value: 4, label: "4 eventos" }, { value: 15, label: "15 eventos" }, { value: 28, label: "28 eventos" },
+        { value: 45, label: "45 eventos" }, { value: 52, label: "52 eventos" }, { value: 48, label: "48 eventos" }, { value: 42, label: "42 eventos" },
+        { value: 35, label: "35 eventos" }, { value: 50, label: "50 eventos" }, { value: 55, label: "55 eventos" }, { value: 60, label: "60 eventos" },
+        { value: 58, label: "58 eventos" }, { value: 45, label: "45 eventos" }, { value: 32, label: "32 eventos" }, { value: 25, label: "25 eventos" },
+        { value: 20, label: "20 eventos" }, { value: 18, label: "18 eventos" }, { value: 15, label: "15 eventos" }, { value: 12, label: "12 eventos" },
+      ],
+      // Martes
+      [
+        { value: 10, label: "10 eventos" }, { value: 6, label: "6 eventos" }, { value: 4, label: "4 eventos" }, { value: 2, label: "2 eventos" },
+        { value: 3, label: "3 eventos" }, { value: 5, label: "5 eventos" }, { value: 18, label: "18 eventos" }, { value: 35, label: "35 eventos" },
+        { value: 48, label: "48 eventos" }, { value: 58, label: "58 eventos" }, { value: 52, label: "52 eventos" }, { value: 45, label: "45 eventos" },
+        { value: 38, label: "38 eventos" }, { value: 55, label: "55 eventos" }, { value: 62, label: "62 eventos" }, { value: 70, label: "70 eventos" },
+        { value: 65, label: "65 eventos" }, { value: 50, label: "50 eventos" }, { value: 35, label: "35 eventos" }, { value: 28, label: "28 eventos" },
+        { value: 22, label: "22 eventos" }, { value: 16, label: "16 eventos" }, { value: 12, label: "12 eventos" }, { value: 10, label: "10 eventos" },
+      ],
+      // Miércoles
+      [
+        { value: 8, label: "8 eventos" }, { value: 5, label: "5 eventos" }, { value: 3, label: "3 eventos" }, { value: 2, label: "2 eventos" },
+        { value: 2, label: "2 eventos" }, { value: 6, label: "6 eventos" }, { value: 20, label: "20 eventos" }, { value: 38, label: "38 eventos" },
+        { value: 52, label: "52 eventos" }, { value: 65, label: "65 eventos" }, { value: 58, label: "58 eventos" }, { value: 50, label: "50 eventos" },
+        { value: 42, label: "42 eventos" }, { value: 58, label: "58 eventos" }, { value: 68, label: "68 eventos" }, { value: 75, label: "75 eventos" },
+        { value: 72, label: "72 eventos" }, { value: 55, label: "55 eventos" }, { value: 40, label: "40 eventos" }, { value: 30, label: "30 eventos" },
+        { value: 25, label: "25 eventos" }, { value: 18, label: "18 eventos" }, { value: 14, label: "14 eventos" }, { value: 10, label: "10 eventos" },
+      ],
+      // Jueves
+      [
+        { value: 15, label: "15 eventos" }, { value: 10, label: "10 eventos" }, { value: 6, label: "6 eventos" }, { value: 4, label: "4 eventos" },
+        { value: 3, label: "3 eventos" }, { value: 8, label: "8 eventos" }, { value: 22, label: "22 eventos" }, { value: 40, label: "40 eventos" },
+        { value: 55, label: "55 eventos" }, { value: 68, label: "68 eventos" }, { value: 62, label: "62 eventos" }, { value: 55, label: "55 eventos" },
+        { value: 48, label: "48 eventos" }, { value: 62, label: "62 eventos" }, { value: 72, label: "72 eventos" }, { value: 80, label: "80 eventos" },
+        { value: 78, label: "78 eventos" }, { value: 60, label: "60 eventos" }, { value: 45, label: "45 eventos" }, { value: 35, label: "35 eventos" },
+        { value: 28, label: "28 eventos" }, { value: 22, label: "22 eventos" }, { value: 18, label: "18 eventos" }, { value: 15, label: "15 eventos" },
+      ],
+      // Viernes
+      [
+        { value: 12, label: "12 eventos" }, { value: 8, label: "8 eventos" }, { value: 5, label: "5 eventos" }, { value: 3, label: "3 eventos" },
+        { value: 2, label: "2 eventos" }, { value: 5, label: "5 eventos" }, { value: 16, label: "16 eventos" }, { value: 32, label: "32 eventos" },
+        { value: 48, label: "48 eventos" }, { value: 60, label: "60 eventos" }, { value: 55, label: "55 eventos" }, { value: 48, label: "48 eventos" },
+        { value: 40, label: "40 eventos" }, { value: 52, label: "52 eventos" }, { value: 58, label: "58 eventos" }, { value: 62, label: "62 eventos" },
+        { value: 55, label: "55 eventos" }, { value: 42, label: "42 eventos" }, { value: 30, label: "30 eventos" }, { value: 22, label: "22 eventos" },
+        { value: 18, label: "18 eventos" }, { value: 14, label: "14 eventos" }, { value: 12, label: "12 eventos" }, { value: 10, label: "10 eventos" },
+      ],
+      // Sábado
+      [
+        { value: 8, label: "8 eventos" }, { value: 5, label: "5 eventos" }, { value: 3, label: "3 eventos" }, { value: 2, label: "2 eventos" },
+        { value: 2, label: "2 eventos" }, { value: 3, label: "3 eventos" }, { value: 8, label: "8 eventos" }, { value: 15, label: "15 eventos" },
+        { value: 22, label: "22 eventos" }, { value: 28, label: "28 eventos" }, { value: 25, label: "25 eventos" }, { value: 22, label: "22 eventos" },
+        { value: 18, label: "18 eventos" }, { value: 20, label: "20 eventos" }, { value: 22, label: "22 eventos" }, { value: 25, label: "25 eventos" },
+        { value: 22, label: "22 eventos" }, { value: 18, label: "18 eventos" }, { value: 15, label: "15 eventos" }, { value: 12, label: "12 eventos" },
+        { value: 10, label: "10 eventos" }, { value: 8, label: "8 eventos" }, { value: 6, label: "6 eventos" }, { value: 5, label: "5 eventos" },
+      ],
+      // Domingo
+      [
+        { value: 5, label: "5 eventos" }, { value: 3, label: "3 eventos" }, { value: 2, label: "2 eventos" }, { value: 2, label: "2 eventos" },
+        { value: 2, label: "2 eventos" }, { value: 2, label: "2 eventos" }, { value: 5, label: "5 eventos" }, { value: 10, label: "10 eventos" },
+        { value: 15, label: "15 eventos" }, { value: 20, label: "20 eventos" }, { value: 18, label: "18 eventos" }, { value: 15, label: "15 eventos" },
+        { value: 12, label: "12 eventos" }, { value: 15, label: "15 eventos" }, { value: 18, label: "18 eventos" }, { value: 20, label: "20 eventos" },
+        { value: 18, label: "18 eventos" }, { value: 15, label: "15 eventos" }, { value: 12, label: "12 eventos" }, { value: 10, label: "10 eventos" },
+        { value: 8, label: "8 eventos" }, { value: 6, label: "6 eventos" }, { value: 5, label: "5 eventos" }, { value: 4, label: "4 eventos" },
+      ],
+    ],
+    xLabels: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"],
+    yLabels: ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
   },
   improvements: [
     {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Badge, StatusBadge } from "../ui/Badge";
 import { IconButton } from "../ui/Button";
+import { useDashboardConfig } from "@/lib/context/DashboardConfigContext";
 
 interface HeaderProps {
   title?: string;
@@ -11,6 +12,7 @@ interface HeaderProps {
 
 export function Header({ title = "Dashboard", systemStatus = "active" }: HeaderProps) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const { config } = useDashboardConfig();
 
   return (
     <header className="h-16 bg-zinc-950 border-b border-zinc-800 px-6 pr-24 flex items-center justify-between">
@@ -23,57 +25,69 @@ export function Header({ title = "Dashboard", systemStatus = "active" }: HeaderP
       {/* Right: System Status & Actions */}
       <div className="flex items-center gap-4">
         {/* System Status Indicators */}
-        <div className="flex items-center gap-4">
-          <div className="w-3 h-3 rounded-full bg-[#39ff14] status-pulse" />
-          <span className="font-mono text-xs text-zinc-400">
-            Uptime: <span className="text-[#39ff14]">99.8%</span>
-          </span>
-          <span className="text-zinc-600">|</span>
-          <span className="font-mono text-xs text-zinc-400">
-            Last sync: <span className="text-[#00d9ff]">2s ago</span>
-          </span>
-        </div>
+        {(config.header.showSystemStatus || config.header.showLastSync) && (
+          <div className="flex items-center gap-4">
+            {config.header.showSystemStatus && (
+              <>
+                <div className="w-3 h-3 rounded-full bg-[#39ff14] status-pulse" />
+                <span className="font-mono text-xs text-zinc-400">
+                  Uptime: <span className="text-[#39ff14]">99.8%</span>
+                </span>
+              </>
+            )}
+            {config.header.showSystemStatus && config.header.showLastSync && (
+              <span className="text-zinc-600">|</span>
+            )}
+            {config.header.showLastSync && (
+              <span className="font-mono text-xs text-zinc-400">
+                Last sync: <span className="text-[#00d9ff]">2s ago</span>
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Notifications */}
-        <div className="relative">
-          <IconButton
-            onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="relative"
-          >
-            <span>⚑</span>
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#ff006e] rounded-full" />
-          </IconButton>
+        {config.header.showNotificationBanner && (
+          <div className="relative">
+            <IconButton
+              onClick={() => setNotificationsOpen(!notificationsOpen)}
+              className="relative"
+            >
+              <span>⚑</span>
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#ff006e] rounded-full" />
+            </IconButton>
 
-          {notificationsOpen && (
-            <div className="absolute right-0 top-full mt-2 w-80 bg-zinc-950 border border-zinc-800 rounded-sm shadow-neo z-50">
-              <div className="p-3 border-b border-zinc-800">
-                <h3 className="text-sm font-mono font-bold">Notifications</h3>
+            {notificationsOpen && (
+              <div className="absolute right-0 top-full mt-2 w-80 bg-zinc-950 border border-zinc-800 rounded-sm shadow-neo z-50">
+                <div className="p-3 border-b border-zinc-800">
+                  <h3 className="text-sm font-mono font-bold">Notifications</h3>
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  <NotificationItem
+                    title="Agent Nexus activated"
+                    time="2m ago"
+                    type="info"
+                  />
+                  <NotificationItem
+                    title="Security scan complete"
+                    time="15m ago"
+                    type="success"
+                  />
+                  <NotificationItem
+                    title="High CPU usage detected"
+                    time="1h ago"
+                    type="warning"
+                  />
+                </div>
+                <div className="p-2 border-t border-zinc-800">
+                  <button className="w-full text-xs font-mono text-[#00d9ff] hover:text-white transition-colors">
+                    View all notifications
+                  </button>
+                </div>
               </div>
-              <div className="max-h-64 overflow-y-auto">
-                <NotificationItem
-                  title="Agent Nexus activated"
-                  time="2m ago"
-                  type="info"
-                />
-                <NotificationItem
-                  title="Security scan complete"
-                  time="15m ago"
-                  type="success"
-                />
-                <NotificationItem
-                  title="High CPU usage detected"
-                  time="1h ago"
-                  type="warning"
-                />
-              </div>
-              <div className="p-2 border-t border-zinc-800">
-                <button className="w-full text-xs font-mono text-[#00d9ff] hover:text-white transition-colors">
-                  View all notifications
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );

@@ -55,7 +55,7 @@ const getVariantColor = (variant: "default" | "success" | "danger" | "warning") 
     case "warning":
       return "bg-amber-400";
     default:
-      return "bg-[#00d9ff]";
+      return "bg-[#39ff14]"; // Default es verde cuando está encendido
   }
 };
 
@@ -96,12 +96,13 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
           <div
             className={`
               ${sizeClasses.track}
-              bg-zinc-700 rounded-full
-              peer-checked:${variantColor}
+              rounded-full
               peer-focus:ring-2 peer-focus:ring-[#00d9ff]/30
               transition-colors duration-200
-              ${checked ? variantColor : "bg-zinc-700"}
             `}
+            style={{
+              backgroundColor: "#52525b",
+            }}
           />
           {/* Thumb */}
           <div

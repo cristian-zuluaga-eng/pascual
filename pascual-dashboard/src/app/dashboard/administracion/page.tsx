@@ -15,6 +15,8 @@ import { TimePicker, TimeRangePicker } from "@/components/ui/TimePicker";
 import { FileUpload } from "@/components/ui/FileUpload";
 import { LineChart, Sparkline } from "@/components/charts/LineChart";
 import { BarChart } from "@/components/charts/BarChart";
+import { HeatMap } from "@/components/charts/HeatMap";
+import { mockHeatmapData, dayLabels, hourLabels } from "@/lib/api/mock/security";
 import {
   AgentHeader,
   SubAgentStatusGrid,
@@ -26,6 +28,7 @@ import {
   FilterTabs,
   TimeRange,
 } from "@/components/agents";
+import { useDashboardConfig } from "@/lib/context/DashboardConfigContext";
 
 // ============================================================================
 // COMPONENT SHOWCASE WRAPPER
@@ -735,6 +738,183 @@ function FileUploadShowcase() {
 // TEMPLATES PAGE
 // ============================================================================
 
+// ============================================================================
+// TOGGLE ROW COMPONENT
+// ============================================================================
+
+interface ToggleRowProps {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  label: string;
+}
+
+function ToggleRow({ checked, onCheckedChange, label }: ToggleRowProps) {
+  return (
+    <div className="flex items-center gap-3 py-1">
+      <div className="flex items-center gap-1.5">
+        <Toggle
+          checked={checked}
+          onCheckedChange={onCheckedChange}
+          size="sm"
+        />
+        <span className={`font-mono text-[10px] w-6 ${checked ? "text-[#39ff14]" : "text-zinc-500"}`}>
+          {checked ? "ON" : "OFF"}
+        </span>
+      </div>
+      <span className="font-mono text-xs text-zinc-300">{label}</span>
+    </div>
+  );
+}
+
+// ============================================================================
+// DASHBOARD CONFIG PANEL
+// ============================================================================
+
+function DashboardConfigPanel() {
+  const { config, updateViewConfig, updateAgentViewConfig, updateHeaderConfig } = useDashboardConfig();
+
+  return (
+    <div className="bg-zinc-950 border border-zinc-800 rounded-sm overflow-hidden">
+      {/* Header */}
+      <div className="flex items-start gap-3 p-4 border-b border-zinc-800 bg-zinc-900/50">
+        <span className="text-xl mt-0.5">🛡️</span>
+        <div className="flex-1">
+          <h3 className="font-mono text-lg font-bold text-white">Control de Características</h3>
+          <p className="font-mono text-xs text-zinc-400 mt-1 leading-relaxed">
+            Activa o desactiva las características del dashboard de forma individual. Esta configuración permite
+            blindar la aplicación contra fallos abruptos al habilitar funcionalidades de manera progresiva
+            conforme el ecosistema PASCUAL va creciendo y estabilizándose.
+          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="px-2 py-0.5 bg-zinc-800 rounded font-mono text-[10px] text-zinc-400">Agente: Picasso</span>
+            <span className="px-2 py-0.5 bg-[#39ff14]/10 border border-[#39ff14]/30 rounded font-mono text-[10px] text-[#39ff14]">Protección activa</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Header Configuration */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm">📢</span>
+              <h4 className="font-mono text-sm font-bold text-white">Header</h4>
+            </div>
+            <div className="space-y-3 pl-1">
+              <ToggleRow
+                checked={config.header.showNotificationBanner}
+                onCheckedChange={(checked) => updateHeaderConfig("showNotificationBanner", checked)}
+                label="Banner de Notificaciones"
+              />
+              <ToggleRow
+                checked={config.header.showSystemStatus}
+                onCheckedChange={(checked) => updateHeaderConfig("showSystemStatus", checked)}
+                label="Estado del Sistema"
+              />
+              <ToggleRow
+                checked={config.header.showLastSync}
+                onCheckedChange={(checked) => updateHeaderConfig("showLastSync", checked)}
+                label="Última Sincronización"
+              />
+            </div>
+          </div>
+
+          {/* Views Configuration */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm">📑</span>
+              <h4 className="font-mono text-sm font-bold text-white">Vistas Principales</h4>
+            </div>
+            <div className="space-y-3 pl-1">
+              <ToggleRow
+                checked={config.views.home}
+                onCheckedChange={(checked) => updateViewConfig("home", checked)}
+                label="Home"
+              />
+              <ToggleRow
+                checked={config.views.planificador}
+                onCheckedChange={(checked) => updateViewConfig("planificador", checked)}
+                label="Planificador"
+              />
+              <ToggleRow
+                checked={config.views.agents}
+                onCheckedChange={(checked) => updateViewConfig("agents", checked)}
+                label="Agents"
+              />
+              <ToggleRow
+                checked={config.views.development}
+                onCheckedChange={(checked) => updateViewConfig("development", checked)}
+                label="Development"
+              />
+              <ToggleRow
+                checked={config.views.chatEmergente}
+                onCheckedChange={(checked) => updateViewConfig("chatEmergente", checked)}
+                label="Chat Emergente"
+              />
+            </div>
+          </div>
+
+          {/* Agent Views Configuration */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm">🤖</span>
+              <h4 className="font-mono text-sm font-bold text-white">Agentes</h4>
+            </div>
+            <div className="space-y-3 pl-1">
+              <ToggleRow
+                checked={config.agentViews.asistente}
+                onCheckedChange={(checked) => updateAgentViewConfig("asistente", checked)}
+                label="Asistente"
+              />
+              <ToggleRow
+                checked={config.agentViews.nexus}
+                onCheckedChange={(checked) => updateAgentViewConfig("nexus", checked)}
+                label="Nexus"
+              />
+              <ToggleRow
+                checked={config.agentViews.sentinel}
+                onCheckedChange={(checked) => updateAgentViewConfig("sentinel", checked)}
+                label="Sentinel"
+              />
+              <ToggleRow
+                checked={config.agentViews.scout}
+                onCheckedChange={(checked) => updateAgentViewConfig("scout", checked)}
+                label="Scout"
+              />
+              <ToggleRow
+                checked={config.agentViews.audiovisual}
+                onCheckedChange={(checked) => updateAgentViewConfig("audiovisual", checked)}
+                label="Audiovisual"
+              />
+              <ToggleRow
+                checked={config.agentViews.consultor}
+                onCheckedChange={(checked) => updateAgentViewConfig("consultor", checked)}
+                label="Consultor"
+              />
+              <ToggleRow
+                checked={config.agentViews.gambito}
+                onCheckedChange={(checked) => updateAgentViewConfig("gambito", checked)}
+                label="Gambito"
+              />
+              <ToggleRow
+                checked={config.agentViews.condor360}
+                onCheckedChange={(checked) => updateAgentViewConfig("condor360", checked)}
+                label="Cóndor360"
+              />
+              <ToggleRow
+                checked={config.agentViews.picasso}
+                onCheckedChange={(checked) => updateAgentViewConfig("picasso", checked)}
+                label="Picasso"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function TemplatesPage() {
   // Sample data for demos
   const sampleChartData = [
@@ -761,11 +941,44 @@ export default function TemplatesPage() {
   return (
     <div className="space-y-6 p-6">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="font-mono text-2xl font-bold text-white">Templates & Componentes</h1>
+      <div className="mb-4">
+        <h1 className="font-mono text-2xl font-bold text-white">Administración</h1>
         <p className="font-mono text-sm text-zinc-500 mt-2">
-          Manual de uso de los componentes base de PASCUAL Dashboard
+          Centro de control para la gestión segura del ecosistema PASCUAL
         </p>
+      </div>
+
+      {/* Dashboard Configuration Panel */}
+      <DashboardConfigPanel />
+
+      {/* Manual Description */}
+      <div className="bg-zinc-950 border border-zinc-800 rounded-sm p-4 mb-6 mt-6">
+        <div className="flex items-start gap-3">
+          <span className="text-xl">📚</span>
+          <div>
+            <h3 className="font-mono text-lg font-bold text-white mb-2">Biblioteca de Componentes Seguros</h3>
+            <p className="font-mono text-xs text-zinc-400 leading-relaxed">
+              Esta biblioteca contiene componentes pre-construidos y validados que pueden ser utilizados por Pascual
+              para extender la funcionalidad del dashboard. Al solicitar nuevas características, es preferible indicar al agente
+              que utilice estos componentes existentes en lugar de crear implementaciones desde cero. Esto garantiza la
+              estabilidad de la experiencia de usuario y previene errores inesperados en producción.
+            </p>
+            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-zinc-800">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#39ff14]" />
+                <span className="font-mono text-[10px] text-zinc-500">Componentes testeados</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#00d9ff]" />
+                <span className="font-mono text-[10px] text-zinc-500">Integración garantizada</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#ffaa00]" />
+                <span className="font-mono text-[10px] text-zinc-500">Sin riesgo de ruptura</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ================================================================== */}
@@ -1512,6 +1725,37 @@ interface DataPoint {
                 { name: "Red", value: 23, color: "#ffaa00" },
               ]}
               height={180}
+            />
+          </div>
+        </div>
+      </ComponentShowcase>
+
+      {/* HeatMap */}
+      <ComponentShowcase
+        title="HeatMap"
+        description="Mapa de calor para visualizar actividad o intensidad en dos dimensiones."
+        interfaceCode={`interface HeatMapProps {
+  data: number[][];         // Matriz de valores (filas x columnas)
+  xLabels: string[];        // Etiquetas eje X (columnas)
+  yLabels: string[];        // Etiquetas eje Y (filas)
+  maxColor?: string;        // Color para valor máximo (default: "#00d9ff")
+  minColor?: string;        // Color para valor mínimo (default: "transparent")
+  cellSize?: number;        // Tamaño de cada celda (default: 20)
+  gap?: number;             // Espacio entre celdas (default: 2)
+  showTooltip?: boolean;    // Mostrar tooltip con valores
+  className?: string;
+}`}
+      >
+        <div className="space-y-4">
+          <p className="font-mono text-[10px] text-zinc-500 uppercase">Activity Heatmap (7 días x 24 horas)</p>
+          <div className="bg-zinc-900 p-4 rounded-sm">
+            <HeatMap
+              data={mockHeatmapData}
+              xLabels={hourLabels}
+              yLabels={dayLabels}
+              maxColor="#00d9ff"
+              cellSize={20}
+              gap={2}
             />
           </div>
         </div>

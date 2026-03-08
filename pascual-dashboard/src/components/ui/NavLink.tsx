@@ -18,7 +18,11 @@ export function NavLink({
   collapsed = false,
 }: NavLinkProps) {
   const pathname = usePathname();
-  const isActive = pathname === href || pathname.startsWith(`${href}/`);
+  // Para /dashboard (Home), solo es activo si es exactamente esa ruta
+  // Para otras rutas, también verificamos si el pathname empieza con href/
+  const isActive = href === "/dashboard"
+    ? pathname === href
+    : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <Link

@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { MainContent } from "@/components/layout/MainContent";
 import { GrowlProvider, GrowlContainer } from "@/components/growl";
 import { ChatTransitionProvider, ChatTransitionOverlay } from "@/components/chat/ChatTransition";
+import { DashboardConfigProvider } from "@/lib/context/DashboardConfigContext";
 
 export default function DashboardLayout({
   children,
@@ -12,18 +13,20 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <GrowlProvider>
-      <ChatTransitionProvider>
-        <div className="flex h-screen overflow-hidden">
-          <Sidebar />
-          <div className="flex flex-col flex-1 overflow-hidden">
-            <Header />
-            <MainContent>{children}</MainContent>
+    <DashboardConfigProvider>
+      <GrowlProvider>
+        <ChatTransitionProvider>
+          <div className="flex h-screen overflow-hidden">
+            <Sidebar />
+            <div className="flex flex-col flex-1 overflow-hidden">
+              <Header />
+              <MainContent>{children}</MainContent>
+            </div>
+            <GrowlContainer />
+            <ChatTransitionOverlay />
           </div>
-          <GrowlContainer />
-          <ChatTransitionOverlay />
-        </div>
-      </ChatTransitionProvider>
-    </GrowlProvider>
+        </ChatTransitionProvider>
+      </GrowlProvider>
+    </DashboardConfigProvider>
   );
 }
