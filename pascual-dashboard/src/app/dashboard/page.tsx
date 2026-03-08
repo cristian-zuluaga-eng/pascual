@@ -1,56 +1,38 @@
 "use client";
 
-import { StatCard } from "@/components/ui/Card";
-import { Grid, Section, SectionHeader } from "@/components/layout/MainContent";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Section, SectionHeader } from "@/components/layout/MainContent";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { ChatWindow } from "@/components/chat/ChatWindow";
 import { MessageInput } from "@/components/chat/MessageInput";
 import { mockActivities } from "@/lib/api/mock/dashboard";
 import { useGrowl } from "@/components/growl";
+import { useDashboardConfig } from "@/lib/context/DashboardConfigContext";
 
 export default function DashboardPage() {
   const { messages, isTyping, sendMessage } = useGrowl();
+  const { config } = useDashboardConfig();
+  const router = useRouter();
+
+  // Redirigir a administración si Home está deshabilitado
+  useEffect(() => {
+    if (!config.views.home) {
+      router.replace("/dashboard/administracion");
+    }
+  }, [config.views.home, router]);
 
   const handleSendMessage = (content: string) => {
     sendMessage(content, "main");
   };
 
+  // Si Home está deshabilitado, no renderizar nada mientras redirige
+  if (!config.views.home) {
+    return null;
+  }
+
   return (
     <div className="h-full flex flex-col gap-6">
-      {/* Quick Stats */}
-      <Section>
-        <Grid cols={4}>
-          <StatCard
-            title="Agentes Activos"
-            value="8 / 9"
-            trend={{ value: 25, positive: true }}
-            variant="info"
-            icon={<span className="text-lg">◎</span>}
-          />
-          <StatCard
-            title="Tareas Pendientes"
-            value="11"
-            trend={{ value: 8, positive: false }}
-            variant="warning"
-            icon={<span className="text-lg">☰</span>}
-          />
-          <StatCard
-            title="Uso de CPU"
-            value="24%"
-            trend={{ value: 5, positive: true }}
-            variant="success"
-            icon={<span className="text-lg">⟨⟩</span>}
-          />
-          <StatCard
-            title="Memoria"
-            value="3.2 GB"
-            trend={{ value: 12, positive: false }}
-            variant="danger"
-            icon={<span className="text-lg">◈</span>}
-          />
-        </Grid>
-      </Section>
-
       {/* Main content grid */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
         {/* Left: Chat */}

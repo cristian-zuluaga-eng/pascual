@@ -843,11 +843,6 @@ function DashboardConfigPanel() {
                 label="Agents"
               />
               <ToggleRow
-                checked={config.views.development}
-                onCheckedChange={(checked) => updateViewConfig("development", checked)}
-                label="Development"
-              />
-              <ToggleRow
                 checked={config.views.chatEmergente}
                 onCheckedChange={(checked) => updateViewConfig("chatEmergente", checked)}
                 label="Chat Emergente"
@@ -863,9 +858,9 @@ function DashboardConfigPanel() {
             </div>
             <div className="space-y-3 pl-1">
               <ToggleRow
-                checked={config.agentViews.asistente}
-                onCheckedChange={(checked) => updateAgentViewConfig("asistente", checked)}
-                label="Asistente"
+                checked={config.agentViews.sentinel}
+                onCheckedChange={(checked) => updateAgentViewConfig("sentinel", checked)}
+                label="Sentinel"
               />
               <ToggleRow
                 checked={config.agentViews.nexus}
@@ -873,9 +868,14 @@ function DashboardConfigPanel() {
                 label="Nexus"
               />
               <ToggleRow
-                checked={config.agentViews.sentinel}
-                onCheckedChange={(checked) => updateAgentViewConfig("sentinel", checked)}
-                label="Sentinel"
+                checked={config.agentViews.condor360}
+                onCheckedChange={(checked) => updateAgentViewConfig("condor360", checked)}
+                label="Cóndor360"
+              />
+              <ToggleRow
+                checked={config.agentViews.gambito}
+                onCheckedChange={(checked) => updateAgentViewConfig("gambito", checked)}
+                label="Gambito"
               />
               <ToggleRow
                 checked={config.agentViews.scout}
@@ -893,14 +893,9 @@ function DashboardConfigPanel() {
                 label="Consultor"
               />
               <ToggleRow
-                checked={config.agentViews.gambito}
-                onCheckedChange={(checked) => updateAgentViewConfig("gambito", checked)}
-                label="Gambito"
-              />
-              <ToggleRow
-                checked={config.agentViews.condor360}
-                onCheckedChange={(checked) => updateAgentViewConfig("condor360", checked)}
-                label="Cóndor360"
+                checked={config.agentViews.asistente}
+                onCheckedChange={(checked) => updateAgentViewConfig("asistente", checked)}
+                label="Asistente"
               />
               <ToggleRow
                 checked={config.agentViews.picasso}

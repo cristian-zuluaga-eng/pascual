@@ -23,6 +23,26 @@ export const mockDashboardStats = {
   },
 };
 
+// Home stats for StatCards
+export const mockHomeStats = {
+  agentesActivos: {
+    value: "8 / 9",
+    trend: { value: 25, positive: true },
+  },
+  tareasPendientes: {
+    value: 11,
+    trend: { value: 8, positive: false },
+  },
+  usoCPU: {
+    value: "24%",
+    trend: { value: 5, positive: true },
+  },
+  memoria: {
+    value: "3.2 GB",
+    trend: { value: 12, positive: false },
+  },
+};
+
 // Activity feed
 export const mockActivities: ActivityItem[] = [
   {

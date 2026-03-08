@@ -31,28 +31,6 @@ export default function Home() {
           ENTER DASHBOARD
         </Link>
 
-        {/* System info */}
-        <div className="grid grid-cols-3 gap-8 mt-8 text-center">
-          <div>
-            <p className="text-2xl font-mono font-bold text-[#00d9ff]">5</p>
-            <p className="text-xs font-mono text-zinc-500 uppercase mt-1">
-              Agents
-            </p>
-          </div>
-          <div>
-            <p className="text-2xl font-mono font-bold text-[#39ff14]">24%</p>
-            <p className="text-xs font-mono text-zinc-500 uppercase mt-1">
-              CPU Load
-            </p>
-          </div>
-          <div>
-            <p className="text-2xl font-mono font-bold text-[#ff006e]">3.2GB</p>
-            <p className="text-xs font-mono text-zinc-500 uppercase mt-1">
-              Memory
-            </p>
-          </div>
-        </div>
-
         {/* Version */}
         <p className="text-xs font-mono text-zinc-700 mt-8">v1.0.0</p>
       </main>

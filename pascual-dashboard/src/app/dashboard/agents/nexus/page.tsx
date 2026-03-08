@@ -8,11 +8,12 @@ import {
   Canvas,
   SectionCard,
   ProgressBar,
+  FilterTabs,
   AgentConfigModal,
   useAgentConfig,
 } from "@/components/agents";
 import { useGrowl } from "@/components/growl";
-import { nexusData } from "@/lib/api/mock/pascual-agents";
+import { nexusData, ScriptImprovement, CodeReview, OpenProject } from "@/lib/api/mock/pascual-agents";
 
 export default function NexusDashboard() {
   const [data] = useState(nexusData);
@@ -28,29 +29,99 @@ export default function NexusDashboard() {
     closeConfig,
   } = useAgentConfig("nexus");
 
-  const getStageColor = (stage: string) => {
-    switch (stage) {
-      case "analysis": return "bg-purple-500";
-      case "design": return "bg-blue-500";
-      case "implement": return "bg-cyan-500";
-      case "testing": return "bg-amber-500";
-      case "review": return "bg-orange-500";
-      case "deploy": return "bg-green-500";
+  // Helpers para proyectos abiertos
+  const getProjectStatusColor = (status: OpenProject["status"]) => {
+    switch (status) {
+      case "active": return "bg-[#39ff14]";
+      case "blocked": return "bg-[#ff006e]";
+      case "waiting": return "bg-amber-500";
       default: return "bg-zinc-500";
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "critical": return "border-[#ff006e]";
-      case "high": return "border-amber-500";
-      case "medium": return "border-[#00d9ff]";
-      case "low": return "border-zinc-600";
-      default: return "border-zinc-700";
+  const getBlockReasonIcon = (reason: OpenProject["blockReason"]) => {
+    switch (reason) {
+      case "approval": return "🔒";
+      case "resources": return "👥";
+      case "external": return "🔗";
+      case "priority": return "📋";
+      default: return "⏸";
     }
   };
 
-  const stages = ["analysis", "design", "implement", "testing", "review", "deploy"];
+  const [improvementSearch, setImprovementSearch] = useState("");
+  const [codeReviewSearch, setCodeReviewSearch] = useState("");
+  const [taskSearch, setTaskSearch] = useState("");
+
+  const getStatusColor = (status: ScriptImprovement["status"]) => {
+    switch (status) {
+      case "completed": return "bg-[#39ff14]";
+      case "in_progress": return "bg-[#00d9ff]";
+      case "testing": return "bg-amber-500";
+      case "pending": return "bg-zinc-500";
+      default: return "bg-zinc-500";
+    }
+  };
+
+  const getStatusLabel = (status: ScriptImprovement["status"]) => {
+    switch (status) {
+      case "completed": return "Completado";
+      case "in_progress": return "En progreso";
+      case "testing": return "En pruebas";
+      case "pending": return "Pendiente";
+      default: return status;
+    }
+  };
+
+  const getImpactBadge = (impact: ScriptImprovement["impact"]) => {
+    switch (impact) {
+      case "high": return { color: "bg-[#ff006e]/20 text-[#ff006e] border-[#ff006e]/30", label: "Alto" };
+      case "medium": return { color: "bg-amber-500/20 text-amber-400 border-amber-500/30", label: "Medio" };
+      case "low": return { color: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30", label: "Bajo" };
+      default: return { color: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30", label: impact };
+    }
+  };
+
+  const getCategoryLabel = (category: ScriptImprovement["category"]) => {
+    switch (category) {
+      case "performance": return "Rendimiento";
+      case "reliability": return "Confiabilidad";
+      case "feature": return "Funcionalidad";
+      case "security": return "Seguridad";
+      case "optimization": return "Optimización";
+      default: return category;
+    }
+  };
+
+  // Code Review helpers
+  const getReviewStatusColor = (status: CodeReview["status"]) => {
+    switch (status) {
+      case "approved": return "bg-[#39ff14]";
+      case "in_review": return "bg-[#00d9ff]";
+      case "changes_requested": return "bg-[#ff006e]";
+      case "pending": return "bg-amber-500";
+      default: return "bg-zinc-500";
+    }
+  };
+
+  const getReviewStatusLabel = (status: CodeReview["status"]) => {
+    switch (status) {
+      case "approved": return "Aprobado";
+      case "in_review": return "En revisión";
+      case "changes_requested": return "Cambios";
+      case "pending": return "Pendiente";
+      default: return status;
+    }
+  };
+
+  const getReviewerStatusIcon = (status: "approved" | "pending" | "changes_requested") => {
+    switch (status) {
+      case "approved": return { icon: "✓", color: "text-[#39ff14]" };
+      case "changes_requested": return { icon: "✕", color: "text-[#ff006e]" };
+      case "pending": return { icon: "○", color: "text-zinc-500" };
+      default: return { icon: "○", color: "text-zinc-500" };
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -72,24 +143,32 @@ export default function NexusDashboard() {
         }}
         kpis={[
           {
-            label: "Cobertura",
+            label: "Eficiencia IA",
+            value: "94%",
+            values: { "24h": "94%", "7d": "92%", "1m": "89%", "1y": "85%" },
+            status: "good",
+            statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "good" },
+          },
+          {
+            label: "Tests",
             value: `${data.metrics.testCoverage}%`,
             values: { "24h": `${data.metrics.testCoverage}%`, "7d": "83%", "1m": "80%", "1y": "75%" },
             status: data.metrics.testCoverage >= 80 ? "good" : "warning",
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "warning" },
           },
           {
-            label: "Deuda Técnica",
-            value: data.metrics.technicalDebt.toUpperCase(),
-            values: { "24h": data.metrics.technicalDebt.toUpperCase(), "7d": "LOW", "1m": "MEDIUM", "1y": "MEDIUM" },
-            status: data.metrics.technicalDebt === "low" ? "good" : data.metrics.technicalDebt === "medium" ? "warning" : "critical",
-            statuses: { "24h": "good", "7d": "good", "1m": "warning", "1y": "warning" },
+            label: "Docs",
+            value: `${data.metrics.documentationCoverage}%`,
+            values: { "24h": `${data.metrics.documentationCoverage}%`, "7d": "65%", "1m": "60%", "1y": "55%" },
+            status: data.metrics.documentationCoverage >= 70 ? "good" : "warning",
+            statuses: { "24h": "warning", "7d": "warning", "1m": "warning", "1y": "warning" },
           },
           {
-            label: "Deploys",
-            value: data.metrics.deploysThisWeek,
-            values: { "24h": data.metrics.deploysThisWeek, "7d": "18", "1m": "65", "1y": "780" },
-            status: "good",
+            label: "Arquitectura",
+            value: `${data.metrics.architectureCoherence}%`,
+            values: { "24h": `${data.metrics.architectureCoherence}%`, "7d": "82%", "1m": "78%", "1y": "72%" },
+            status: data.metrics.architectureCoherence >= 80 ? "good" : "warning",
+            statuses: { "24h": "good", "7d": "good", "1m": "warning", "1y": "warning" },
           },
           {
             label: "PRs Abiertos",
@@ -129,124 +208,279 @@ export default function NexusDashboard() {
           ]}
         />
 
-        {/* Development Pipeline */}
-        <SectionCard title="Pipeline de Desarrollo" maxHeight="320px">
-          <div className="grid grid-cols-3 gap-2">
-            {stages.slice(0, 3).map((stage) => {
-              const items = data.pipeline.filter(p => p.stage === stage);
-              return (
-                <div key={stage} className="space-y-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className={`w-2 h-2 rounded-full ${getStageColor(stage)}`} />
-                    <span className="font-mono text-[10px] text-zinc-500 uppercase">{stage}</span>
-                  </div>
-                  {items.map((item) => (
-                    <div
-                      key={item.id}
-                      className={`p-2 bg-zinc-900 rounded-sm border-l-2 ${getPriorityColor(item.priority)}`}
-                    >
-                      <p className="font-mono text-[10px] text-zinc-400">{item.id}</p>
-                      <p className="font-mono text-xs text-white truncate">{item.title}</p>
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
-          </div>
-          <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-zinc-800">
-            {stages.slice(3).map((stage) => {
-              const items = data.pipeline.filter(p => p.stage === stage);
-              return (
-                <div key={stage} className="space-y-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className={`w-2 h-2 rounded-full ${getStageColor(stage)}`} />
-                    <span className="font-mono text-[10px] text-zinc-500 uppercase">{stage}</span>
-                  </div>
-                  {items.map((item) => (
-                    <div
-                      key={item.id}
-                      className={`p-2 bg-zinc-900 rounded-sm border-l-2 ${getPriorityColor(item.priority)}`}
-                    >
-                      <p className="font-mono text-[10px] text-zinc-400">{item.id}</p>
-                      <p className="font-mono text-xs text-white truncate">{item.title}</p>
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
-          </div>
-        </SectionCard>
-
-        {/* Code Quality */}
-        <SectionCard title="Calidad de Código" maxHeight="320px">
-          <div className="space-y-3">
-            <ProgressBar label="Complejidad" value={data.metrics.codeComplexity} color="#00d9ff" />
-            <ProgressBar label="Mantenib." value={data.metrics.maintainabilityIndex} color="#39ff14" />
-            <ProgressBar label="Documentación" value={data.metrics.documentationCoverage} color="#ffaa00" />
-            <ProgressBar label="Tests" value={data.metrics.testCoverage} color="#39ff14" />
-          </div>
-          <div className="mt-4 pt-4 border-t border-zinc-800">
-            <p className="font-mono text-xs text-zinc-500 uppercase mb-2">Coherencia Arquitectónica</p>
-            <div className="w-full h-3 bg-zinc-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-[#00d9ff] to-[#39ff14] rounded-full"
-                style={{ width: `${data.metrics.architectureCoherence}%` }}
-              />
-            </div>
-            <p className="font-mono text-right text-xs text-zinc-400 mt-1">{data.metrics.architectureCoherence}%</p>
-          </div>
-        </SectionCard>
-
-        {/* Recent Commits */}
+        {/* Tareas en Curso */}
         <SectionCard
-          title="Commits Recientes"
-          action={<button className="font-mono text-xs text-[#00d9ff] hover:underline">Ver todos</button>}
+          title="Tareas en Curso"
+          action={
+            <FilterTabs
+              options={[]}
+              value=""
+              onChange={() => {}}
+              searchValue={taskSearch}
+              onSearchChange={setTaskSearch}
+              searchPlaceholder="Buscar tarea..."
+              searchOnly
+            />
+          }
           maxHeight="320px"
         >
           <div className="space-y-2">
-            {data.recentCommits.map((commit) => (
-              <div key={commit.hash} className="flex items-start gap-3 py-2 border-b border-zinc-800 last:border-0">
-                <code className="font-mono text-[10px] text-[#00d9ff] bg-zinc-900 px-1.5 py-0.5 rounded">
-                  {commit.hash}
-                </code>
-                <div className="flex-1 min-w-0">
-                  <p className="font-mono text-xs text-white truncate">{commit.message}</p>
-                  <p className="font-mono text-[10px] text-zinc-600">{commit.author} • {commit.time}</p>
+            {data.openProjects
+              .filter((project) => taskSearch === "" ||
+                project.name.toLowerCase().includes(taskSearch.toLowerCase()) ||
+                project.assignedAgent?.name.toLowerCase().includes(taskSearch.toLowerCase()) ||
+                project.assignedAgent?.task.toLowerCase().includes(taskSearch.toLowerCase()) ||
+                project.ownerAgent?.name.toLowerCase().includes(taskSearch.toLowerCase()) ||
+                project.blockDetail?.toLowerCase().includes(taskSearch.toLowerCase())
+              )
+              .map((project) => (
+              <div
+                key={project.id}
+                className="p-2 bg-zinc-900/50 rounded-sm border border-zinc-800 hover:border-zinc-700 transition-colors"
+              >
+                {/* Header: Status + Name + Type + Progress */}
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getProjectStatusColor(project.status)}`} />
+                    <span className="font-mono text-xs text-white truncate">{project.name}</span>
+                    <span className="font-mono text-[9px] text-[#00d9ff] bg-[#00d9ff]/10 border border-[#00d9ff]/30 px-1.5 py-0.5 rounded flex-shrink-0">
+                      {project.type === "user" ? "Usuario" : project.ownerAgent ? `${project.ownerAgent.icon} ${project.ownerAgent.name}` : "Sistema"}
+                    </span>
+                  </div>
+                  <span className="font-mono text-[10px] text-zinc-400 flex-shrink-0">{project.progress}%</span>
+                </div>
+
+                {/* Agente trabajando o razón de bloqueo */}
+                <div className="flex items-center justify-between pl-4">
+                  {project.assignedAgent ? (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs">{project.assignedAgent.icon}</span>
+                      <span className="font-mono text-[10px] text-[#39ff14]">{project.assignedAgent.name}</span>
+                      <span className="font-mono text-[9px] text-zinc-500">· {project.assignedAgent.task}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs">{getBlockReasonIcon(project.blockReason)}</span>
+                      <span className={`font-mono text-[10px] ${project.status === "blocked" ? "text-[#ff006e]" : "text-amber-400"}`}>
+                        {project.blockDetail}
+                      </span>
+                    </div>
+                  )}
+                  <span className="font-mono text-[9px] text-zinc-600">{project.lastUpdate}</span>
                 </div>
               </div>
             ))}
+            {data.openProjects
+              .filter((project) => taskSearch === "" ||
+                project.name.toLowerCase().includes(taskSearch.toLowerCase()) ||
+                project.assignedAgent?.name.toLowerCase().includes(taskSearch.toLowerCase()) ||
+                project.assignedAgent?.task.toLowerCase().includes(taskSearch.toLowerCase()) ||
+                project.ownerAgent?.name.toLowerCase().includes(taskSearch.toLowerCase()) ||
+                project.blockDetail?.toLowerCase().includes(taskSearch.toLowerCase())
+              ).length === 0 && (
+              <p className="font-mono text-xs text-zinc-500 text-center py-4">
+                No hay tareas {taskSearch && `que contengan "${taskSearch}"`}
+              </p>
+            )}
+          </div>
+
+          {/* Footer Stats */}
+          <div className="mt-3 pt-3 border-t border-zinc-800 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#39ff14]" />
+                <span className="font-mono text-[9px] text-zinc-500">{data.openProjects.filter(p => p.status === "active").length} Activos</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#ff006e]" />
+                <span className="font-mono text-[9px] text-zinc-500">{data.openProjects.filter(p => p.status === "blocked").length} Bloqueados</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                <span className="font-mono text-[9px] text-zinc-500">{data.openProjects.filter(p => p.status === "waiting").length} En espera</span>
+              </div>
+            </div>
+            <span className="font-mono text-[9px] text-zinc-600">{data.openProjects.length} tareas</span>
           </div>
         </SectionCard>
 
-        {/* Model Performance */}
-        <SectionCard title="Rendimiento de Modelos" maxHeight="320px">
+        {/* Script Improvements */}
+        <SectionCard
+          title="Mejoras de Scripts - LOG"
+          action={
+            <FilterTabs
+              options={[]}
+              value=""
+              onChange={() => {}}
+              searchValue={improvementSearch}
+              onSearchChange={setImprovementSearch}
+              searchPlaceholder="Buscar mejora..."
+              searchOnly
+            />
+          }
+          maxHeight="320px"
+        >
           <div className="space-y-3">
-            {data.modelPerformance.map((model) => (
-              <div key={model.model} className="flex items-center justify-between">
-                <span className="font-mono text-xs text-zinc-400">{model.model}</span>
-                <div className="flex items-center gap-4">
-                  <div className="w-24">
-                    <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-[#00d9ff] rounded-full"
-                        style={{ width: `${model.accuracy}%` }}
-                      />
+            {data.scriptImprovements
+              .filter((imp) => improvementSearch === "" ||
+                imp.name.toLowerCase().includes(improvementSearch.toLowerCase()) ||
+                imp.description.toLowerCase().includes(improvementSearch.toLowerCase()) ||
+                imp.agentsInvolved.some(a => a.name.toLowerCase().includes(improvementSearch.toLowerCase()))
+              )
+              .map((improvement) => {
+                const impactBadge = getImpactBadge(improvement.impact);
+                return (
+                  <div key={improvement.id} className="p-3 bg-zinc-900/50 rounded-sm border border-zinc-800 hover:border-zinc-700 transition-colors">
+                    {/* Header: Status + Name + Timestamp */}
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusColor(improvement.status)}`} />
+                        <span className="font-mono text-xs text-white truncate">{improvement.name}</span>
+                      </div>
+                      <span className="font-mono text-[9px] text-zinc-500 flex-shrink-0">{improvement.timestamp}</span>
+                    </div>
+
+                    {/* Description */}
+                    <p className="font-mono text-[10px] text-zinc-400 mb-2">{improvement.description}</p>
+
+                    {/* Agents Involved + Expected Outcome */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[9px] text-zinc-500">Agentes:</span>
+                        <div className="flex items-center gap-1">
+                          {improvement.agentsInvolved.map((agent, idx) => (
+                            <span
+                              key={idx}
+                              className="flex items-center gap-1 px-1.5 py-0.5 bg-zinc-800 rounded text-[9px]"
+                              title={agent.name}
+                            >
+                              <span>{agent.icon}</span>
+                              <span className="font-mono text-zinc-300">{agent.name}</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <span className="font-mono text-[10px] text-[#39ff14] text-right truncate">{improvement.expectedOutcome}</span>
                     </div>
                   </div>
-                  <span className="font-mono text-xs text-white w-10 text-right">{model.accuracy}%</span>
+                );
+              })}
+            {data.scriptImprovements
+              .filter((imp) => improvementSearch === "" ||
+                imp.name.toLowerCase().includes(improvementSearch.toLowerCase()) ||
+                imp.description.toLowerCase().includes(improvementSearch.toLowerCase()) ||
+                imp.agentsInvolved.some(a => a.name.toLowerCase().includes(improvementSearch.toLowerCase()))
+              ).length === 0 && (
+              <p className="font-mono text-xs text-zinc-500 text-center py-4">
+                No hay mejoras {improvementSearch && `que contengan "${improvementSearch}"`}
+              </p>
+            )}
+          </div>
+        </SectionCard>
+
+        {/* Code Reviews */}
+        <SectionCard
+          title="Code Reviews"
+          action={
+            <FilterTabs
+              options={[]}
+              value=""
+              onChange={() => {}}
+              searchValue={codeReviewSearch}
+              onSearchChange={setCodeReviewSearch}
+              searchPlaceholder="Buscar PR..."
+              searchOnly
+            />
+          }
+          maxHeight="320px"
+        >
+          <div className="space-y-2">
+            {data.codeReviews
+              .filter((review) => codeReviewSearch === "" ||
+                review.title.toLowerCase().includes(codeReviewSearch.toLowerCase()) ||
+                review.author.toLowerCase().includes(codeReviewSearch.toLowerCase()) ||
+                review.project.toLowerCase().includes(codeReviewSearch.toLowerCase()) ||
+                review.branch.toLowerCase().includes(codeReviewSearch.toLowerCase())
+              )
+              .map((review) => (
+              <div key={review.id} className="p-2.5 bg-zinc-900/50 rounded-sm border border-zinc-800 hover:border-zinc-700 transition-colors">
+                {/* Header: ID + Project + Title + Status */}
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <a
+                      href={review.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-[10px] text-[#00d9ff] bg-zinc-800 px-1.5 py-0.5 rounded flex-shrink-0 hover:bg-zinc-700 transition-colors"
+                    >
+                      {review.id}
+                    </a>
+                    <span className="font-mono text-[9px] text-[#00d9ff] bg-[#00d9ff]/10 border border-[#00d9ff]/30 px-1.5 py-0.5 rounded flex-shrink-0">
+                      {review.project}
+                    </span>
+                    <span className="font-mono text-xs text-white truncate">{review.title}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <div className={`w-2 h-2 rounded-full ${getReviewStatusColor(review.status)}`} />
+                    <span className={`font-mono text-[9px] ${
+                      review.status === "approved" ? "text-[#39ff14]" :
+                      review.status === "in_review" ? "text-[#00d9ff]" :
+                      review.status === "changes_requested" ? "text-[#ff006e]" : "text-amber-400"
+                    }`}>
+                      {getReviewStatusLabel(review.status)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Author + Branch */}
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-mono text-[10px] text-zinc-300">@{review.author}</span>
+                  <span className="text-zinc-700">→</span>
+                  <code className="font-mono text-[9px] text-zinc-500 truncate">{review.branch}</code>
+                </div>
+
+                {/* Stats Row */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 text-[9px] font-mono">
+                    <span className="text-zinc-500">{review.filesChanged} archivos</span>
+                    <span className="text-[#39ff14]">+{review.additions}</span>
+                    <span className="text-[#ff006e]">-{review.deletions}</span>
+                    <span className="text-zinc-500">{review.comments} comentarios</span>
+                  </div>
+                  <span className="font-mono text-[9px] text-zinc-600">{review.timestamp}</span>
                 </div>
               </div>
             ))}
+            {data.codeReviews
+              .filter((review) => codeReviewSearch === "" ||
+                review.title.toLowerCase().includes(codeReviewSearch.toLowerCase()) ||
+                review.author.toLowerCase().includes(codeReviewSearch.toLowerCase()) ||
+                review.project.toLowerCase().includes(codeReviewSearch.toLowerCase()) ||
+                review.branch.toLowerCase().includes(codeReviewSearch.toLowerCase())
+              ).length === 0 && (
+              <p className="font-mono text-xs text-zinc-500 text-center py-4">
+                No hay PRs {codeReviewSearch && `que contengan "${codeReviewSearch}"`}
+              </p>
+            )}
           </div>
-          <div className="mt-4 pt-4 border-t border-zinc-800 grid grid-cols-2 gap-4">
-            <div>
-              <p className="font-mono text-[10px] text-zinc-500">Tiempo Respuesta</p>
-              <p className="font-mono text-sm text-white">{(data.metrics.avgResponseTime / 1000).toFixed(1)}s</p>
+
+          {/* Footer Stats */}
+          <div className="mt-3 pt-3 border-t border-zinc-800 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#39ff14]" />
+                <span className="font-mono text-[9px] text-zinc-500">{data.codeReviews.filter(r => r.status === "approved").length} Aprobados</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#00d9ff]" />
+                <span className="font-mono text-[9px] text-zinc-500">{data.codeReviews.filter(r => r.status === "in_review").length} En revisión</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#ff006e]" />
+                <span className="font-mono text-[9px] text-zinc-500">{data.codeReviews.filter(r => r.status === "changes_requested").length} Con cambios</span>
+              </div>
             </div>
-            <div>
-              <p className="font-mono text-[10px] text-zinc-500">Uso de Tokens</p>
-              <p className="font-mono text-sm text-white">{(data.metrics.tokenUsageDaily / 1000).toFixed(0)}K/día</p>
-            </div>
+            <span className="font-mono text-[9px] text-zinc-600">{data.codeReviews.length} PRs activos</span>
           </div>
         </SectionCard>
       </div>

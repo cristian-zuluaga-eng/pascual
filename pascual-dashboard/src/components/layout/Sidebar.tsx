@@ -6,23 +6,22 @@ import { useDashboardConfig, DashboardConfig } from "@/lib/context/DashboardConf
 
 const navItems = [
   { name: "Home", path: "/dashboard", icon: "⊞", configKey: "home" as keyof DashboardConfig["views"] },
-  { name: "Administración", path: "/dashboard/administracion", icon: "⚙", configKey: null }, // Siempre visible
   { name: "Planificador", path: "/dashboard/tasks", icon: "☑", configKey: "planificador" as keyof DashboardConfig["views"] },
   { name: "Agents", path: "/dashboard/agents", icon: "◎", configKey: "agents" as keyof DashboardConfig["views"] },
-  { name: "Development", path: "/dashboard/development", icon: "⟨/⟩", configKey: "development" as keyof DashboardConfig["views"] },
+  { name: "Administración", path: "/dashboard/administracion", icon: "⚙", configKey: null }, // Siempre visible
 ];
 
 
 // Agentes Especializados - Individual Agent Dashboards
 const agentDashboardItems = [
-  { name: "Asistente", path: "/dashboard/agents/asistente", icon: "👤", configKey: "asistente" as keyof DashboardConfig["agentViews"] },
-  { name: "Nexus", path: "/dashboard/agents/nexus", icon: "🔧", configKey: "nexus" as keyof DashboardConfig["agentViews"] },
   { name: "Sentinel", path: "/dashboard/agents/sentinel", icon: "🛡️", configKey: "sentinel" as keyof DashboardConfig["agentViews"] },
+  { name: "Nexus", path: "/dashboard/agents/nexus", icon: "💻", configKey: "nexus" as keyof DashboardConfig["agentViews"] },
+  { name: "Cóndor360", path: "/dashboard/agents/condor360", icon: "📈", configKey: "condor360" as keyof DashboardConfig["agentViews"] },
+  { name: "Gambito", path: "/dashboard/agents/gambito", icon: "🎯", configKey: "gambito" as keyof DashboardConfig["agentViews"] },
   { name: "Scout", path: "/dashboard/agents/scout", icon: "🔍", configKey: "scout" as keyof DashboardConfig["agentViews"] },
   { name: "Audiovisual", path: "/dashboard/agents/audiovisual", icon: "🎬", configKey: "audiovisual" as keyof DashboardConfig["agentViews"] },
   { name: "Consultor", path: "/dashboard/agents/consultor", icon: "📚", configKey: "consultor" as keyof DashboardConfig["agentViews"] },
-  { name: "Gambito", path: "/dashboard/agents/gambito", icon: "🎯", configKey: "gambito" as keyof DashboardConfig["agentViews"] },
-  { name: "Cóndor360", path: "/dashboard/agents/condor360", icon: "📈", configKey: "condor360" as keyof DashboardConfig["agentViews"] },
+  { name: "Asistente", path: "/dashboard/agents/asistente", icon: "👤", configKey: "asistente" as keyof DashboardConfig["agentViews"] },
   { name: "Picasso", path: "/dashboard/agents/picasso", icon: "🎨", configKey: "picasso" as keyof DashboardConfig["agentViews"] },
 ];
 

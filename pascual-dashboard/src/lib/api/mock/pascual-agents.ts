@@ -187,6 +187,27 @@ export interface PipelineItem {
   priority: Priority;
 }
 
+export interface OpenProject {
+  id: string;
+  name: string;
+  description: string;
+  type: "agent" | "user"; // Proyecto de agente o de usuario
+  ownerAgent?: { // Agente dueño del proyecto (si type es "agent")
+    name: string;
+    icon: string;
+  };
+  status: "active" | "blocked" | "waiting";
+  assignedAgent?: {
+    name: string;
+    icon: string;
+    task: string; // Qué está haciendo el agente
+  };
+  blockReason?: "approval" | "resources" | "external" | "priority" | null;
+  blockDetail?: string; // Detalle específico del bloqueo
+  progress: number; // 0-100
+  lastUpdate: string;
+}
+
 export interface Commit {
   hash: string;
   message: string;
@@ -200,11 +221,41 @@ export interface ModelPerformance {
   avgResponseTime: number;
 }
 
+export interface ScriptImprovement {
+  id: string;
+  name: string;
+  description: string;
+  agentsInvolved: { name: string; icon: string }[];
+  expectedOutcome: string;
+  status: "pending" | "in_progress" | "completed" | "testing";
+  impact: "high" | "medium" | "low";
+  category: "performance" | "reliability" | "feature" | "security" | "optimization";
+  timestamp: string;
+}
+
+export interface CodeReview {
+  id: string;
+  title: string;
+  author: string;
+  branch: string;
+  project: string;
+  status: "approved" | "changes_requested" | "pending" | "in_review";
+  comments: number;
+  filesChanged: number;
+  additions: number;
+  deletions: number;
+  githubUrl: string;
+  timestamp: string;
+}
+
 export interface NexusData extends AgentBase {
   metrics: NexusMetrics;
   pipeline: PipelineItem[];
+  openProjects: OpenProject[];
   recentCommits: Commit[];
   modelPerformance: ModelPerformance[];
+  scriptImprovements: ScriptImprovement[];
+  codeReviews: CodeReview[];
 }
 
 export const nexusData: NexusData = {
@@ -258,6 +309,84 @@ export const nexusData: NexusData = {
     { id: "PR-8", title: "Security patches", stage: "review", priority: "critical" },
     { id: "v2.4", title: "Release v2.4.0", stage: "deploy", priority: "high" },
   ],
+  openProjects: [
+    {
+      id: "proj-1",
+      name: "Sistema de Autenticación v2",
+      description: "Migración del módulo de auth a OAuth 2.0",
+      type: "user",
+      status: "active",
+      assignedAgent: { name: "Implementador", icon: "⚙️", task: "Implementando refresh tokens" },
+      progress: 65,
+      lastUpdate: "hace 5m",
+    },
+    {
+      id: "proj-2",
+      name: "Dashboard Analytics",
+      description: "Nuevas métricas y visualizaciones",
+      type: "user",
+      status: "active",
+      assignedAgent: { name: "Designer", icon: "🎨", task: "Diseñando componentes de gráficos" },
+      progress: 40,
+      lastUpdate: "hace 12m",
+    },
+    {
+      id: "proj-3",
+      name: "API Gateway Optimization",
+      description: "Mejora de rendimiento en endpoints críticos",
+      type: "agent",
+      ownerAgent: { name: "Nexus", icon: "💻" },
+      status: "blocked",
+      blockReason: "approval",
+      blockDetail: "Esperando aprobación del arquitecto",
+      progress: 25,
+      lastUpdate: "hace 2h",
+    },
+    {
+      id: "proj-4",
+      name: "Mobile App Backend",
+      description: "APIs para la aplicación móvil",
+      type: "user",
+      status: "blocked",
+      blockReason: "resources",
+      blockDetail: "Todos los agentes ocupados",
+      progress: 10,
+      lastUpdate: "hace 1d",
+    },
+    {
+      id: "proj-5",
+      name: "Optimización de Caché",
+      description: "Mejora del sistema de caché distribuido",
+      type: "agent",
+      ownerAgent: { name: "Scout", icon: "🔍" },
+      status: "active",
+      assignedAgent: { name: "Scout", icon: "🔍", task: "Analizando patrones de uso" },
+      progress: 55,
+      lastUpdate: "hace 8m",
+    },
+    {
+      id: "proj-6",
+      name: "Sistema de Notificaciones",
+      description: "Push notifications y emails",
+      type: "user",
+      status: "waiting",
+      blockReason: "external",
+      blockDetail: "Esperando credenciales de Firebase",
+      progress: 80,
+      lastUpdate: "hace 4h",
+    },
+    {
+      id: "proj-7",
+      name: "Monitoreo de Seguridad",
+      description: "Sistema de detección de amenazas",
+      type: "agent",
+      ownerAgent: { name: "Sentinel", icon: "🛡️" },
+      status: "active",
+      assignedAgent: { name: "Sentinel", icon: "🛡️", task: "Configurando reglas de detección" },
+      progress: 30,
+      lastUpdate: "hace 15m",
+    },
+  ],
   recentCommits: [
     { hash: "a3f2b1", message: "feat: Add auth module", author: "Nexus", time: "hace 2h" },
     { hash: "b4c3d2", message: "fix: Login redirect issue", author: "Nexus", time: "hace 4h" },
@@ -268,6 +397,138 @@ export const nexusData: NexusData = {
     { model: "Claude Opus", accuracy: 89, avgResponseTime: 3200 },
     { model: "Claude Sonnet", accuracy: 94, avgResponseTime: 1800 },
     { model: "Claude Haiku", accuracy: 67, avgResponseTime: 450 },
+  ],
+  scriptImprovements: [
+    {
+      id: "1",
+      name: "Optimización del pipeline de procesamiento",
+      description: "Refactorización del flujo de datos entre agentes para reducir latencia",
+      agentsInvolved: [
+        { name: "Scout", icon: "🔍" },
+        { name: "Sentinel", icon: "🛡️" },
+      ],
+      expectedOutcome: "Reducción del 40% en tiempo de respuesta entre agentes",
+      status: "completed",
+      impact: "high",
+      category: "performance",
+      timestamp: "hace 2h",
+    },
+    {
+      id: "2",
+      name: "Sistema de caché distribuido",
+      description: "Implementación de caché compartido para consultas frecuentes",
+      agentsInvolved: [
+        { name: "Scout", icon: "🔍" },
+        { name: "Gambito", icon: "🎯" },
+        { name: "Cóndor360", icon: "📈" },
+      ],
+      expectedOutcome: "Mejora del 60% en consultas repetitivas y ahorro de tokens",
+      status: "in_progress",
+      impact: "high",
+      category: "optimization",
+      timestamp: "hace 4h",
+    },
+    {
+      id: "3",
+      name: "Validación de inputs mejorada",
+      description: "Nuevo sistema de sanitización y validación de entradas de usuario",
+      agentsInvolved: [
+        { name: "Sentinel", icon: "🛡️" },
+        { name: "Asistente", icon: "👤" },
+      ],
+      expectedOutcome: "Eliminación de vulnerabilidades de inyección y XSS",
+      status: "testing",
+      impact: "high",
+      category: "security",
+      timestamp: "hace 6h",
+    },
+    {
+      id: "4",
+      name: "Retry automático con backoff exponencial",
+      description: "Mecanismo de reintentos inteligente para llamadas a APIs externas",
+      agentsInvolved: [
+        { name: "Scout", icon: "🔍" },
+        { name: "Audiovisual", icon: "🎬" },
+      ],
+      expectedOutcome: "Reducción del 80% en fallos por timeout y rate limiting",
+      status: "completed",
+      impact: "medium",
+      category: "reliability",
+      timestamp: "hace 1d",
+    },
+    {
+      id: "5",
+      name: "Logging estructurado centralizado",
+      description: "Sistema unificado de logs con trazabilidad entre agentes",
+      agentsInvolved: [
+        { name: "Sentinel", icon: "🛡️" },
+        { name: "Nexus", icon: "🔧" },
+        { name: "Picasso", icon: "🎨" },
+      ],
+      expectedOutcome: "Debugging 3x más rápido y mejor visibilidad de errores",
+      status: "pending",
+      impact: "medium",
+      category: "feature",
+      timestamp: "hace 2d",
+    },
+  ],
+  codeReviews: [
+    {
+      id: "PR-142",
+      title: "Refactor authentication middleware",
+      author: "czuluaga",
+      branch: "feature/auth-refactor",
+      project: "pascual-core",
+      status: "approved",
+      comments: 8,
+      filesChanged: 12,
+      additions: 245,
+      deletions: 89,
+      githubUrl: "https://github.com/pascual-ai/core/pull/142",
+      timestamp: "hace 2h",
+    },
+    {
+      id: "PR-141",
+      title: "Add rate limiting to API",
+      author: "jrodriguez",
+      branch: "feature/rate-limit",
+      project: "pascual-api",
+      status: "in_review",
+      comments: 5,
+      filesChanged: 6,
+      additions: 124,
+      deletions: 12,
+      githubUrl: "https://github.com/pascual-ai/api/pull/141",
+      timestamp: "hace 4h",
+    },
+    {
+      id: "PR-140",
+      title: "Optimize prediction caching",
+      author: "mgarcia",
+      branch: "perf/prediction-cache",
+      project: "pascual-core",
+      status: "changes_requested",
+      comments: 12,
+      filesChanged: 8,
+      additions: 156,
+      deletions: 67,
+      githubUrl: "https://github.com/pascual-ai/core/pull/140",
+      timestamp: "hace 6h",
+    },
+    {
+      id: "PR-139",
+      title: "Update dashboard components",
+      author: "alopez",
+      branch: "ui/dashboard-update",
+      project: "pascual-dashboard",
+      status: "pending",
+      comments: 2,
+      filesChanged: 15,
+      additions: 320,
+      deletions: 145,
+      githubUrl: "https://github.com/pascual-ai/dashboard/pull/139",
+      timestamp: "hace 8h",
+    },
   ],
 };
 

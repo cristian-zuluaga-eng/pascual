@@ -8,7 +8,6 @@ export interface DashboardConfig {
     home: boolean;
     planificador: boolean;
     agents: boolean;
-    development: boolean;
     chatEmergente: boolean;
   };
   // Agentes individuales
@@ -36,7 +35,6 @@ const defaultConfig: DashboardConfig = {
     home: true,
     planificador: true,
     agents: true,
-    development: true,
     chatEmergente: true,
   },
   agentViews: {
