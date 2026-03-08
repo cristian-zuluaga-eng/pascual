@@ -1275,12 +1275,20 @@ export interface MarketSignal {
   target: number;
   current: number;
   upside: number;
+  confidence: number;
+  reason: string;
   action?: string;
 }
 
 export interface SectorPerformance {
   sector: string;
   change: number;
+}
+
+export interface ModelConfidence {
+  sector: string;
+  confidence: number;
+  conviction: ConvictionLevel; // high: >85%, medium: 65-85%, low: <65%
 }
 
 export interface FinancialNews {
@@ -1290,13 +1298,24 @@ export interface FinancialNews {
   timestamp: string;
 }
 
+export interface AIRecommendation {
+  id: string;
+  type: "buy" | "sell" | "hold";
+  asset: string;
+  reason: string;
+  confidence: number;
+  timestamp: string;
+}
+
 export interface Condor360Data extends AgentBase {
   metrics: Condor360Metrics;
   portfolioAllocation: PortfolioAllocation[];
   topHoldings: Holding[];
   marketSignals: MarketSignal[];
   sectorPerformance: SectorPerformance[];
+  modelConfidence: ModelConfidence[];
   news: FinancialNews[];
+  recommendations: AIRecommendation[];
   marketSentiment: "bullish" | "neutral" | "bearish";
   vix: number;
 }
@@ -1344,9 +1363,9 @@ export const condor360Data: Condor360Data = {
     { symbol: "GOOGL", percentage: 8.3, todayChange: -0.5 },
   ],
   marketSignals: [
-    { id: "1", conviction: "high", symbol: "NVDA", title: "Strong momentum", target: 950, current: 875, upside: 8.5 },
-    { id: "2", conviction: "medium", symbol: "AMZN", title: "Earnings catalyst", target: 195, current: 182, upside: 7.1 },
-    { id: "3", conviction: "low", symbol: "XYZ", title: "Deteriorating fundamentals", target: 0, current: 45, upside: -50, action: "Reduce position 50%" },
+    { id: "1", conviction: "high", symbol: "NVDA", title: "Strong momentum", target: 950, current: 875, upside: 8.5, confidence: 92, reason: "Fuerte momentum técnico y fundamentales sólidos" },
+    { id: "2", conviction: "medium", symbol: "AMZN", title: "Earnings catalyst", target: 195, current: 182, upside: 7.1, confidence: 74, reason: "Catalizador de earnings próximo" },
+    { id: "3", conviction: "low", symbol: "XYZ", title: "Deteriorating fundamentals", target: 0, current: 45, upside: -50, confidence: 68, reason: "Fundamentales deteriorándose", action: "Reduce position 50%" },
   ],
   sectorPerformance: [
     { sector: "Technology", change: 2.1 },
@@ -1356,10 +1375,29 @@ export const condor360Data: Condor360Data = {
     { sector: "Consumer", change: -0.2 },
     { sector: "Utilities", change: -0.5 },
   ],
+  modelConfidence: [
+    { sector: "Tecnología", confidence: 92, conviction: "high" },
+    { sector: "Energía", confidence: 87, conviction: "high" },
+    { sector: "Petróleo", confidence: 78, conviction: "medium" },
+    { sector: "Divisas", confidence: 84, conviction: "medium" },
+    { sector: "Salud", confidence: 71, conviction: "medium" },
+    { sector: "Finanzas", confidence: 89, conviction: "high" },
+    { sector: "Consumo", confidence: 68, conviction: "medium" },
+    { sector: "Inmobiliario", confidence: 62, conviction: "low" },
+    { sector: "Criptomonedas", confidence: 58, conviction: "low" },
+    { sector: "Materiales", confidence: 74, conviction: "medium" },
+    { sector: "Industriales", confidence: 81, conviction: "medium" },
+    { sector: "Telecomunicaciones", confidence: 66, conviction: "medium" },
+  ],
   news: [
     { id: "1", title: "Fed signals rate pause", impact: "positive", timestamp: "hace 2h" },
     { id: "2", title: "NVDA beats estimates", impact: "positive", timestamp: "hace 5h" },
     { id: "3", title: "Oil prices rising", impact: "neutral", timestamp: "hace 8h" },
+  ],
+  recommendations: [
+    { id: "1", type: "buy", asset: "NVDA", reason: "Fuerte momentum + catalizador de earnings", confidence: 87, timestamp: "hace 1h" },
+    { id: "2", type: "hold", asset: "AAPL", reason: "Consolidación antes de nuevo ciclo de iPhone", confidence: 72, timestamp: "hace 3h" },
+    { id: "3", type: "sell", asset: "INTC", reason: "Pérdida de market share en servidores", confidence: 65, timestamp: "hace 5h" },
   ],
   marketSentiment: "bullish",
   vix: 14.2,

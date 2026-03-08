@@ -5,6 +5,7 @@ import { NavLink } from "../ui/NavLink";
 
 const navItems = [
   { name: "Home", path: "/dashboard", icon: "⊞" },
+  { name: "Planificador", path: "/dashboard/tasks", icon: "☑" },
   { name: "Agents", path: "/dashboard/agents", icon: "◎" },
   { name: "Security", path: "/dashboard/security", icon: "⛊" },
   { name: "Finance", path: "/dashboard/finance", icon: "◈" },
@@ -13,14 +14,6 @@ const navItems = [
   { name: "Templates", path: "/dashboard/templates", icon: "⬡" },
 ];
 
-// Mando de Control - Agent Ecosystem Navigation
-const controlCenterItems = [
-  { name: "Control Center", path: "/dashboard/control-center", icon: "⌘" },
-  { name: "Task Queue", path: "/dashboard/control-center/tasks", icon: "☷" },
-  { name: "Exec Logs", path: "/dashboard/control-center/logs", icon: "▤" },
-  { name: "Agent Details", path: "/dashboard/control-center/agent-details", icon: "◉" },
-  { name: "Orchestration", path: "/dashboard/control-center/orchestration", icon: "⚙" },
-];
 
 // Agentes Especializados - Individual Agent Dashboards
 const agentDashboardItems = [
@@ -83,54 +76,45 @@ export function Sidebar({ metrics }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 p-2 overflow-y-auto">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.path}
-            href={item.path}
-            icon={item.icon}
-            collapsed={collapsed}
-          >
-            {item.name}
-          </NavLink>
-        ))}
+        {/* Main Navigation Items */}
+        {navItems.map((item) => {
+          // Renderizamos los items de navegación principal
+          const isAgentsItem = item.name === "Agents";
 
-        {/* Mando de Control Section */}
-        <div className="mt-4 pt-4 border-t border-zinc-800">
-          {!collapsed && (
-            <div className="px-3 py-2 text-xs font-mono text-zinc-500 uppercase tracking-wider">
-              Mando de Control
-            </div>
-          )}
-          {controlCenterItems.map((item) => (
-            <NavLink
-              key={item.path}
-              href={item.path}
-              icon={item.icon}
-              collapsed={collapsed}
-            >
-              {item.name}
-            </NavLink>
-          ))}
-        </div>
+          return (
+            <div key={item.path}>
+              <NavLink
+                href={item.path}
+                icon={item.icon}
+                collapsed={collapsed}
+              >
+                {item.name}
+              </NavLink>
 
-        {/* Agentes Especializados Section */}
-        <div className="mt-4 pt-4 border-t border-zinc-800">
-          {!collapsed && (
-            <div className="px-3 py-2 text-xs font-mono text-zinc-500 uppercase tracking-wider">
-              Agentes
+              {/* Si es Agents, insertamos la sección de agentes especializados justo después */}
+              {isAgentsItem && (
+                <div className="ml-4">
+                  {!collapsed && (
+                    <div className="px-3 py-2 text-xs font-mono text-zinc-500 uppercase tracking-wider">
+                      Agentes
+                    </div>
+                  )}
+                  {agentDashboardItems.map((agentItem) => (
+                    <NavLink
+                      key={agentItem.path}
+                      href={agentItem.path}
+                      icon={agentItem.icon}
+                      collapsed={collapsed}
+                    >
+                      {agentItem.name}
+                    </NavLink>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-          {agentDashboardItems.map((item) => (
-            <NavLink
-              key={item.path}
-              href={item.path}
-              icon={item.icon}
-              collapsed={collapsed}
-            >
-              {item.name}
-            </NavLink>
-          ))}
-        </div>
+          );
+        })}
+
       </nav>
 
       {/* System Metrics Footer */}

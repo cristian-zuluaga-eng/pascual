@@ -14,9 +14,15 @@ import {
 import { useGrowl } from "@/components/growl";
 import { condor360Data } from "@/lib/api/mock/pascual-agents";
 
+type TrendFilter = "all" | "high" | "medium" | "low";
+type ConvictionFilter = "all" | "high" | "medium" | "low";
+
 export default function Condor360Dashboard() {
   const [data] = useState(condor360Data);
   const { sendToAgent } = useGrowl();
+  const [trendFilter, setTrendFilter] = useState<TrendFilter>("all");
+  const [trendSearch, setTrendSearch] = useState("");
+  const [confidenceSearch, setConfidenceSearch] = useState("");
 
   // Usar el hook reutilizable para configuración del agente
   const {
@@ -28,12 +34,21 @@ export default function Condor360Dashboard() {
     closeConfig,
   } = useAgentConfig("condor360");
 
+  // Filtrar señales de mercado
+  const filteredSignals = data.marketSignals.filter((signal) => {
+    const matchesFilter = trendFilter === "all" || signal.conviction === trendFilter;
+    const matchesSearch = trendSearch === "" ||
+      signal.symbol.toLowerCase().includes(trendSearch.toLowerCase()) ||
+      signal.reason.toLowerCase().includes(trendSearch.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
+
   const getConvictionStyle = (conviction: string) => {
     switch (conviction) {
-      case "high": return { border: "border-[#39ff14]", bg: "bg-[#39ff14]/10", badge: "success" as const };
-      case "medium": return { border: "border-[#00d9ff]", bg: "bg-[#00d9ff]/10", badge: "info" as const };
-      case "low": return { border: "border-[#ff006e]", bg: "bg-[#ff006e]/10", badge: "danger" as const };
-      default: return { border: "border-zinc-700", bg: "bg-zinc-900", badge: "default" as const };
+      case "high": return { border: "border-transparent", bg: "bg-[#39ff14]/10", badge: "success" as const };
+      case "medium": return { border: "border-transparent", bg: "bg-zinc-800", badge: "info" as const };
+      case "low": return { border: "border-transparent", bg: "bg-[#ff006e]/10", badge: "danger" as const };
+      default: return { border: "border-transparent", bg: "bg-zinc-800", badge: "default" as const };
     }
   };
 
@@ -51,15 +66,6 @@ export default function Condor360Dashboard() {
     }
   };
 
-  const getSentimentStyle = (sentiment: string) => {
-    switch (sentiment) {
-      case "bullish": return { color: "text-[#39ff14]", icon: "▲" };
-      case "bearish": return { color: "text-[#ff006e]", icon: "▼" };
-      default: return { color: "text-zinc-400", icon: "●" };
-    }
-  };
-
-  const sentimentStyle = getSentimentStyle(data.marketSentiment);
 
   return (
     <div className="space-y-4">
@@ -169,68 +175,170 @@ export default function Condor360Dashboard() {
           </div>
         </SectionCard>
 
-        {/* Market Signals */}
+        {/* Portfolio Trends */}
         <SectionCard
-          title="Señales de Mercado"
+          title="Tendencia de Portafolio"
           action={
-            <Badge variant="info">{data.metrics.signalsActive} activas</Badge>
+            <Badge variant="info">{filteredSignals.length} activas</Badge>
           }
-          maxHeight="320px"
+          maxHeight="380px"
         >
-          <div className="space-y-3">
-            {data.marketSignals.map((signal) => {
+          {/* Filters */}
+          <div className="flex items-center gap-2 mb-3">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={trendSearch}
+              onChange={(e) => setTrendSearch(e.target.value)}
+              className="flex-1 px-2 py-1 bg-zinc-800 border border-zinc-700 rounded-sm font-mono text-[10px] text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#00d9ff]"
+            />
+            <div className="flex items-center gap-1">
+              {(["all", "high", "medium", "low"] as TrendFilter[]).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setTrendFilter(filter)}
+                  className={`px-2 py-1 font-mono text-[9px] rounded-sm transition-colors ${
+                    trendFilter === filter
+                      ? "bg-[#00d9ff]/20 text-[#00d9ff] border border-[#00d9ff]/30"
+                      : "bg-zinc-800 text-zinc-500 border border-zinc-700 hover:text-zinc-300"
+                  }`}
+                >
+                  {filter === "all" ? "todos" : filter === "high" ? "alza" : filter === "medium" ? "neutro" : "baja"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {filteredSignals.map((signal) => {
               const style = getConvictionStyle(signal.conviction);
               return (
                 <div
                   key={signal.id}
-                  className={`p-3 rounded-sm border ${style.border} ${style.bg}`}
+                  className={`p-2 rounded-sm border ${style.border} ${style.bg}`}
                 >
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-bold text-white">{signal.symbol}</span>
-                      <Badge variant={style.badge} className="text-[9px]">
-                        {signal.conviction.toUpperCase()}
-                      </Badge>
+                      <span className="font-mono text-xs font-bold text-white">{signal.symbol}</span>
+                      {signal.conviction === "high" && (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-[#39ff14]">
+                          <path d="M5 19L19 5M19 5H8M19 5V16" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                      {signal.conviction === "low" && (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-[#ff006e]">
+                          <path d="M5 5L19 19M19 19H8M19 19V8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
                     </div>
-                    {signal.action && (
-                      <Badge variant="warning" className="text-[9px]">{signal.action}</Badge>
-                    )}
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1">
+                        <span className={`font-mono text-xs font-bold ${signal.upside > 0 ? "text-[#39ff14]" : "text-[#ff006e]"}`}>
+                          {signal.upside > 0 ? "+" : ""}{signal.upside}%
+                        </span>
+                        <span className="font-mono text-[9px] text-zinc-500">impacto</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="font-mono text-xs font-bold text-[#00d9ff]">
+                          {signal.confidence}%
+                        </span>
+                        <span className="font-mono text-[9px] text-zinc-500">confianza</span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="font-mono text-xs text-zinc-300 mb-2">{signal.title}</p>
-                  {signal.upside > 0 ? (
-                    <div className="flex items-center justify-between text-[10px] font-mono">
-                      <span className="text-zinc-500">Target: ${signal.target} | Actual: ${signal.current}</span>
-                      <span className="text-[#39ff14]">+{signal.upside}% potencial</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between text-[10px] font-mono">
-                      <span className="text-zinc-500">Actual: ${signal.current}</span>
-                      <span className="text-[#ff006e]">{signal.upside}% riesgo</span>
-                    </div>
-                  )}
+                  <p className="font-mono text-[10px] text-zinc-400 mt-1">{signal.reason}</p>
                 </div>
               );
             })}
+            {filteredSignals.length === 0 && (
+              <p className="font-mono text-[10px] text-zinc-500 text-center py-4">Sin resultados</p>
+            )}
           </div>
         </SectionCard>
       </div>
 
-      {/* Sectors, News & Sentiment */}
+      {/* AI Recommendations, Sectors, News & Sentiment */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Sector Performance */}
-        <SectionCard title="Rendimiento por Sector" maxHeight="320px">
+        {/* Oportunidades */}
+        <SectionCard title="Oportunidades" maxHeight="320px">
           <div className="space-y-2">
-            {data.sectorPerformance.map((sector) => (
+            {data.recommendations.map((rec) => (
               <div
-                key={sector.sector}
-                className="flex items-center justify-between p-2 bg-zinc-900 rounded-sm"
+                key={rec.id}
+                className="p-2 bg-zinc-900 rounded-sm"
               >
-                <span className="font-mono text-xs text-zinc-400">{sector.sector}</span>
-                <span className={`font-mono text-sm font-bold ${getChangeColor(sector.change)}`}>
-                  {sector.change > 0 ? "+" : ""}{sector.change}%
-                </span>
+                <div className="flex items-center gap-2 mb-1">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-[#00d9ff]">
+                    <path d="M8 17l-5 5M16 7l5-5M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span className="font-mono text-xs font-bold text-white">{rec.asset}</span>
+                  <div className="flex items-center gap-1 ml-auto">
+                    <span className="font-mono text-xs font-bold text-[#00d9ff]">{rec.confidence}%</span>
+                    <span className="font-mono text-[9px] text-zinc-500">confianza</span>
+                  </div>
+                </div>
+                <p className="font-mono text-[10px] text-zinc-400">{rec.reason}</p>
               </div>
             ))}
+          </div>
+        </SectionCard>
+
+        {/* Model Confidence */}
+        <SectionCard title="Confianza del Modelo" maxHeight="320px">
+          {/* Search Filter */}
+          <div className="mb-3">
+            <input
+              type="text"
+              placeholder="Buscar sector..."
+              value={confidenceSearch}
+              onChange={(e) => setConfidenceSearch(e.target.value)}
+              className="w-full px-2 py-1 bg-zinc-800 border border-zinc-700 rounded-sm font-mono text-[10px] text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#00d9ff]"
+            />
+          </div>
+          <div className="space-y-2">
+            {data.modelConfidence
+              .filter((item) =>
+                confidenceSearch === "" ||
+                item.sector.toLowerCase().includes(confidenceSearch.toLowerCase())
+              )
+              .map((item) => {
+                const getConfidenceColor = (confidence: number) => {
+                  if (confidence > 85) return "text-[#39ff14]"; // Alta
+                  if (confidence >= 65) return "text-[#ffaa00]"; // Media
+                  return "text-[#ff006e]"; // Baja
+                };
+                const getConfidenceLabel = (conviction: string) => {
+                  switch (conviction) {
+                    case "high": return { text: "Alta", color: "text-[#39ff14]", bg: "bg-[#39ff14]/10" };
+                    case "medium": return { text: "Media", color: "text-[#ffaa00]", bg: "bg-[#ffaa00]/10" };
+                    case "low": return { text: "Baja", color: "text-[#ff006e]", bg: "bg-[#ff006e]/10" };
+                    default: return { text: "N/A", color: "text-zinc-400", bg: "bg-zinc-800" };
+                  }
+                };
+                const label = getConfidenceLabel(item.conviction);
+                return (
+                  <div
+                    key={item.sector}
+                    className="flex items-center justify-between p-2 bg-zinc-900 rounded-sm"
+                  >
+                    <span className="font-mono text-xs text-zinc-400 flex-1">{item.sector}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`font-mono text-sm font-bold ${getConfidenceColor(item.confidence)}`}>
+                        {item.confidence}%
+                      </span>
+                      <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded ${label.bg} ${label.color}`}>
+                        {label.text}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            {data.modelConfidence.filter((item) =>
+              confidenceSearch === "" ||
+              item.sector.toLowerCase().includes(confidenceSearch.toLowerCase())
+            ).length === 0 && (
+              <p className="font-mono text-[10px] text-zinc-500 text-center py-4">Sin resultados</p>
+            )}
           </div>
         </SectionCard>
 
@@ -254,35 +362,6 @@ export default function Condor360Dashboard() {
           </div>
         </SectionCard>
 
-        {/* Market Sentiment */}
-        <SectionCard title="Sentimiento del Mercado" maxHeight="320px">
-          <div className="text-center p-4">
-            <p className={`font-mono text-4xl ${sentimentStyle.color}`}>{sentimentStyle.icon}</p>
-            <p className={`font-mono text-xl font-bold ${sentimentStyle.color} capitalize mt-2`}>
-              {data.marketSentiment === "bullish" ? "Alcista" : data.marketSentiment === "bearish" ? "Bajista" : "Neutral"}
-            </p>
-          </div>
-          <div className="space-y-3 pt-4 border-t border-zinc-800">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs text-zinc-500">VIX (Índice de Miedo)</span>
-              <span className={`font-mono text-sm ${data.vix < 20 ? "text-[#39ff14]" : data.vix < 30 ? "text-[#ffaa00]" : "text-[#ff006e]"}`}>
-                {data.vix}
-              </span>
-            </div>
-            <ProgressBar
-              label=""
-              value={data.vix}
-              max={50}
-              color={data.vix < 20 ? "#39ff14" : data.vix < 30 ? "#ffaa00" : "#ff006e"}
-              showValue={false}
-            />
-            <p className="font-mono text-[10px] text-zinc-500 text-center">
-              {data.vix < 20 ? "Baja volatilidad - Mercados tranquilos" :
-               data.vix < 30 ? "Volatilidad moderada" :
-               "Alta volatilidad - Miedo en mercados"}
-            </p>
-          </div>
-        </SectionCard>
       </div>
 
       {/* Agent Configuration Modal */}
