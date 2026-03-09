@@ -5,19 +5,30 @@ import { Section, Grid } from "@/components/layout/MainContent";
 import { AgentCard, Agent } from "@/components/dashboard/AgentCard";
 import { mockAgents } from "@/lib/api/mock/agents";
 import { AgentConfigModal, AgentHeader } from "@/components/agents";
+import { useDashboardConfig } from "@/lib/context/DashboardConfigContext";
 
 export default function AgentsPage() {
   const [agents, setAgents] = useState<Agent[]>(mockAgents);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const { config } = useDashboardConfig();
+
+  // Filtrar agentes según configuración de agentViews
+  const filteredAgents = agents.filter((agent) => {
+    // Pascual siempre se muestra
+    if (agent.id === "pascual") return true;
+    // Para los demás, verificar si están habilitados en agentViews
+    const agentKey = agent.id as keyof typeof config.agentViews;
+    return config.agentViews[agentKey] !== false;
+  });
 
   // Separar Pascual de los demás agentes
-  const pascualAgent = agents.find((a) => a.id === "pascual");
-  const otherAgents = agents.filter((a) => a.id !== "pascual");
+  const pascualAgent = filteredAgents.find((a) => a.id === "pascual");
+  const otherAgents = filteredAgents.filter((a) => a.id !== "pascual");
 
-  const activeCount = agents.filter((a) => a.status === "active").length;
-  const busyCount = agents.filter((a) => a.status === "busy").length;
-  const offlineCount = agents.filter((a) => a.status === "offline").length;
-  const totalSubAgents = agents.reduce((acc, agent) => acc + (agent.subAgents?.length || 0), 0);
+  const activeCount = filteredAgents.filter((a) => a.status === "active").length;
+  const busyCount = filteredAgents.filter((a) => a.status === "busy").length;
+  const offlineCount = filteredAgents.filter((a) => a.status === "offline").length;
+  const totalSubAgents = filteredAgents.reduce((acc, agent) => acc + (agent.subAgents?.length || 0), 0);
 
   const handleAgentModelChange = (_agentId: string, newModel: string) => {
     if (selectedAgent) {
@@ -69,17 +80,20 @@ export default function AgentsPage() {
         }}
         kpis={[
           {
+            id: "total",
             label: "Total",
-            value: agents.length,
+            value: filteredAgents.length,
             status: "neutral",
           },
           {
+            id: "subagents",
             label: "Sub-agents",
             value: totalSubAgents,
             values: { "24h": totalSubAgents, "7d": totalSubAgents, "1m": totalSubAgents - 2, "1y": totalSubAgents - 5 },
             status: "neutral",
           },
           {
+            id: "active",
             label: "Active",
             value: activeCount,
             values: { "24h": activeCount, "7d": activeCount - 1, "1m": activeCount - 2, "1y": activeCount - 3 },
@@ -87,12 +101,14 @@ export default function AgentsPage() {
             statuses: { "24h": "good", "7d": "good", "1m": "warning", "1y": "warning" },
           },
           {
+            id: "busy",
             label: "Busy",
             value: busyCount,
             values: { "24h": busyCount, "7d": busyCount + 1, "1m": busyCount + 2, "1y": busyCount + 1 },
             status: "warning",
           },
           {
+            id: "offline",
             label: "Offline",
             value: offlineCount,
             values: { "24h": offlineCount, "7d": offlineCount, "1m": offlineCount + 1, "1y": offlineCount + 2 },

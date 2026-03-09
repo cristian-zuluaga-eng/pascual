@@ -170,8 +170,8 @@ export const mockAgents: Agent[] = [
     ],
   },
   {
-    id: "optimus",
-    name: "Optimus",
+    id: "picasso",
+    name: "Picasso",
     icon: "🎨",
     description: "Sistema de Interfaces y Experiencia de Usuario - Diseño UX/UI, accesibilidad y rendimiento web",
     model: "Claude Opus",
@@ -200,5 +200,5 @@ export const agentCapabilities: Record<string, string[]> = {
   consultor: ["Financial Planning", "Career Advice", "Parenting Tips", "Wellness Coaching"],
   gambito: ["Statistical Modeling", "Odds Analysis", "Bankroll Management", "Performance Tracking"],
   condor360: ["Technical Analysis", "Fundamental Analysis", "Portfolio Optimization", "Market Signals"],
-  optimus: ["UI/UX Design", "Accessibility Audit", "Performance Optimization", "Component Library"],
+  picasso: ["UI/UX Design", "Accessibility Audit", "Performance Optimization", "Component Library"],
 };

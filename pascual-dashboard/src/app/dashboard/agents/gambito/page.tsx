@@ -13,10 +13,12 @@ import {
 } from "@/components/agents";
 import { useGrowl } from "@/components/growl";
 import { gambitoData } from "@/lib/api/mock/pascual-agents";
+import { useDashboardConfig } from "@/lib/context/DashboardConfigContext";
 
 export default function GambitoDashboard() {
   const [data] = useState(gambitoData);
   const { sendToAgent } = useGrowl();
+  const { config } = useDashboardConfig();
   const [sportFilter, setSportFilter] = useState<string>("all");
   const [predictionSearch, setPredictionSearch] = useState("");
 
@@ -63,6 +65,7 @@ export default function GambitoDashboard() {
         lema={data.lema}
         status={data.status}
         showTimeRange={true}
+        kpiVisibility={config.kpis.gambito}
         usage={{
           data: [35, 42, 38, 55, 62, 58, 70, 78, 72, 85],
           dataByRange: {
@@ -75,6 +78,7 @@ export default function GambitoDashboard() {
         }}
         kpis={[
           {
+            id: "roi",
             label: "ROI",
             value: `${data.metrics.roi > 0 ? "+" : ""}${data.metrics.roi}%`,
             values: { "24h": `${data.metrics.roi > 0 ? "+" : ""}${data.metrics.roi}%`, "7d": "+9.5%", "1m": "+7.2%", "1y": "+12.8%" },
@@ -82,6 +86,7 @@ export default function GambitoDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "good" },
           },
           {
+            id: "winRate",
             label: "Win Rate",
             value: `${data.metrics.winRate}%`,
             values: { "24h": `${data.metrics.winRate}%`, "7d": "58%", "1m": "56%", "1y": "54%" },
@@ -89,6 +94,7 @@ export default function GambitoDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "warning" },
           },
           {
+            id: "precision",
             label: "Precisión",
             value: `${data.metrics.modelAccuracy}%`,
             values: { "24h": `${data.metrics.modelAccuracy}%`, "7d": "73%", "1m": "71%", "1y": "69%" },
@@ -96,6 +102,7 @@ export default function GambitoDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "warning" },
           },
           {
+            id: "sharpe",
             label: "Sharpe",
             value: data.metrics.sharpeRatio.toFixed(2),
             values: { "24h": data.metrics.sharpeRatio.toFixed(2), "7d": "1.35", "1m": "1.22", "1y": "1.48" },
@@ -103,6 +110,7 @@ export default function GambitoDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "good" },
           },
           {
+            id: "drawdown",
             label: "Drawdown",
             value: `${data.metrics.maxDrawdown}%`,
             values: { "24h": `${data.metrics.maxDrawdown}%`, "7d": "-6.5%", "1m": "-9.2%", "1y": "-12.5%" },
@@ -262,7 +270,7 @@ export default function GambitoDashboard() {
       {/* Bankroll + Market Performance + Model Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Bankroll */}
-        <SectionCard title="Bankroll" maxHeight="320px">
+        <SectionCard title="Balance" visible={config.grids.gambito.bankroll} maxHeight="320px">
           <div className="space-y-4">
             <div className="text-center p-4 bg-zinc-900 rounded-sm">
               <p className="font-mono text-[10px] text-zinc-500 mb-1">ACTUAL</p>
@@ -299,7 +307,7 @@ export default function GambitoDashboard() {
         </SectionCard>
 
         {/* Sport Precision */}
-        <SectionCard title="Precisión por Deporte" maxHeight="320px">
+        <SectionCard title="Precisión por Deporte" visible={config.grids.gambito.precisionDeporte} maxHeight="320px">
           <div className="space-y-2">
             {data.sportConfidence.map((sport) => (
               <div
@@ -322,7 +330,7 @@ export default function GambitoDashboard() {
         </SectionCard>
 
         {/* Model Stats */}
-        <SectionCard title="Rendimiento de Modelos" maxHeight="320px">
+        <SectionCard title="Rendimiento de Modelos" visible={config.grids.gambito.rendimientoModelos} maxHeight="320px">
           <div className="space-y-3">
             {data.modelStats.map((model) => (
               <div key={model.name} className="p-2 bg-zinc-900 rounded-sm">

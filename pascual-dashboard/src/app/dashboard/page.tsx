@@ -34,9 +34,9 @@ export default function DashboardPage() {
   return (
     <div className="h-full flex flex-col gap-6">
       {/* Main content grid */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
+      <div className={`flex-1 grid grid-cols-1 ${config.grids.home.actividadReciente ? "lg:grid-cols-3" : ""} gap-6 min-h-0`}>
         {/* Left: Chat */}
-        <div className="lg:col-span-2 flex flex-col min-h-0">
+        <div className={`${config.grids.home.actividadReciente ? "lg:col-span-2" : ""} flex flex-col min-h-0`}>
           {/* Chat Section */}
           <Section className="flex-1 flex flex-col min-h-0">
             <SectionHeader title="Chat con PASCUAL" />
@@ -50,9 +50,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Right: Activity Feed */}
-        <div className="flex flex-col min-h-0 h-full">
-          <ActivityFeed activities={mockActivities} className="flex-1 min-h-0" />
-        </div>
+        {config.grids.home.actividadReciente && (
+          <div className="flex flex-col min-h-0 h-full">
+            <ActivityFeed activities={mockActivities} className="flex-1 min-h-0" />
+          </div>
+        )}
       </div>
     </div>
   );

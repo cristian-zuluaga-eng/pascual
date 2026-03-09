@@ -14,10 +14,12 @@ import {
 } from "@/components/agents";
 import { useGrowl } from "@/components/growl";
 import { nexusData, ScriptImprovement, CodeReview, OpenProject } from "@/lib/api/mock/pascual-agents";
+import { useDashboardConfig } from "@/lib/context/DashboardConfigContext";
 
 export default function NexusDashboard() {
   const [data] = useState(nexusData);
   const { sendToAgent } = useGrowl();
+  const { config } = useDashboardConfig();
 
   // Usar el hook reutilizable para configuración del agente
   const {
@@ -131,6 +133,7 @@ export default function NexusDashboard() {
         lema={data.lema}
         status={data.status}
         showTimeRange={true}
+        kpiVisibility={config.kpis.nexus}
         usage={{
           data: [45, 52, 48, 65, 72, 68, 75, 82, 78, 85],
           dataByRange: {
@@ -143,6 +146,7 @@ export default function NexusDashboard() {
         }}
         kpis={[
           {
+            id: "eficienciaIA",
             label: "Eficiencia IA",
             value: "94%",
             values: { "24h": "94%", "7d": "92%", "1m": "89%", "1y": "85%" },
@@ -150,6 +154,7 @@ export default function NexusDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "good" },
           },
           {
+            id: "tests",
             label: "Tests",
             value: `${data.metrics.testCoverage}%`,
             values: { "24h": `${data.metrics.testCoverage}%`, "7d": "83%", "1m": "80%", "1y": "75%" },
@@ -157,6 +162,7 @@ export default function NexusDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "warning" },
           },
           {
+            id: "docs",
             label: "Docs",
             value: `${data.metrics.documentationCoverage}%`,
             values: { "24h": `${data.metrics.documentationCoverage}%`, "7d": "65%", "1m": "60%", "1y": "55%" },
@@ -164,6 +170,7 @@ export default function NexusDashboard() {
             statuses: { "24h": "warning", "7d": "warning", "1m": "warning", "1y": "warning" },
           },
           {
+            id: "arquitectura",
             label: "Arquitectura",
             value: `${data.metrics.architectureCoherence}%`,
             values: { "24h": `${data.metrics.architectureCoherence}%`, "7d": "82%", "1m": "78%", "1y": "72%" },
@@ -171,6 +178,7 @@ export default function NexusDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "warning", "1y": "warning" },
           },
           {
+            id: "prsAbiertos",
             label: "PRs Abiertos",
             value: data.metrics.prsOpen,
             values: { "24h": data.metrics.prsOpen, "7d": "8", "1m": "12", "1y": "6" },
@@ -178,6 +186,7 @@ export default function NexusDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "warning", "1y": "good" },
           },
           {
+            id: "bugs",
             label: "Bugs",
             value: data.metrics.bugsOpen,
             values: { "24h": data.metrics.bugsOpen, "7d": "5", "1m": "8", "1y": "3" },
@@ -193,7 +202,7 @@ export default function NexusDashboard() {
         onSettings={openConfig}
       />
 
-      {/* Canvas + Pipeline + Code Quality - Grid 2x2 */}
+      {/* Canvas + Grids */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Canvas - Lienzo de respuestas de Pascual */}
         <Canvas
@@ -211,6 +220,7 @@ export default function NexusDashboard() {
         {/* Tareas en Curso */}
         <SectionCard
           title="Tareas en Curso"
+          visible={config.grids.nexus.tareasEnCurso}
           action={
             <FilterTabs
               options={[]}
@@ -307,6 +317,7 @@ export default function NexusDashboard() {
         {/* Script Improvements */}
         <SectionCard
           title="Mejoras de Scripts - LOG"
+          visible={config.grids.nexus.mejorasScripts}
           action={
             <FilterTabs
               options={[]}
@@ -381,6 +392,7 @@ export default function NexusDashboard() {
         {/* Code Reviews */}
         <SectionCard
           title="Code Reviews"
+          visible={config.grids.nexus.codeReviews}
           action={
             <FilterTabs
               options={[]}

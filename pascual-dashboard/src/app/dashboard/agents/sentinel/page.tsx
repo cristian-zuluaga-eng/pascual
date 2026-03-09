@@ -16,12 +16,14 @@ import {
 import { HeatMap } from "@/components/charts/HeatMap";
 import { useGrowl } from "@/components/growl";
 import { sentinelData } from "@/lib/api/mock/pascual-agents";
+import { useDashboardConfig } from "@/lib/context/DashboardConfigContext";
 
 export default function SentinelDashboard() {
   const [data] = useState(sentinelData);
   const [threatSearch, setThreatSearch] = useState("");
   const [improvementSearch, setImprovementSearch] = useState("");
   const { sendToAgent } = useGrowl();
+  const { config } = useDashboardConfig();
 
   // Usar el hook reutilizable para configuración del agente
   const {
@@ -79,6 +81,7 @@ export default function SentinelDashboard() {
         lema={data.lema}
         status={data.status}
         showTimeRange={true}
+        kpiVisibility={config.kpis.sentinel}
         usage={{
           data: [30, 35, 42, 38, 45, 52, 48, 55, 50, 47],
           dataByRange: {
@@ -91,6 +94,7 @@ export default function SentinelDashboard() {
         }}
         kpis={[
           {
+            id: "seguridad",
             label: "Seguridad",
             value: `${data.metrics.securityScore}%`,
             values: { "24h": `${data.metrics.securityScore}%`, "7d": "92%", "1m": "90%", "1y": "88%" },
@@ -98,6 +102,7 @@ export default function SentinelDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "warning" },
           },
           {
+            id: "uptime",
             label: "Uptime",
             value: `${data.metrics.uptime}%`,
             values: { "24h": `${data.metrics.uptime}%`, "7d": "99.8%", "1m": "99.7%", "1y": "99.5%" },
@@ -105,12 +110,14 @@ export default function SentinelDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "good" },
           },
           {
+            id: "amenazas",
             label: "Amenazas",
             value: `${data.metrics.threatsBlocked}/${data.metrics.threatsDetected}`,
             values: { "24h": `${data.metrics.threatsBlocked}/${data.metrics.threatsDetected}`, "7d": "45/45", "1m": "156/158", "1y": "1842/1850" },
             status: "good",
           },
           {
+            id: "mttd",
             label: "MTTD",
             value: `${data.metrics.mttd}s`,
             values: { "24h": `${data.metrics.mttd}s`, "7d": "3.5s", "1m": "3.8s", "1y": "4.2s" },
@@ -118,6 +125,7 @@ export default function SentinelDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "warning" },
           },
           {
+            id: "cumplimiento",
             label: "Cumplimiento",
             value: `${data.metrics.complianceScore}%`,
             values: { "24h": `${data.metrics.complianceScore}%`, "7d": "100%", "1m": "98%", "1y": "97%" },
@@ -125,6 +133,7 @@ export default function SentinelDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "warning", "1y": "warning" },
           },
           {
+            id: "disco",
             label: "Disco",
             value: `${data.metrics.diskUsage}%`,
             values: { "24h": `${data.metrics.diskUsage}%`, "7d": "68%", "1m": "62%", "1y": "45%" },
@@ -158,6 +167,7 @@ export default function SentinelDashboard() {
         {/* Monitor de Amenazas */}
         <SectionCard
           title="Monitor de Amenazas"
+          visible={config.grids.sentinel.monitorAmenazas}
           action={
             <FilterTabs
               options={[]}
@@ -217,6 +227,7 @@ export default function SentinelDashboard() {
         {/* Recursos del Sistema */}
         <SectionCard
           title="Recursos del Sistema"
+          visible={config.grids.sentinel.recursosSistema}
           action={
             <div className="flex items-center gap-3">
               <span className="font-mono text-[10px] text-zinc-500">
@@ -244,6 +255,7 @@ export default function SentinelDashboard() {
         {/* Escaneo de Vulnerabilidades */}
         <SectionCard
           title="Escaneo de Vulnerabilidades"
+          visible={config.grids.sentinel.escaneoVulnerabilidades}
           action={<span className="font-mono text-[10px] text-zinc-500">Último: {data.vulnerabilities.lastScan}</span>}
           maxHeight="320px"
         >
@@ -297,6 +309,7 @@ export default function SentinelDashboard() {
         {/* Mejoras Implementadas */}
         <SectionCard
           title="Mejoras Implementadas"
+          visible={config.grids.sentinel.mejorasImplementadas}
           action={
             <FilterTabs
               options={[]}
@@ -354,6 +367,7 @@ export default function SentinelDashboard() {
         {/* Activity Heatmap - Mapa de calor de actividad de seguridad */}
         <SectionCard
           title="Mapa de Actividad"
+          visible={config.grids.sentinel.mapaActividad}
           action={
             <span className="font-mono text-[10px] text-zinc-500">7 días</span>
           }

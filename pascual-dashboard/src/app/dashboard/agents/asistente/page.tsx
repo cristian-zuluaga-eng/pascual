@@ -14,10 +14,12 @@ import {
 } from "@/components/agents";
 import { useGrowl } from "@/components/growl";
 import { asistenteData } from "@/lib/api/mock/pascual-agents";
+import { useDashboardConfig } from "@/lib/context/DashboardConfigContext";
 
 export default function AsistenteDashboard() {
   const [data] = useState(asistenteData);
   const { sendToAgent } = useGrowl();
+  const { config } = useDashboardConfig();
 
   // Usar el hook reutilizable para configuración del agente
   const {
@@ -65,6 +67,7 @@ export default function AsistenteDashboard() {
         lema={data.lema}
         status={data.status}
         showTimeRange={true}
+        kpiVisibility={config.kpis.asistente}
         usage={{
           data: [28, 35, 42, 38, 45, 52, 48, 55, 60, 58],
           dataByRange: {
@@ -77,12 +80,14 @@ export default function AsistenteDashboard() {
         }}
         kpis={[
           {
+            id: "tareasHoy",
             label: "Tareas Hoy",
             value: data.metrics.tasksToday,
             values: { "24h": data.metrics.tasksToday, "7d": "32", "1m": "128", "1y": "1542" },
             status: "neutral",
           },
           {
+            id: "completado",
             label: "Completado",
             value: `${data.metrics.weeklyCompletionRate}%`,
             values: { "24h": `${data.metrics.weeklyCompletionRate}%`, "7d": "82%", "1m": "78%", "1y": "75%" },
@@ -90,6 +95,7 @@ export default function AsistenteDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "warning", "1y": "warning" },
           },
           {
+            id: "precision",
             label: "Precisión",
             value: `${data.metrics.proactiveAccuracy}%`,
             values: { "24h": `${data.metrics.proactiveAccuracy}%`, "7d": "80%", "1m": "76%", "1y": "72%" },
@@ -97,12 +103,14 @@ export default function AsistenteDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "warning" },
           },
           {
+            id: "recordatorio",
             label: "Recordatorio",
             value: data.metrics.nextReminder,
             values: { "24h": data.metrics.nextReminder, "7d": "15 min", "1m": "30 min", "1y": "1 hora" },
             status: "neutral",
           },
           {
+            id: "satisfaccion",
             label: "Satisfacción",
             value: `${data.metrics.userSatisfaction}/5`,
             values: { "24h": `${data.metrics.userSatisfaction}/5`, "7d": "4.6/5", "1m": "4.5/5", "1y": "4.4/5" },
@@ -134,7 +142,7 @@ export default function AsistenteDashboard() {
         />
 
         {/* Agenda del Día */}
-        <SectionCard title="Agenda del Día" maxHeight="320px">
+        <SectionCard title="Agenda del Día" visible={config.grids.asistente.agendaDia} maxHeight="320px">
           <div className="space-y-2">
             {data.todaySchedule.map((event) => (
               <div
@@ -155,7 +163,7 @@ export default function AsistenteDashboard() {
         </SectionCard>
 
         {/* Sugerencias Proactivas */}
-        <SectionCard title="Sugerencias Proactivas" maxHeight="320px">
+        <SectionCard title="Sugerencias Proactivas" visible={config.grids.asistente.sugerenciasProactivas} maxHeight="320px">
           <div className="space-y-3">
             <p className="font-mono text-xs text-zinc-500">Basado en tu rutina:</p>
             {data.suggestions.map((suggestion) => (
@@ -224,7 +232,7 @@ export default function AsistenteDashboard() {
         </SectionCard>
 
         {/* Gestión Doméstica */}
-        <SectionCard title="Gestión Doméstica" maxHeight="320px">
+        <SectionCard title="Gestión Doméstica" visible={config.grids.asistente.gestionDomestica} maxHeight="320px">
           <div className="space-y-4">
             <div>
               <p className="font-mono text-xs text-zinc-400 mb-3">Inventario Hogar</p>

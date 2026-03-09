@@ -13,6 +13,7 @@ import {
 } from "@/components/agents";
 import { useGrowl } from "@/components/growl";
 import { condor360Data } from "@/lib/api/mock/pascual-agents";
+import { useDashboardConfig } from "@/lib/context/DashboardConfigContext";
 
 type TrendFilter = "all" | "high" | "medium" | "low";
 type ConvictionFilter = "all" | "high" | "medium" | "low";
@@ -20,6 +21,7 @@ type ConvictionFilter = "all" | "high" | "medium" | "low";
 export default function Condor360Dashboard() {
   const [data] = useState(condor360Data);
   const { sendToAgent } = useGrowl();
+  const { config } = useDashboardConfig();
   const [trendFilter, setTrendFilter] = useState<TrendFilter>("all");
   const [trendSearch, setTrendSearch] = useState("");
   const [confidenceSearch, setConfidenceSearch] = useState("");
@@ -75,6 +77,7 @@ export default function Condor360Dashboard() {
         lema={data.lema}
         status={data.status}
         showTimeRange={true}
+        kpiVisibility={config.kpis.condor360}
         usage={{
           data: [40, 48, 52, 58, 65, 72, 68, 75, 82, 88],
           dataByRange: {
@@ -87,6 +90,7 @@ export default function Condor360Dashboard() {
         }}
         kpis={[
           {
+            id: "retorno",
             label: "Retorno",
             value: `${data.metrics.portfolioReturn > 0 ? "+" : ""}${data.metrics.portfolioReturn}%`,
             values: { "24h": `${data.metrics.portfolioReturn > 0 ? "+" : ""}${data.metrics.portfolioReturn}%`, "7d": "+11.2%", "1m": "+8.5%", "1y": "+18.5%" },
@@ -94,6 +98,7 @@ export default function Condor360Dashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "good" },
           },
           {
+            id: "precision",
             label: "Precisión",
             value: `${data.metrics.predictionAccuracy}%`,
             values: { "24h": `${data.metrics.predictionAccuracy}%`, "7d": "72%", "1m": "68%", "1y": "66%" },
@@ -125,7 +130,7 @@ export default function Condor360Dashboard() {
         />
 
         {/* Portfolio Allocation */}
-        <SectionCard title="Asignación de Portafolio" maxHeight="320px">
+        <SectionCard title="Asignación de Portafolio" visible={config.grids.condor360.asignacionPortafolio} maxHeight="320px">
           <div className="space-y-3">
             {data.portfolioAllocation.map((item) => (
               <div key={item.asset} className="flex items-center gap-3">
@@ -239,7 +244,7 @@ export default function Condor360Dashboard() {
       {/* AI Recommendations, Sectors, News & Sentiment */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Oportunidades */}
-        <SectionCard title="Oportunidades" maxHeight="320px">
+        <SectionCard title="Oportunidades" visible={config.grids.condor360.oportunidades} maxHeight="320px">
           <div className="space-y-2">
             {data.recommendations.map((rec) => (
               <div
@@ -263,7 +268,7 @@ export default function Condor360Dashboard() {
         </SectionCard>
 
         {/* Model Confidence */}
-        <SectionCard title="Confianza del Modelo" maxHeight="320px">
+        <SectionCard title="Confianza del Modelo" visible={config.grids.condor360.confianzaModelo} maxHeight="320px">
           {/* Search Filter */}
           <div className="mb-3">
             <input
@@ -322,7 +327,7 @@ export default function Condor360Dashboard() {
         </SectionCard>
 
         {/* News */}
-        <SectionCard title="Noticias Financieras" maxHeight="320px">
+        <SectionCard title="Noticias Financieras" visible={config.grids.condor360.noticiasFinancieras} maxHeight="320px">
           <div className="space-y-2">
             {data.news.map((item) => (
               <div

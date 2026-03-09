@@ -12,10 +12,12 @@ import {
 } from "@/components/agents";
 import { useGrowl } from "@/components/growl";
 import { picassoData } from "@/lib/api/mock/pascual-agents";
+import { useDashboardConfig } from "@/lib/context/DashboardConfigContext";
 
 export default function PicassoDashboard() {
   const [data] = useState(picassoData);
   const { sendToAgent } = useGrowl();
+  const { config } = useDashboardConfig();
   const [implementationSearch, setImplementationSearch] = useState("");
 
   // Usar el hook reutilizable para configuración del agente
@@ -39,6 +41,7 @@ export default function PicassoDashboard() {
         lema={data.lema}
         status={data.status}
         showTimeRange={true}
+        kpiVisibility={config.kpis.picasso}
         usage={{
           data: [55, 62, 58, 70, 75, 82, 78, 85, 90, 88],
           dataByRange: {
@@ -51,6 +54,7 @@ export default function PicassoDashboard() {
         }}
         kpis={[
           {
+            id: "uptime",
             label: "Uptime",
             value: `${data.metrics.uptime}%`,
             values: { "24h": `${data.metrics.uptime}%`, "7d": "99.92%", "1m": "99.85%", "1y": "99.72%" },
@@ -58,6 +62,7 @@ export default function PicassoDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "good" },
           },
           {
+            id: "uxScore",
             label: "UX Score",
             value: `${data.metrics.uxScore}%`,
             values: { "24h": `${data.metrics.uxScore}%`, "7d": "91%", "1m": "89%", "1y": "86%" },
@@ -89,7 +94,7 @@ export default function PicassoDashboard() {
         />
 
         {/* UX NECESIDADES */}
-        <SectionCard title="NECESIDADES" maxHeight="320px">
+        <SectionCard title="HALLAZGOS POR APROBAR" visible={config.grids.picasso.necesidades} maxHeight="320px">
           <div className="space-y-4">
             {data.uxNeeds.map((need) => {
               const getPriorityColor = (priority: string) => {
@@ -118,7 +123,7 @@ export default function PicassoDashboard() {
       {/* Log de Implementación - Full width */}
       <div className="grid grid-cols-1 gap-4">
         {/* Log de Implementación */}
-        <SectionCard title="LOG DE IMPLEMENTACIÓN" maxHeight="420px">
+        <SectionCard title="LOG DE IMPLEMENTACIÓN" visible={config.grids.picasso.logImplementacion} maxHeight="420px">
           {/* Filtro de texto */}
           <div className="mb-3">
             <input

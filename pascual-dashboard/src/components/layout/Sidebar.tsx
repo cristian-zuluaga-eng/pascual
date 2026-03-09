@@ -7,7 +7,7 @@ import { useDashboardConfig, DashboardConfig } from "@/lib/context/DashboardConf
 const navItems = [
   { name: "Home", path: "/dashboard", icon: "⊞", configKey: "home" as keyof DashboardConfig["views"] },
   { name: "Planificador", path: "/dashboard/tasks", icon: "☑", configKey: "planificador" as keyof DashboardConfig["views"] },
-  { name: "Agents", path: "/dashboard/agents", icon: "◎", configKey: "agents" as keyof DashboardConfig["views"] },
+  { name: "Agentes Dashboard", path: "/dashboard/agents", icon: "◎", configKey: "agents" as keyof DashboardConfig["views"] },
   { name: "Administración", path: "/dashboard/administracion", icon: "⚙", configKey: null }, // Siempre visible
 ];
 
@@ -25,27 +25,9 @@ const agentDashboardItems = [
   { name: "Picasso", path: "/dashboard/agents/picasso", icon: "🎨", configKey: "picasso" as keyof DashboardConfig["agentViews"] },
 ];
 
-interface SystemMetrics {
-  cpu: number;
-  ram: string;
-  activeAgents: number;
-}
-
-interface SidebarProps {
-  metrics?: SystemMetrics;
-}
-
-export function Sidebar({ metrics }: SidebarProps) {
+export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const { config } = useDashboardConfig();
-
-  const defaultMetrics: SystemMetrics = {
-    cpu: 24,
-    ram: "3.2GB",
-    activeAgents: 5,
-  };
-
-  const currentMetrics = metrics || defaultMetrics;
 
   return (
     <aside
@@ -79,7 +61,7 @@ export function Sidebar({ metrics }: SidebarProps) {
           .filter((item) => item.configKey === null || config.views[item.configKey])
           .map((item) => {
             // Renderizamos los items de navegación principal
-            const isAgentsItem = item.name === "Agents";
+            const isAgentsItem = item.path === "/dashboard/agents";
 
             return (
               <div key={item.path}>
@@ -119,50 +101,6 @@ export function Sidebar({ metrics }: SidebarProps) {
 
       </nav>
 
-      {/* System Metrics Footer */}
-      <div className="p-4 border-t border-zinc-800">
-        {!collapsed ? (
-          <div className="text-xs font-mono text-zinc-400 space-y-1">
-            <div className="flex justify-between">
-              <span>CPU:</span>
-              <span
-                className={
-                  currentMetrics.cpu > 80
-                    ? "text-[#ff006e]"
-                    : "text-[#39ff14]"
-                }
-              >
-                {currentMetrics.cpu}%
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span>RAM:</span>
-              <span className="text-[#00d9ff]">{currentMetrics.ram}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>AGENTS:</span>
-              <span className="text-[#ff006e]">
-                {currentMetrics.activeAgents} active
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-2">
-            <div
-              className={`w-2 h-2 rounded-full ${currentMetrics.cpu > 80 ? "bg-[#ff006e]" : "bg-[#39ff14]"} status-pulse`}
-              title={`CPU: ${currentMetrics.cpu}%`}
-            />
-            <div
-              className="w-2 h-2 rounded-full bg-[#00d9ff]"
-              title={`RAM: ${currentMetrics.ram}`}
-            />
-            <div
-              className="w-2 h-2 rounded-full bg-[#ff006e]"
-              title={`${currentMetrics.activeAgents} agents active`}
-            />
-          </div>
-        )}
-      </div>
     </aside>
   );
 }

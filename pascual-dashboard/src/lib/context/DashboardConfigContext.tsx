@@ -28,6 +28,119 @@ export interface DashboardConfig {
     showSystemStatus: boolean;
     showLastSync: boolean;
   };
+  // Grids por pantalla
+  grids: {
+    home: {
+      actividadReciente: boolean;
+    };
+    sentinel: {
+      monitorAmenazas: boolean;
+      recursosSistema: boolean;
+      escaneoVulnerabilidades: boolean;
+      mejorasImplementadas: boolean;
+      mapaActividad: boolean;
+    };
+    nexus: {
+      tareasEnCurso: boolean;
+      mejorasScripts: boolean;
+      codeReviews: boolean;
+    };
+    condor360: {
+      asignacionPortafolio: boolean;
+      oportunidades: boolean;
+      confianzaModelo: boolean;
+      noticiasFinancieras: boolean;
+    };
+    gambito: {
+      bankroll: boolean;
+      precisionDeporte: boolean;
+      rendimientoModelos: boolean;
+    };
+    scout: {
+      fuentesActivas: boolean;
+      tendencias: boolean;
+      busquedasRecientes: boolean;
+    };
+    audiovisual: {
+      biblioteca: boolean;
+      procesamientoActivo: boolean;
+      capacidades: boolean;
+    };
+    consultor: {
+      areasExperticia: boolean;
+      resumenArea: boolean;
+    };
+    asistente: {
+      agendaDia: boolean;
+      sugerenciasProactivas: boolean;
+      gestionDomestica: boolean;
+    };
+    picasso: {
+      necesidades: boolean;
+      logImplementacion: boolean;
+    };
+  };
+  // KPIs por agente (cada KPI individual)
+  kpis: {
+    sentinel: {
+      seguridad: boolean;
+      uptime: boolean;
+      amenazas: boolean;
+      mttd: boolean;
+      cumplimiento: boolean;
+      disco: boolean;
+    };
+    nexus: {
+      eficienciaIA: boolean;
+      tests: boolean;
+      docs: boolean;
+      arquitectura: boolean;
+      prsAbiertos: boolean;
+      bugs: boolean;
+    };
+    condor360: {
+      retorno: boolean;
+      precision: boolean;
+    };
+    gambito: {
+      roi: boolean;
+      winRate: boolean;
+      precision: boolean;
+      sharpe: boolean;
+      drawdown: boolean;
+    };
+    scout: {
+      busquedas: boolean;
+      precision: boolean;
+      fuentes: boolean;
+      data: boolean;
+      cache: boolean;
+    };
+    audiovisual: {
+      generados: boolean;
+      enCola: boolean;
+      calidad: boolean;
+      storage: boolean;
+    };
+    consultor: {
+      consultas: boolean;
+      satisfaccion: boolean;
+      planes: boolean;
+      followUp: boolean;
+      exito: boolean;
+    };
+    asistente: {
+      tareasHoy: boolean;
+      completado: boolean;
+      precision: boolean;
+      recordatorio: boolean;
+      satisfaccion: boolean;
+    };
+    picasso: {
+      uptime: boolean;
+      uxScore: boolean;
+    };
+  };
 }
 
 const defaultConfig: DashboardConfig = {
@@ -53,6 +166,117 @@ const defaultConfig: DashboardConfig = {
     showSystemStatus: true,
     showLastSync: true,
   },
+  grids: {
+    home: {
+      actividadReciente: true,
+    },
+    sentinel: {
+      monitorAmenazas: true,
+      recursosSistema: true,
+      escaneoVulnerabilidades: true,
+      mejorasImplementadas: true,
+      mapaActividad: true,
+    },
+    nexus: {
+      tareasEnCurso: true,
+      mejorasScripts: true,
+      codeReviews: true,
+    },
+    condor360: {
+      asignacionPortafolio: true,
+      oportunidades: true,
+      confianzaModelo: true,
+      noticiasFinancieras: true,
+    },
+    gambito: {
+      bankroll: true,
+      precisionDeporte: true,
+      rendimientoModelos: true,
+    },
+    scout: {
+      fuentesActivas: true,
+      tendencias: true,
+      busquedasRecientes: true,
+    },
+    audiovisual: {
+      biblioteca: true,
+      procesamientoActivo: true,
+      capacidades: true,
+    },
+    consultor: {
+      areasExperticia: true,
+      resumenArea: true,
+    },
+    asistente: {
+      agendaDia: true,
+      sugerenciasProactivas: true,
+      gestionDomestica: true,
+    },
+    picasso: {
+      necesidades: true,
+      logImplementacion: true,
+    },
+  },
+  kpis: {
+    sentinel: {
+      seguridad: true,
+      uptime: true,
+      amenazas: true,
+      mttd: true,
+      cumplimiento: true,
+      disco: true,
+    },
+    nexus: {
+      eficienciaIA: true,
+      tests: true,
+      docs: true,
+      arquitectura: true,
+      prsAbiertos: true,
+      bugs: true,
+    },
+    condor360: {
+      retorno: true,
+      precision: true,
+    },
+    gambito: {
+      roi: true,
+      winRate: true,
+      precision: true,
+      sharpe: true,
+      drawdown: true,
+    },
+    scout: {
+      busquedas: true,
+      precision: true,
+      fuentes: true,
+      data: true,
+      cache: true,
+    },
+    audiovisual: {
+      generados: true,
+      enCola: true,
+      calidad: true,
+      storage: true,
+    },
+    consultor: {
+      consultas: true,
+      satisfaccion: true,
+      planes: true,
+      followUp: true,
+      exito: true,
+    },
+    asistente: {
+      tareasHoy: true,
+      completado: true,
+      precision: true,
+      recordatorio: true,
+      satisfaccion: true,
+    },
+    picasso: {
+      uptime: true,
+      uxScore: true,
+    },
+  },
 };
 
 interface DashboardConfigContextType {
@@ -60,6 +284,16 @@ interface DashboardConfigContextType {
   updateViewConfig: (key: keyof DashboardConfig["views"], value: boolean) => void;
   updateAgentViewConfig: (key: keyof DashboardConfig["agentViews"], value: boolean) => void;
   updateHeaderConfig: (key: keyof DashboardConfig["header"], value: boolean) => void;
+  updateGridConfig: <T extends keyof DashboardConfig["grids"]>(
+    screen: T,
+    grid: keyof DashboardConfig["grids"][T],
+    value: boolean
+  ) => void;
+  updateKpiConfig: <T extends keyof DashboardConfig["kpis"]>(
+    agent: T,
+    kpi: keyof DashboardConfig["kpis"][T],
+    value: boolean
+  ) => void;
   resetConfig: () => void;
 }
 
@@ -89,6 +323,40 @@ export function DashboardConfigProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const updateGridConfig = <T extends keyof DashboardConfig["grids"]>(
+    screen: T,
+    grid: keyof DashboardConfig["grids"][T],
+    value: boolean
+  ) => {
+    setConfig((prev) => ({
+      ...prev,
+      grids: {
+        ...prev.grids,
+        [screen]: {
+          ...prev.grids[screen],
+          [grid]: value,
+        },
+      },
+    }));
+  };
+
+  const updateKpiConfig = <T extends keyof DashboardConfig["kpis"]>(
+    agent: T,
+    kpi: keyof DashboardConfig["kpis"][T],
+    value: boolean
+  ) => {
+    setConfig((prev) => ({
+      ...prev,
+      kpis: {
+        ...prev.kpis,
+        [agent]: {
+          ...prev.kpis[agent],
+          [kpi]: value,
+        },
+      },
+    }));
+  };
+
   const resetConfig = () => {
     setConfig(defaultConfig);
   };
@@ -100,6 +368,8 @@ export function DashboardConfigProvider({ children }: { children: ReactNode }) {
         updateViewConfig,
         updateAgentViewConfig,
         updateHeaderConfig,
+        updateGridConfig,
+        updateKpiConfig,
         resetConfig,
       }}
     >

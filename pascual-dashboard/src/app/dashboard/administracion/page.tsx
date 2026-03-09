@@ -766,12 +766,53 @@ function ToggleRow({ checked, onCheckedChange, label }: ToggleRowProps) {
   );
 }
 
+interface GridGroupProps {
+  icon: string;
+  label: string;
+  children: React.ReactNode;
+}
+
+function GridGroup({ icon, label, children }: GridGroupProps) {
+  return (
+    <div className="p-3">
+      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-zinc-800">
+        <span className="text-sm">{icon}</span>
+        <span className="font-mono text-xs text-white font-medium">{label}</span>
+      </div>
+      <div className="space-y-2">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Master Toggle for enabling/disabling all items in a section
+interface MasterToggleProps {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}
+
+function MasterToggle({ checked, onCheckedChange }: MasterToggleProps) {
+  return (
+    <button
+      onClick={() => onCheckedChange(!checked)}
+      className={`px-2 py-0.5 font-mono text-[9px] rounded-sm transition-colors ${
+        checked
+          ? "bg-[#39ff14]/20 text-[#39ff14] border border-[#39ff14]/30"
+          : "bg-zinc-800 text-zinc-500 border border-zinc-700 hover:text-zinc-300"
+      }`}
+    >
+      {checked ? "ALL ON" : "ALL OFF"}
+    </button>
+  );
+}
+
 // ============================================================================
 // DASHBOARD CONFIG PANEL
 // ============================================================================
 
 function DashboardConfigPanel() {
-  const { config, updateViewConfig, updateAgentViewConfig, updateHeaderConfig } = useDashboardConfig();
+  const { config, updateViewConfig, updateAgentViewConfig, updateHeaderConfig, updateGridConfig, updateKpiConfig } = useDashboardConfig();
 
   return (
     <div className="bg-zinc-950 border border-zinc-800 rounded-sm overflow-hidden">
@@ -850,58 +891,635 @@ function DashboardConfigPanel() {
             </div>
           </div>
 
-          {/* Agent Views Configuration */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm">🤖</span>
-              <h4 className="font-mono text-sm font-bold text-white">Agentes</h4>
+        </div>
+
+        {/* Home Grids */}
+        <div className="mt-6 pt-6 border-t border-zinc-800">
+          <div className="bg-zinc-900/30 rounded-sm border border-zinc-800">
+            <GridGroup icon="⊞" label="Home">
+              <ToggleRow
+                checked={config.grids.home.actividadReciente}
+                onCheckedChange={(checked) => updateGridConfig("home", "actividadReciente", checked)}
+                label="Actividad Reciente"
+              />
+            </GridGroup>
+          </div>
+        </div>
+
+        {/* Agent Configurations - Grids + KPIs unified */}
+        <div className="mt-6 pt-6 border-t border-zinc-800">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-sm">🤖</span>
+            <h4 className="font-mono text-sm font-bold text-white">Configuración por Agente</h4>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Sentinel */}
+            <div className={`bg-zinc-900/30 rounded-sm border border-zinc-800 ${!config.agentViews.sentinel ? "opacity-50" : ""}`}>
+              <div className="p-3">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">🛡️</span>
+                    <span className="font-mono text-xs text-white font-medium">Sentinel</span>
+                  </div>
+                  <Toggle
+                    checked={config.agentViews.sentinel}
+                    onCheckedChange={(checked) => {
+                      updateAgentViewConfig("sentinel", checked);
+                      if (!checked) {
+                        Object.keys(config.grids.sentinel).forEach((key) => {
+                          updateGridConfig("sentinel", key as keyof typeof config.grids.sentinel, false);
+                        });
+                        Object.keys(config.kpis.sentinel).forEach((key) => {
+                          updateKpiConfig("sentinel", key as keyof typeof config.kpis.sentinel, false);
+                        });
+                      }
+                    }}
+                    size="sm"
+                  />
+                </div>
+                {/* Grids Section */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">Grids</span>
+                    <MasterToggle
+                      checked={Object.values(config.grids.sentinel).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.grids.sentinel).forEach((key) => {
+                          updateGridConfig("sentinel", key as keyof typeof config.grids.sentinel, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.grids.sentinel.monitorAmenazas} onCheckedChange={(checked) => updateGridConfig("sentinel", "monitorAmenazas", checked)} label="Monitor de Amenazas" />
+                    <ToggleRow checked={config.grids.sentinel.recursosSistema} onCheckedChange={(checked) => updateGridConfig("sentinel", "recursosSistema", checked)} label="Recursos del Sistema" />
+                    <ToggleRow checked={config.grids.sentinel.escaneoVulnerabilidades} onCheckedChange={(checked) => updateGridConfig("sentinel", "escaneoVulnerabilidades", checked)} label="Escaneo Vulnerabilidades" />
+                    <ToggleRow checked={config.grids.sentinel.mejorasImplementadas} onCheckedChange={(checked) => updateGridConfig("sentinel", "mejorasImplementadas", checked)} label="Mejoras Implementadas" />
+                    <ToggleRow checked={config.grids.sentinel.mapaActividad} onCheckedChange={(checked) => updateGridConfig("sentinel", "mapaActividad", checked)} label="Mapa de Actividad" />
+                  </div>
+                </div>
+                {/* Divider */}
+                <div className="border-t border-zinc-800 my-3" />
+                {/* KPIs Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">KPIs</span>
+                    <MasterToggle
+                      checked={Object.values(config.kpis.sentinel).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.kpis.sentinel).forEach((key) => {
+                          updateKpiConfig("sentinel", key as keyof typeof config.kpis.sentinel, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.kpis.sentinel.seguridad} onCheckedChange={(checked) => updateKpiConfig("sentinel", "seguridad", checked)} label="Seguridad" />
+                    <ToggleRow checked={config.kpis.sentinel.uptime} onCheckedChange={(checked) => updateKpiConfig("sentinel", "uptime", checked)} label="Uptime" />
+                    <ToggleRow checked={config.kpis.sentinel.amenazas} onCheckedChange={(checked) => updateKpiConfig("sentinel", "amenazas", checked)} label="Amenazas" />
+                    <ToggleRow checked={config.kpis.sentinel.mttd} onCheckedChange={(checked) => updateKpiConfig("sentinel", "mttd", checked)} label="MTTD" />
+                    <ToggleRow checked={config.kpis.sentinel.cumplimiento} onCheckedChange={(checked) => updateKpiConfig("sentinel", "cumplimiento", checked)} label="Cumplimiento" />
+                    <ToggleRow checked={config.kpis.sentinel.disco} onCheckedChange={(checked) => updateKpiConfig("sentinel", "disco", checked)} label="Disco" />
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="space-y-3 pl-1">
-              <ToggleRow
-                checked={config.agentViews.sentinel}
-                onCheckedChange={(checked) => updateAgentViewConfig("sentinel", checked)}
-                label="Sentinel"
-              />
-              <ToggleRow
-                checked={config.agentViews.nexus}
-                onCheckedChange={(checked) => updateAgentViewConfig("nexus", checked)}
-                label="Nexus"
-              />
-              <ToggleRow
-                checked={config.agentViews.condor360}
-                onCheckedChange={(checked) => updateAgentViewConfig("condor360", checked)}
-                label="Cóndor360"
-              />
-              <ToggleRow
-                checked={config.agentViews.gambito}
-                onCheckedChange={(checked) => updateAgentViewConfig("gambito", checked)}
-                label="Gambito"
-              />
-              <ToggleRow
-                checked={config.agentViews.scout}
-                onCheckedChange={(checked) => updateAgentViewConfig("scout", checked)}
-                label="Scout"
-              />
-              <ToggleRow
-                checked={config.agentViews.audiovisual}
-                onCheckedChange={(checked) => updateAgentViewConfig("audiovisual", checked)}
-                label="Audiovisual"
-              />
-              <ToggleRow
-                checked={config.agentViews.consultor}
-                onCheckedChange={(checked) => updateAgentViewConfig("consultor", checked)}
-                label="Consultor"
-              />
-              <ToggleRow
-                checked={config.agentViews.asistente}
-                onCheckedChange={(checked) => updateAgentViewConfig("asistente", checked)}
-                label="Asistente"
-              />
-              <ToggleRow
-                checked={config.agentViews.picasso}
-                onCheckedChange={(checked) => updateAgentViewConfig("picasso", checked)}
-                label="Picasso"
-              />
+
+            {/* Nexus */}
+            <div className={`bg-zinc-900/30 rounded-sm border border-zinc-800 ${!config.agentViews.nexus ? "opacity-50" : ""}`}>
+              <div className="p-3">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">💻</span>
+                    <span className="font-mono text-xs text-white font-medium">Nexus</span>
+                  </div>
+                  <Toggle
+                    checked={config.agentViews.nexus}
+                    onCheckedChange={(checked) => {
+                      updateAgentViewConfig("nexus", checked);
+                      if (!checked) {
+                        Object.keys(config.grids.nexus).forEach((key) => {
+                          updateGridConfig("nexus", key as keyof typeof config.grids.nexus, false);
+                        });
+                        Object.keys(config.kpis.nexus).forEach((key) => {
+                          updateKpiConfig("nexus", key as keyof typeof config.kpis.nexus, false);
+                        });
+                      }
+                    }}
+                    size="sm"
+                  />
+                </div>
+                {/* Grids Section */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">Grids</span>
+                    <MasterToggle
+                      checked={Object.values(config.grids.nexus).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.grids.nexus).forEach((key) => {
+                          updateGridConfig("nexus", key as keyof typeof config.grids.nexus, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.grids.nexus.tareasEnCurso} onCheckedChange={(checked) => updateGridConfig("nexus", "tareasEnCurso", checked)} label="Tareas en Curso" />
+                    <ToggleRow checked={config.grids.nexus.mejorasScripts} onCheckedChange={(checked) => updateGridConfig("nexus", "mejorasScripts", checked)} label="Mejoras de Scripts" />
+                    <ToggleRow checked={config.grids.nexus.codeReviews} onCheckedChange={(checked) => updateGridConfig("nexus", "codeReviews", checked)} label="Code Reviews" />
+                  </div>
+                </div>
+                <div className="border-t border-zinc-800 my-3" />
+                {/* KPIs Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">KPIs</span>
+                    <MasterToggle
+                      checked={Object.values(config.kpis.nexus).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.kpis.nexus).forEach((key) => {
+                          updateKpiConfig("nexus", key as keyof typeof config.kpis.nexus, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.kpis.nexus.eficienciaIA} onCheckedChange={(checked) => updateKpiConfig("nexus", "eficienciaIA", checked)} label="Eficiencia IA" />
+                    <ToggleRow checked={config.kpis.nexus.tests} onCheckedChange={(checked) => updateKpiConfig("nexus", "tests", checked)} label="Tests" />
+                    <ToggleRow checked={config.kpis.nexus.docs} onCheckedChange={(checked) => updateKpiConfig("nexus", "docs", checked)} label="Docs" />
+                    <ToggleRow checked={config.kpis.nexus.arquitectura} onCheckedChange={(checked) => updateKpiConfig("nexus", "arquitectura", checked)} label="Arquitectura" />
+                    <ToggleRow checked={config.kpis.nexus.prsAbiertos} onCheckedChange={(checked) => updateKpiConfig("nexus", "prsAbiertos", checked)} label="PRs Abiertos" />
+                    <ToggleRow checked={config.kpis.nexus.bugs} onCheckedChange={(checked) => updateKpiConfig("nexus", "bugs", checked)} label="Bugs" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Cóndor360 */}
+            <div className={`bg-zinc-900/30 rounded-sm border border-zinc-800 ${!config.agentViews.condor360 ? "opacity-50" : ""}`}>
+              <div className="p-3">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">🦅</span>
+                    <span className="font-mono text-xs text-white font-medium">Cóndor360</span>
+                  </div>
+                  <Toggle
+                    checked={config.agentViews.condor360}
+                    onCheckedChange={(checked) => {
+                      updateAgentViewConfig("condor360", checked);
+                      if (!checked) {
+                        Object.keys(config.grids.condor360).forEach((key) => {
+                          updateGridConfig("condor360", key as keyof typeof config.grids.condor360, false);
+                        });
+                        Object.keys(config.kpis.condor360).forEach((key) => {
+                          updateKpiConfig("condor360", key as keyof typeof config.kpis.condor360, false);
+                        });
+                      }
+                    }}
+                    size="sm"
+                  />
+                </div>
+                {/* Grids Section */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">Grids</span>
+                    <MasterToggle
+                      checked={Object.values(config.grids.condor360).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.grids.condor360).forEach((key) => {
+                          updateGridConfig("condor360", key as keyof typeof config.grids.condor360, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.grids.condor360.asignacionPortafolio} onCheckedChange={(checked) => updateGridConfig("condor360", "asignacionPortafolio", checked)} label="Asignación Portafolio" />
+                    <ToggleRow checked={config.grids.condor360.oportunidades} onCheckedChange={(checked) => updateGridConfig("condor360", "oportunidades", checked)} label="Oportunidades" />
+                    <ToggleRow checked={config.grids.condor360.confianzaModelo} onCheckedChange={(checked) => updateGridConfig("condor360", "confianzaModelo", checked)} label="Confianza Modelo" />
+                    <ToggleRow checked={config.grids.condor360.noticiasFinancieras} onCheckedChange={(checked) => updateGridConfig("condor360", "noticiasFinancieras", checked)} label="Noticias Financieras" />
+                  </div>
+                </div>
+                <div className="border-t border-zinc-800 my-3" />
+                {/* KPIs Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">KPIs</span>
+                    <MasterToggle
+                      checked={Object.values(config.kpis.condor360).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.kpis.condor360).forEach((key) => {
+                          updateKpiConfig("condor360", key as keyof typeof config.kpis.condor360, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.kpis.condor360.retorno} onCheckedChange={(checked) => updateKpiConfig("condor360", "retorno", checked)} label="Retorno" />
+                    <ToggleRow checked={config.kpis.condor360.precision} onCheckedChange={(checked) => updateKpiConfig("condor360", "precision", checked)} label="Precisión" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Gambito */}
+            <div className={`bg-zinc-900/30 rounded-sm border border-zinc-800 ${!config.agentViews.gambito ? "opacity-50" : ""}`}>
+              <div className="p-3">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">🎯</span>
+                    <span className="font-mono text-xs text-white font-medium">Gambito</span>
+                  </div>
+                  <Toggle
+                    checked={config.agentViews.gambito}
+                    onCheckedChange={(checked) => {
+                      updateAgentViewConfig("gambito", checked);
+                      if (!checked) {
+                        Object.keys(config.grids.gambito).forEach((key) => {
+                          updateGridConfig("gambito", key as keyof typeof config.grids.gambito, false);
+                        });
+                        Object.keys(config.kpis.gambito).forEach((key) => {
+                          updateKpiConfig("gambito", key as keyof typeof config.kpis.gambito, false);
+                        });
+                      }
+                    }}
+                    size="sm"
+                  />
+                </div>
+                {/* Grids Section */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">Grids</span>
+                    <MasterToggle
+                      checked={Object.values(config.grids.gambito).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.grids.gambito).forEach((key) => {
+                          updateGridConfig("gambito", key as keyof typeof config.grids.gambito, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.grids.gambito.bankroll} onCheckedChange={(checked) => updateGridConfig("gambito", "bankroll", checked)} label="Balance" />
+                    <ToggleRow checked={config.grids.gambito.precisionDeporte} onCheckedChange={(checked) => updateGridConfig("gambito", "precisionDeporte", checked)} label="Precisión por Deporte" />
+                    <ToggleRow checked={config.grids.gambito.rendimientoModelos} onCheckedChange={(checked) => updateGridConfig("gambito", "rendimientoModelos", checked)} label="Rendimiento Modelos" />
+                  </div>
+                </div>
+                <div className="border-t border-zinc-800 my-3" />
+                {/* KPIs Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">KPIs</span>
+                    <MasterToggle
+                      checked={Object.values(config.kpis.gambito).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.kpis.gambito).forEach((key) => {
+                          updateKpiConfig("gambito", key as keyof typeof config.kpis.gambito, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.kpis.gambito.roi} onCheckedChange={(checked) => updateKpiConfig("gambito", "roi", checked)} label="ROI" />
+                    <ToggleRow checked={config.kpis.gambito.winRate} onCheckedChange={(checked) => updateKpiConfig("gambito", "winRate", checked)} label="Win Rate" />
+                    <ToggleRow checked={config.kpis.gambito.precision} onCheckedChange={(checked) => updateKpiConfig("gambito", "precision", checked)} label="Precisión" />
+                    <ToggleRow checked={config.kpis.gambito.sharpe} onCheckedChange={(checked) => updateKpiConfig("gambito", "sharpe", checked)} label="Sharpe" />
+                    <ToggleRow checked={config.kpis.gambito.drawdown} onCheckedChange={(checked) => updateKpiConfig("gambito", "drawdown", checked)} label="Drawdown" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Scout */}
+            <div className={`bg-zinc-900/30 rounded-sm border border-zinc-800 ${!config.agentViews.scout ? "opacity-50" : ""}`}>
+              <div className="p-3">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">🔍</span>
+                    <span className="font-mono text-xs text-white font-medium">Scout</span>
+                  </div>
+                  <Toggle
+                    checked={config.agentViews.scout}
+                    onCheckedChange={(checked) => {
+                      updateAgentViewConfig("scout", checked);
+                      if (!checked) {
+                        Object.keys(config.grids.scout).forEach((key) => {
+                          updateGridConfig("scout", key as keyof typeof config.grids.scout, false);
+                        });
+                        Object.keys(config.kpis.scout).forEach((key) => {
+                          updateKpiConfig("scout", key as keyof typeof config.kpis.scout, false);
+                        });
+                      }
+                    }}
+                    size="sm"
+                  />
+                </div>
+                {/* Grids Section */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">Grids</span>
+                    <MasterToggle
+                      checked={Object.values(config.grids.scout).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.grids.scout).forEach((key) => {
+                          updateGridConfig("scout", key as keyof typeof config.grids.scout, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.grids.scout.fuentesActivas} onCheckedChange={(checked) => updateGridConfig("scout", "fuentesActivas", checked)} label="Fuentes Activas" />
+                    <ToggleRow checked={config.grids.scout.tendencias} onCheckedChange={(checked) => updateGridConfig("scout", "tendencias", checked)} label="Tendencias" />
+                    <ToggleRow checked={config.grids.scout.busquedasRecientes} onCheckedChange={(checked) => updateGridConfig("scout", "busquedasRecientes", checked)} label="Búsquedas Recientes" />
+                  </div>
+                </div>
+                <div className="border-t border-zinc-800 my-3" />
+                {/* KPIs Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">KPIs</span>
+                    <MasterToggle
+                      checked={Object.values(config.kpis.scout).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.kpis.scout).forEach((key) => {
+                          updateKpiConfig("scout", key as keyof typeof config.kpis.scout, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.kpis.scout.busquedas} onCheckedChange={(checked) => updateKpiConfig("scout", "busquedas", checked)} label="Búsquedas" />
+                    <ToggleRow checked={config.kpis.scout.precision} onCheckedChange={(checked) => updateKpiConfig("scout", "precision", checked)} label="Precisión" />
+                    <ToggleRow checked={config.kpis.scout.fuentes} onCheckedChange={(checked) => updateKpiConfig("scout", "fuentes", checked)} label="Fuentes" />
+                    <ToggleRow checked={config.kpis.scout.data} onCheckedChange={(checked) => updateKpiConfig("scout", "data", checked)} label="Data" />
+                    <ToggleRow checked={config.kpis.scout.cache} onCheckedChange={(checked) => updateKpiConfig("scout", "cache", checked)} label="Cache" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Audiovisual */}
+            <div className={`bg-zinc-900/30 rounded-sm border border-zinc-800 ${!config.agentViews.audiovisual ? "opacity-50" : ""}`}>
+              <div className="p-3">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">🎬</span>
+                    <span className="font-mono text-xs text-white font-medium">Audiovisual</span>
+                  </div>
+                  <Toggle
+                    checked={config.agentViews.audiovisual}
+                    onCheckedChange={(checked) => {
+                      updateAgentViewConfig("audiovisual", checked);
+                      if (!checked) {
+                        Object.keys(config.grids.audiovisual).forEach((key) => {
+                          updateGridConfig("audiovisual", key as keyof typeof config.grids.audiovisual, false);
+                        });
+                        Object.keys(config.kpis.audiovisual).forEach((key) => {
+                          updateKpiConfig("audiovisual", key as keyof typeof config.kpis.audiovisual, false);
+                        });
+                      }
+                    }}
+                    size="sm"
+                  />
+                </div>
+                {/* Grids Section */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">Grids</span>
+                    <MasterToggle
+                      checked={Object.values(config.grids.audiovisual).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.grids.audiovisual).forEach((key) => {
+                          updateGridConfig("audiovisual", key as keyof typeof config.grids.audiovisual, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.grids.audiovisual.biblioteca} onCheckedChange={(checked) => updateGridConfig("audiovisual", "biblioteca", checked)} label="Biblioteca" />
+                    <ToggleRow checked={config.grids.audiovisual.procesamientoActivo} onCheckedChange={(checked) => updateGridConfig("audiovisual", "procesamientoActivo", checked)} label="Procesamiento Activo" />
+                    <ToggleRow checked={config.grids.audiovisual.capacidades} onCheckedChange={(checked) => updateGridConfig("audiovisual", "capacidades", checked)} label="Capacidades" />
+                  </div>
+                </div>
+                <div className="border-t border-zinc-800 my-3" />
+                {/* KPIs Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">KPIs</span>
+                    <MasterToggle
+                      checked={Object.values(config.kpis.audiovisual).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.kpis.audiovisual).forEach((key) => {
+                          updateKpiConfig("audiovisual", key as keyof typeof config.kpis.audiovisual, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.kpis.audiovisual.generados} onCheckedChange={(checked) => updateKpiConfig("audiovisual", "generados", checked)} label="Generados" />
+                    <ToggleRow checked={config.kpis.audiovisual.enCola} onCheckedChange={(checked) => updateKpiConfig("audiovisual", "enCola", checked)} label="En Cola" />
+                    <ToggleRow checked={config.kpis.audiovisual.calidad} onCheckedChange={(checked) => updateKpiConfig("audiovisual", "calidad", checked)} label="Calidad" />
+                    <ToggleRow checked={config.kpis.audiovisual.storage} onCheckedChange={(checked) => updateKpiConfig("audiovisual", "storage", checked)} label="Storage" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Consultor */}
+            <div className={`bg-zinc-900/30 rounded-sm border border-zinc-800 ${!config.agentViews.consultor ? "opacity-50" : ""}`}>
+              <div className="p-3">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">📚</span>
+                    <span className="font-mono text-xs text-white font-medium">Consultor</span>
+                  </div>
+                  <Toggle
+                    checked={config.agentViews.consultor}
+                    onCheckedChange={(checked) => {
+                      updateAgentViewConfig("consultor", checked);
+                      if (!checked) {
+                        Object.keys(config.grids.consultor).forEach((key) => {
+                          updateGridConfig("consultor", key as keyof typeof config.grids.consultor, false);
+                        });
+                        Object.keys(config.kpis.consultor).forEach((key) => {
+                          updateKpiConfig("consultor", key as keyof typeof config.kpis.consultor, false);
+                        });
+                      }
+                    }}
+                    size="sm"
+                  />
+                </div>
+                {/* Grids Section */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">Grids</span>
+                    <MasterToggle
+                      checked={Object.values(config.grids.consultor).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.grids.consultor).forEach((key) => {
+                          updateGridConfig("consultor", key as keyof typeof config.grids.consultor, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.grids.consultor.areasExperticia} onCheckedChange={(checked) => updateGridConfig("consultor", "areasExperticia", checked)} label="Áreas de Experticia" />
+                    <ToggleRow checked={config.grids.consultor.resumenArea} onCheckedChange={(checked) => updateGridConfig("consultor", "resumenArea", checked)} label="Resumen por Área" />
+                  </div>
+                </div>
+                <div className="border-t border-zinc-800 my-3" />
+                {/* KPIs Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">KPIs</span>
+                    <MasterToggle
+                      checked={Object.values(config.kpis.consultor).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.kpis.consultor).forEach((key) => {
+                          updateKpiConfig("consultor", key as keyof typeof config.kpis.consultor, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.kpis.consultor.consultas} onCheckedChange={(checked) => updateKpiConfig("consultor", "consultas", checked)} label="Consultas" />
+                    <ToggleRow checked={config.kpis.consultor.satisfaccion} onCheckedChange={(checked) => updateKpiConfig("consultor", "satisfaccion", checked)} label="Satisfacción" />
+                    <ToggleRow checked={config.kpis.consultor.planes} onCheckedChange={(checked) => updateKpiConfig("consultor", "planes", checked)} label="Planes" />
+                    <ToggleRow checked={config.kpis.consultor.followUp} onCheckedChange={(checked) => updateKpiConfig("consultor", "followUp", checked)} label="Follow-up" />
+                    <ToggleRow checked={config.kpis.consultor.exito} onCheckedChange={(checked) => updateKpiConfig("consultor", "exito", checked)} label="Éxito" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Asistente */}
+            <div className={`bg-zinc-900/30 rounded-sm border border-zinc-800 ${!config.agentViews.asistente ? "opacity-50" : ""}`}>
+              <div className="p-3">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">👤</span>
+                    <span className="font-mono text-xs text-white font-medium">Asistente</span>
+                  </div>
+                  <Toggle
+                    checked={config.agentViews.asistente}
+                    onCheckedChange={(checked) => {
+                      updateAgentViewConfig("asistente", checked);
+                      if (!checked) {
+                        Object.keys(config.grids.asistente).forEach((key) => {
+                          updateGridConfig("asistente", key as keyof typeof config.grids.asistente, false);
+                        });
+                        Object.keys(config.kpis.asistente).forEach((key) => {
+                          updateKpiConfig("asistente", key as keyof typeof config.kpis.asistente, false);
+                        });
+                      }
+                    }}
+                    size="sm"
+                  />
+                </div>
+                {/* Grids Section */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">Grids</span>
+                    <MasterToggle
+                      checked={Object.values(config.grids.asistente).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.grids.asistente).forEach((key) => {
+                          updateGridConfig("asistente", key as keyof typeof config.grids.asistente, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.grids.asistente.agendaDia} onCheckedChange={(checked) => updateGridConfig("asistente", "agendaDia", checked)} label="Agenda del Día" />
+                    <ToggleRow checked={config.grids.asistente.sugerenciasProactivas} onCheckedChange={(checked) => updateGridConfig("asistente", "sugerenciasProactivas", checked)} label="Sugerencias Proactivas" />
+                    <ToggleRow checked={config.grids.asistente.gestionDomestica} onCheckedChange={(checked) => updateGridConfig("asistente", "gestionDomestica", checked)} label="Gestión Doméstica" />
+                  </div>
+                </div>
+                <div className="border-t border-zinc-800 my-3" />
+                {/* KPIs Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">KPIs</span>
+                    <MasterToggle
+                      checked={Object.values(config.kpis.asistente).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.kpis.asistente).forEach((key) => {
+                          updateKpiConfig("asistente", key as keyof typeof config.kpis.asistente, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.kpis.asistente.tareasHoy} onCheckedChange={(checked) => updateKpiConfig("asistente", "tareasHoy", checked)} label="Tareas Hoy" />
+                    <ToggleRow checked={config.kpis.asistente.completado} onCheckedChange={(checked) => updateKpiConfig("asistente", "completado", checked)} label="Completado" />
+                    <ToggleRow checked={config.kpis.asistente.precision} onCheckedChange={(checked) => updateKpiConfig("asistente", "precision", checked)} label="Precisión" />
+                    <ToggleRow checked={config.kpis.asistente.recordatorio} onCheckedChange={(checked) => updateKpiConfig("asistente", "recordatorio", checked)} label="Recordatorio" />
+                    <ToggleRow checked={config.kpis.asistente.satisfaccion} onCheckedChange={(checked) => updateKpiConfig("asistente", "satisfaccion", checked)} label="Satisfacción" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Picasso */}
+            <div className={`bg-zinc-900/30 rounded-sm border border-zinc-800 ${!config.agentViews.picasso ? "opacity-50" : ""}`}>
+              <div className="p-3">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">🎨</span>
+                    <span className="font-mono text-xs text-white font-medium">Picasso</span>
+                  </div>
+                  <Toggle
+                    checked={config.agentViews.picasso}
+                    onCheckedChange={(checked) => {
+                      updateAgentViewConfig("picasso", checked);
+                      if (!checked) {
+                        Object.keys(config.grids.picasso).forEach((key) => {
+                          updateGridConfig("picasso", key as keyof typeof config.grids.picasso, false);
+                        });
+                        Object.keys(config.kpis.picasso).forEach((key) => {
+                          updateKpiConfig("picasso", key as keyof typeof config.kpis.picasso, false);
+                        });
+                      }
+                    }}
+                    size="sm"
+                  />
+                </div>
+                {/* Grids Section */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">Grids</span>
+                    <MasterToggle
+                      checked={Object.values(config.grids.picasso).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.grids.picasso).forEach((key) => {
+                          updateGridConfig("picasso", key as keyof typeof config.grids.picasso, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.grids.picasso.necesidades} onCheckedChange={(checked) => updateGridConfig("picasso", "necesidades", checked)} label="Hallazgos por Aprobar" />
+                    <ToggleRow checked={config.grids.picasso.logImplementacion} onCheckedChange={(checked) => updateGridConfig("picasso", "logImplementacion", checked)} label="Log Implementación" />
+                  </div>
+                </div>
+                <div className="border-t border-zinc-800 my-3" />
+                {/* KPIs Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-zinc-500 uppercase">KPIs</span>
+                    <MasterToggle
+                      checked={Object.values(config.kpis.picasso).every(Boolean)}
+                      onCheckedChange={(checked) => {
+                        Object.keys(config.kpis.picasso).forEach((key) => {
+                          updateKpiConfig("picasso", key as keyof typeof config.kpis.picasso, checked);
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.kpis.picasso.uptime} onCheckedChange={(checked) => updateKpiConfig("picasso", "uptime", checked)} label="Uptime" />
+                    <ToggleRow checked={config.kpis.picasso.uxScore} onCheckedChange={(checked) => updateKpiConfig("picasso", "uxScore", checked)} label="UX Score" />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1022,9 +1640,9 @@ interface AgentDashboardTemplate {
                 color: "#00d9ff",
               }}
               kpis={[
-                { label: "Tareas", value: 42, status: "good" },
-                { label: "Precisión", value: "95%", status: "good" },
-                { label: "Latencia", value: "120ms", status: "warning" },
+                { id: "tareas", label: "Tareas", value: 42, status: "good" },
+                { id: "precision", label: "Precisión", value: "95%", status: "good" },
+                { id: "latencia", label: "Latencia", value: "120ms", status: "warning" },
               ]}
             />
           </div>
@@ -1350,9 +1968,9 @@ interface UsageData {
             color: "#39ff14",
           }}
           kpis={[
-            { label: "Amenazas", value: 3, status: "warning" },
-            { label: "Bloqueadas", value: 127, status: "good" },
-            { label: "Uptime", value: "99.9%", status: "good" },
+            { id: "amenazas", label: "Amenazas", value: 3, status: "warning" },
+            { id: "bloqueadas", label: "Bloqueadas", value: 127, status: "good" },
+            { id: "uptime", label: "Uptime", value: "99.9%", status: "good" },
           ]}
         />
       </ComponentShowcase>

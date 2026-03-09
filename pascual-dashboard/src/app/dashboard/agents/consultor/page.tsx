@@ -13,10 +13,12 @@ import {
 } from "@/components/agents";
 import { useGrowl } from "@/components/growl";
 import { consultorData } from "@/lib/api/mock/pascual-agents";
+import { useDashboardConfig } from "@/lib/context/DashboardConfigContext";
 
 export default function ConsultorDashboard() {
   const [data] = useState(consultorData);
   const { sendToAgent } = useGrowl();
+  const { config } = useDashboardConfig();
 
   // Usar el hook reutilizable para configuración del agente
   const {
@@ -63,6 +65,7 @@ export default function ConsultorDashboard() {
         lema={data.lema}
         status={data.status}
         showTimeRange={true}
+        kpiVisibility={config.kpis.consultor}
         usage={{
           data: [25, 32, 28, 40, 35, 45, 42, 50, 48, 55],
           dataByRange: {
@@ -75,12 +78,14 @@ export default function ConsultorDashboard() {
         }}
         kpis={[
           {
+            id: "consultas",
             label: "Consultas",
             value: data.metrics.consultationsThisMonth,
             values: { "24h": data.metrics.consultationsThisMonth, "7d": "89", "1m": "342", "1y": "3856" },
             status: "good",
           },
           {
+            id: "satisfaccion",
             label: "Satisfacción",
             value: `${data.metrics.userSatisfaction}/5`,
             values: { "24h": `${data.metrics.userSatisfaction}/5`, "7d": "4.6/5", "1m": "4.5/5", "1y": "4.4/5" },
@@ -88,12 +93,14 @@ export default function ConsultorDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "good" },
           },
           {
+            id: "planes",
             label: "Planes",
             value: data.metrics.activePlans,
             values: { "24h": data.metrics.activePlans, "7d": "12", "1m": "28", "1y": "156" },
             status: "neutral",
           },
           {
+            id: "followUp",
             label: "Follow-up",
             value: `${data.metrics.followUpRate}%`,
             values: { "24h": `${data.metrics.followUpRate}%`, "7d": "72%", "1m": "68%", "1y": "65%" },
@@ -101,6 +108,7 @@ export default function ConsultorDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "good" },
           },
           {
+            id: "exito",
             label: "Éxito",
             value: `${data.metrics.recommendationSuccessRate}%`,
             values: { "24h": `${data.metrics.recommendationSuccessRate}%`, "7d": "82%", "1m": "78%", "1y": "76%" },
@@ -132,7 +140,7 @@ export default function ConsultorDashboard() {
         />
 
         {/* Expertise Areas */}
-        <SectionCard title="Áreas de Experticia" maxHeight="320px">
+        <SectionCard title="Áreas de Experticia" visible={config.grids.consultor.areasExperticia} maxHeight="320px">
           <div className="space-y-3">
             {data.expertiseAreas.map((area) => (
               <div
@@ -223,7 +231,7 @@ export default function ConsultorDashboard() {
         </SectionCard>
 
         {/* Summary Stats */}
-        <SectionCard title="Resumen por Área" maxHeight="320px">
+        <SectionCard title="Resumen por Área" visible={config.grids.consultor.resumenArea} maxHeight="320px">
           <div className="grid grid-cols-5 gap-2">
             {data.expertiseAreas.map((area) => (
               <div key={area.id} className="text-center p-3 bg-zinc-900 rounded-sm">

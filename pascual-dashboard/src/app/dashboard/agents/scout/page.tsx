@@ -14,6 +14,7 @@ import {
 } from "@/components/agents";
 import { useGrowl } from "@/components/growl";
 import { scoutData } from "@/lib/api/mock/pascual-agents";
+import { useDashboardConfig } from "@/lib/context/DashboardConfigContext";
 
 export default function ScoutDashboard() {
   const [data] = useState(scoutData);
@@ -22,6 +23,7 @@ export default function ScoutDashboard() {
   const [searchFilter, setSearchFilter] = useState<"all" | "completed" | "processing" | "pending" | "failed">("all");
   const [searchSearch, setSearchSearch] = useState("");
   const { sendToAgent } = useGrowl();
+  const { config } = useDashboardConfig();
 
   // Usar el hook reutilizable para configuración del agente
   const {
@@ -59,6 +61,7 @@ export default function ScoutDashboard() {
         lema={data.lema}
         status={data.status}
         showTimeRange={true}
+        kpiVisibility={config.kpis.scout}
         usage={{
           data: [45, 62, 58, 71, 68, 82, 75, 89, 84, 91],
           dataByRange: {
@@ -71,12 +74,14 @@ export default function ScoutDashboard() {
         }}
         kpis={[
           {
+            id: "busquedas",
             label: "Búsquedas",
             value: data.metrics.searchesToday,
             values: { "24h": data.metrics.searchesToday, "7d": 847, "1m": 3420, "1y": 41500 },
             status: "neutral",
           },
           {
+            id: "precision",
             label: "Precisión",
             value: `${data.metrics.searchAccuracy}%`,
             values: { "24h": `${data.metrics.searchAccuracy}%`, "7d": "91%", "1m": "89%", "1y": "87%" },
@@ -84,17 +89,20 @@ export default function ScoutDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "warning", "1y": "warning" },
           },
           {
+            id: "fuentes",
             label: "Fuentes",
             value: data.metrics.sourcesActive,
             status: "neutral",
           },
           {
+            id: "data",
             label: "Data",
             value: data.metrics.dataProcessed,
             values: { "24h": data.metrics.dataProcessed, "7d": "18.2GB", "1m": "72.5GB", "1y": "845GB" },
             status: "neutral",
           },
           {
+            id: "cache",
             label: "Cache",
             value: `${data.metrics.cacheHitRate}%`,
             values: { "24h": `${data.metrics.cacheHitRate}%`, "7d": "68%", "1m": "71%", "1y": "74%" },
@@ -128,6 +136,7 @@ export default function ScoutDashboard() {
         {/* Recent Searches */}
         <SectionCard
           title="Búsquedas Recientes"
+          visible={config.grids.scout.busquedasRecientes}
           action={
             <FilterTabs
               options={[
@@ -184,6 +193,7 @@ export default function ScoutDashboard() {
         {/* Monitored Trends */}
         <SectionCard
           title="Tendencias Monitoreadas"
+          visible={config.grids.scout.tendencias}
           action={
             <Badge variant="info">{data.metrics.alertsPending} alertas</Badge>
           }
@@ -218,6 +228,7 @@ export default function ScoutDashboard() {
         {/* Data Sources */}
         <SectionCard
           title="Fuentes de Datos"
+          visible={config.grids.scout.fuentesActivas}
           action={
             <FilterTabs
               options={[

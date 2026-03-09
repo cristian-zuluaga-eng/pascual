@@ -220,7 +220,7 @@ function generateAgentResponse(agentId: string, agentName: string, userMessage: 
       "Análisis fundamental completado. Los ratios están dentro de parámetros.",
       "Sentimiento del mercado: Bullish. VIX en niveles bajos.",
     ],
-    optimus: [
+    picasso: [
       "Auditoría UX completada. Core Web Vitals dentro de objetivos.",
       "Nuevo componente diseñado siguiendo el design system.",
       "Accesibilidad verificada. WCAG 2.1 AA compliant.",

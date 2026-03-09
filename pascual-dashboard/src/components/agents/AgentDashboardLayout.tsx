@@ -31,6 +31,8 @@ export const TIME_RANGE_LABELS: Record<TimeRange, string> = {
 // ============================================================================
 
 interface HeaderKPI {
+  /** ID único del KPI para control de visibilidad */
+  id: string;
   label: string;
   value: string | number;
   /** Values for different time ranges */
@@ -57,6 +59,8 @@ interface AgentHeaderProps {
   kpis?: HeaderKPI[];
   usage?: UsageData;
   showTimeRange?: boolean;
+  /** Objeto con visibilidad de cada KPI por su id (ej: { seguridad: true, uptime: false }) */
+  kpiVisibility?: Record<string, boolean>;
   defaultTimeRange?: TimeRange;
   onTimeRangeChange?: (range: TimeRange) => void;
   onRefresh?: () => void;
@@ -72,6 +76,7 @@ export function AgentHeader({
   kpis,
   usage,
   showTimeRange = false,
+  kpiVisibility,
   defaultTimeRange = "24h",
   onTimeRangeChange,
   onRefresh,
@@ -176,7 +181,9 @@ export function AgentHeader({
         {/* KPIs in boxes */}
         {kpis && kpis.length > 0 && (
           <div className="flex items-center gap-3">
-            {kpis.map((kpi, idx) => (
+            {kpis
+              .filter((kpi) => !kpiVisibility || kpiVisibility[kpi.id] !== false)
+              .map((kpi, idx) => (
               <div key={idx} className="bg-zinc-950 border border-zinc-800 rounded-sm px-4 py-2 text-center min-w-[80px]">
                 <p className={`font-mono text-lg font-bold ${getKPIColor(getKPIStatus(kpi))}`}>
                   {getKPIValue(kpi)}
@@ -1154,9 +1161,15 @@ interface SectionCardProps {
   children: ReactNode;
   className?: string;
   maxHeight?: string;
+  visible?: boolean; // Si es false, no renderiza el componente
 }
 
-export function SectionCard({ title, action, children, className = "", maxHeight = "300px" }: SectionCardProps) {
+export function SectionCard({ title, action, children, className = "", maxHeight = "300px", visible = true }: SectionCardProps) {
+  // Si visible es false, no renderizar nada
+  if (!visible) {
+    return null;
+  }
+
   return (
     <Card className={className}>
       <CardHeader>

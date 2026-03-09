@@ -20,6 +20,8 @@ import type { AgentStatus, SubAgentStatus } from "@/lib/api/mock/pascual-agents"
  * KPI que se muestra en el header del agente
  */
 export interface AgentKPI {
+  /** ID único del KPI (para control de visibilidad) */
+  id: string;
   /** Etiqueta del KPI */
   label: string;
   /** Valor actual del KPI */

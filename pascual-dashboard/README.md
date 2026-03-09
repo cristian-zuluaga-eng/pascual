@@ -1,3 +1,10 @@
+# PASCUAL Dashboard
+
+**Version:** 1.1.0
+**Author:** Cristian Zuluaga
+
+Dashboard de control para el ecosistema PASCUAL - Sistema de agentes inteligentes para automatizacion y asistencia personal.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

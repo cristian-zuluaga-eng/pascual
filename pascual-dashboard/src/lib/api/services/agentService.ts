@@ -24,7 +24,7 @@ import {
   consultorData,
   gambitoData,
   condor360Data,
-  optimusData,
+  picassoData,
 } from "../mock/pascual-agents";
 
 import { mockAgents, AVAILABLE_MODELS } from "../mock/agents";
@@ -42,7 +42,7 @@ type AgentId =
   | "consultor"
   | "gambito"
   | "condor360"
-  | "optimus"
+  | "picasso"
   | "pascual";
 
 interface AgentDataMap {
@@ -54,7 +54,7 @@ interface AgentDataMap {
   consultor: typeof consultorData;
   gambito: typeof gambitoData;
   condor360: typeof condor360Data;
-  optimus: typeof optimusData;
+  picasso: typeof picassoData;
 }
 
 // Mapa de datos mock por agente
@@ -67,7 +67,7 @@ const AGENT_DATA_MAP: Record<string, unknown> = {
   consultor: consultorData,
   gambito: gambitoData,
   condor360: condor360Data,
-  optimus: optimusData,
+  picasso: picassoData,
 };
 
 // ============================================================================

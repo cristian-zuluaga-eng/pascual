@@ -15,12 +15,14 @@ import {
 } from "@/components/agents";
 import { useGrowl } from "@/components/growl";
 import { audiovisualData } from "@/lib/api/mock/pascual-agents";
+import { useDashboardConfig } from "@/lib/context/DashboardConfigContext";
 
 export default function AudiovisualDashboard() {
   const [data] = useState(audiovisualData);
   const [libraryFilter, setLibraryFilter] = useState<"all" | "image" | "video" | "audio" | "text">("all");
   const [librarySearch, setLibrarySearch] = useState("");
   const { sendToAgent } = useGrowl();
+  const { config } = useDashboardConfig();
 
   // Usar el hook reutilizable para configuración del agente
   const {
@@ -80,6 +82,7 @@ export default function AudiovisualDashboard() {
         lema={data.lema}
         status={data.status}
         showTimeRange={true}
+        kpiVisibility={config.kpis.audiovisual}
         usage={{
           data: [40, 45, 50, 48, 55, 60, 58, 65, 62, 70],
           dataByRange: {
@@ -92,12 +95,14 @@ export default function AudiovisualDashboard() {
         }}
         kpis={[
           {
+            id: "generados",
             label: "Generados",
             value: data.metrics.assetsGenerated,
             values: { "24h": data.metrics.assetsGenerated, "7d": 542, "1m": 2180, "1y": 26500 },
             status: "neutral",
           },
           {
+            id: "enCola",
             label: "En Cola",
             value: data.metrics.inQueue,
             values: { "24h": data.metrics.inQueue, "7d": 5, "1m": 4, "1y": 3 },
@@ -105,6 +110,7 @@ export default function AudiovisualDashboard() {
             statuses: { "24h": "good", "7d": "warning", "1m": "good", "1y": "good" },
           },
           {
+            id: "calidad",
             label: "Calidad",
             value: `${data.metrics.avgQuality}%`,
             values: { "24h": `${data.metrics.avgQuality}%`, "7d": "85%", "1m": "83%", "1y": "81%" },
@@ -112,6 +118,7 @@ export default function AudiovisualDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "warning" },
           },
           {
+            id: "storage",
             label: "Storage",
             value: data.metrics.storageUsed,
             values: { "24h": data.metrics.storageUsed, "7d": "2.1 GB", "1m": "1.8 GB", "1y": "1.2 GB" },
@@ -144,6 +151,7 @@ export default function AudiovisualDashboard() {
         {/* Biblioteca de Assets */}
         <SectionCard
           title="Biblioteca de Assets"
+          visible={config.grids.audiovisual.biblioteca}
           action={
             <FilterTabs
               options={[
@@ -226,6 +234,7 @@ export default function AudiovisualDashboard() {
         {/* Cola de Producción */}
         <SectionCard
           title="Cola de Producción"
+          visible={config.grids.audiovisual.procesamientoActivo}
           action={
             <Badge variant={data.metrics.inQueue > 0 ? "info" : "success"}>
               {data.metrics.inQueue} en cola
@@ -277,6 +286,7 @@ export default function AudiovisualDashboard() {
         {/* Assets Recientes */}
         <SectionCard
           title="Assets Recientes"
+          visible={config.grids.audiovisual.capacidades}
           action={
             <button className="font-mono text-xs text-[#00d9ff] hover:underline">Ver todos</button>
           }
