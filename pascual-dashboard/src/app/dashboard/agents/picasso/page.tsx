@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import {
   AgentHeader,
-  SubAgentStatusGrid,
   Canvas,
   SectionCard,
   AgentConfigModal,
@@ -72,19 +71,13 @@ export default function PicassoDashboard() {
         ]}
       />
 
-      {/* Sub-Agents Status Grid */}
-      <SubAgentStatusGrid
-        subAgents={data.subAgents}
-        onSettings={openConfig}
-      />
-
       {/* Canvas + Needs - Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Canvas - Lienzo de respuestas de Pascual */}
         <Canvas
           title="Canvas"
           placeholder="¿Qué necesitas diseñar o analizar?"
-          onSendMessage={(msg) => sendToAgent("picasso", "Picasso", "🎨", msg)}
+          onSendMessage={(msg) => sendToAgent("picasso", "Dashboard", "🎨", msg)}
           minHeight="180px"
           quickPrompts={[
             { label: "Auditar UI", prompt: "Ejecuta una auditoría de UI/UX" },
@@ -94,7 +87,7 @@ export default function PicassoDashboard() {
         />
 
         {/* UX NECESIDADES */}
-        <SectionCard title="HALLAZGOS POR APROBAR" visible={config.grids.picasso.necesidades} maxHeight="320px">
+        <SectionCard title="NECESIDADES IDENTIFICADAS" visible={config.grids.picasso.necesidades} maxHeight="320px">
           <div className="space-y-4">
             {data.uxNeeds.map((need) => {
               const getPriorityColor = (priority: string) => {

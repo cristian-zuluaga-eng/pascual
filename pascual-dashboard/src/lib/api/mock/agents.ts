@@ -1,3 +1,19 @@
+// ============================================================================
+// MÓDULOS DEL DASHBOARD - Mock Data
+// ============================================================================
+//
+// IMPORTANTE: Este archivo contiene datos mock para los MÓDULOS del dashboard.
+// Los módulos son las diferentes secciones/funcionalidades del sistema.
+//
+// AGENTES REALES del sistema (definidos en /dashboard/agents/page.tsx):
+// - Pascual: Orquestador principal, finanzas y administración
+// - Hunter: Búsqueda de información y extracción de datos
+// - Warden: Seguridad y actualización del dashboard
+// - Nexus: Operaciones complejas de programación y análisis financiero
+//
+// Los "subAgents" aquí son sub-módulos de cada módulo principal.
+// ============================================================================
+
 import { Agent } from "@/components/dashboard/AgentCard";
 
 export const AVAILABLE_MODELS = [
@@ -12,12 +28,13 @@ export const AVAILABLE_MODELS = [
   "ElevenLabs",
 ];
 
+// Mock data de módulos (para vistas legacy, no usar para agentes reales)
 export const mockAgents: Agent[] = [
   {
     id: "pascual",
     name: "Pascual",
     icon: "🧠",
-    description: "Agente Maestro - Orquestador principal del ecosistema, coordinación de agentes especializados y toma de decisiones estratégicas",
+    description: "Orquestador principal del sistema. Experto en finanzas y administración de recursos informáticos. Eje central del ecosistema.",
     model: "Claude Opus",
     role: "general",
     status: "active",
@@ -90,7 +107,7 @@ export const mockAgents: Agent[] = [
     activeTasks: 4,
     usageHistory: [55, 62, 58, 70, 65, 75, 72, 78, 80, 85],
     subAgents: [
-      { id: "hunter", name: "Hunter", model: "Claude Sonnet", status: "busy", description: "Especialista en Búsqueda" },
+      { id: "hunter", name: "Hunter", model: "Claude Sonnet", status: "busy", description: "Búsqueda de información y extracción de datos" },
       { id: "harvester", name: "Harvester", model: "Claude Haiku", status: "active", description: "Experto en Extracción" },
       { id: "curator", name: "Curator", model: "Claude Haiku", status: "active", description: "Gestor de Calidad de Datos" },
       { id: "synthesizer", name: "Synthesizer", model: "Claude Sonnet", status: "busy", description: "Procesador de Información" },
@@ -171,7 +188,7 @@ export const mockAgents: Agent[] = [
   },
   {
     id: "picasso",
-    name: "Picasso",
+    name: "Dashboard",
     icon: "🎨",
     description: "Sistema de Interfaces y Experiencia de Usuario - Diseño UX/UI, accesibilidad y rendimiento web",
     model: "Claude Opus",

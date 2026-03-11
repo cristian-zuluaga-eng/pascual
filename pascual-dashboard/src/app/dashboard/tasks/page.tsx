@@ -13,10 +13,17 @@ import { Sparkline } from "@/components/charts/LineChart";
 // TYPES
 // ============================================================================
 
-type TaskStatus = "backlog" | "todo" | "in_progress" | "done";
+type TaskStatus = "backlog" | "todo" | "in_progress" | "in_review" | "done";
 type TaskPriority = "low" | "medium" | "high" | "urgent";
 type CalendarView = "week" | "month";
 type TimeRange = "24h" | "7d" | "1m" | "1y";
+
+interface Project {
+  id: string;
+  name: string;
+  description: string;
+  color: string;
+}
 
 const TIME_RANGE_LABELS: Record<TimeRange, string> = {
   "24h": "24H",
@@ -36,6 +43,7 @@ interface Task {
   completedAt?: string;
   notes?: TaskNote[];
   tags?: string[];
+  projectId: string;
 }
 
 interface TaskNote {
@@ -57,7 +65,23 @@ interface Reminder {
 // MOCK DATA
 // ============================================================================
 
+const projects: Project[] = [
+  {
+    id: "general",
+    name: "Proyecto General",
+    description: "Tareas generales del equipo",
+    color: "#00d9ff",
+  },
+  {
+    id: "software",
+    name: "Proyecto de Software",
+    description: "Desarrollo de la nueva plataforma",
+    color: "#39ff14",
+  },
+];
+
 const initialTasks: Task[] = [
+  // === PROYECTO GENERAL ===
   {
     id: "1",
     title: "Analizar tendencias de mercado Q1",
@@ -68,6 +92,7 @@ const initialTasks: Task[] = [
     createdAt: "2024-03-01",
     completedAt: "2024-03-05",
     tags: ["finanzas", "análisis"],
+    projectId: "general",
     notes: [
       { id: "n1", content: "Revisados los datos de enero y febrero", createdAt: "2024-03-02" },
       { id: "n2", content: "Tendencia positiva en sector tecnológico", createdAt: "2024-03-04" },
@@ -82,16 +107,18 @@ const initialTasks: Task[] = [
     assignedAgent: "Sentinel",
     createdAt: "2024-03-04",
     tags: ["seguridad"],
+    projectId: "general",
   },
   {
     id: "3",
     title: "Actualizar documentación API",
     description: "La documentación de endpoints necesita actualización",
-    status: "in_progress",
+    status: "in_review",
     priority: "medium",
     assignedAgent: "Nexus",
     createdAt: "2024-03-03",
     tags: ["desarrollo", "docs"],
+    projectId: "general",
   },
   {
     id: "4",
@@ -102,6 +129,7 @@ const initialTasks: Task[] = [
     assignedAgent: "Asistente",
     createdAt: "2024-03-05",
     tags: ["productividad"],
+    projectId: "general",
   },
   {
     id: "5",
@@ -112,6 +140,7 @@ const initialTasks: Task[] = [
     assignedAgent: "Nexus",
     createdAt: "2024-03-06",
     tags: ["desarrollo", "review"],
+    projectId: "general",
   },
   {
     id: "6",
@@ -120,6 +149,7 @@ const initialTasks: Task[] = [
     priority: "low",
     createdAt: "2024-03-01",
     tags: ["mantenimiento"],
+    projectId: "general",
   },
   {
     id: "7",
@@ -129,6 +159,7 @@ const initialTasks: Task[] = [
     priority: "medium",
     createdAt: "2024-03-02",
     tags: ["performance"],
+    projectId: "general",
   },
   {
     id: "8",
@@ -139,6 +170,7 @@ const initialTasks: Task[] = [
     createdAt: "2024-03-01",
     completedAt: "2024-03-03",
     tags: ["reportes"],
+    projectId: "general",
   },
   {
     id: "9",
@@ -149,6 +181,123 @@ const initialTasks: Task[] = [
     createdAt: "2024-02-28",
     completedAt: "2024-03-02",
     tags: ["finanzas", "alertas"],
+    projectId: "general",
+  },
+  // === PROYECTO DE SOFTWARE ===
+  {
+    id: "sw-1",
+    title: "Diseñar arquitectura de microservicios",
+    description: "Definir la estructura de servicios para el nuevo sistema",
+    status: "done",
+    priority: "high",
+    assignedAgent: "Nexus",
+    createdAt: "2024-02-20",
+    completedAt: "2024-02-28",
+    tags: ["arquitectura", "backend"],
+    projectId: "software",
+    notes: [
+      { id: "sw-n1", content: "Se definieron 5 microservicios principales", createdAt: "2024-02-25" },
+      { id: "sw-n2", content: "Arquitectura aprobada por el equipo", createdAt: "2024-02-28" },
+    ],
+  },
+  {
+    id: "sw-2",
+    title: "Implementar autenticación OAuth2",
+    description: "Integrar sistema de autenticación con proveedores externos",
+    status: "in_review",
+    priority: "urgent",
+    assignedAgent: "Sentinel",
+    createdAt: "2024-03-01",
+    tags: ["seguridad", "auth", "backend"],
+    projectId: "software",
+    notes: [
+      { id: "sw-n3", content: "Implementación completada, pendiente revisión de seguridad", createdAt: "2024-03-05" },
+    ],
+  },
+  {
+    id: "sw-3",
+    title: "Crear componentes UI del dashboard",
+    description: "Desarrollar componentes reutilizables en React",
+    status: "in_progress",
+    priority: "high",
+    assignedAgent: "Nexus",
+    createdAt: "2024-03-02",
+    tags: ["frontend", "react", "ui"],
+    projectId: "software",
+  },
+  {
+    id: "sw-4",
+    title: "Configurar pipeline CI/CD",
+    description: "Automatizar el proceso de build y deployment",
+    status: "in_progress",
+    priority: "medium",
+    assignedAgent: "Optimus",
+    createdAt: "2024-03-03",
+    tags: ["devops", "automation"],
+    projectId: "software",
+  },
+  {
+    id: "sw-5",
+    title: "Escribir tests unitarios API",
+    description: "Cobertura mínima del 80% para endpoints críticos",
+    status: "todo",
+    priority: "high",
+    assignedAgent: "Nexus",
+    createdAt: "2024-03-04",
+    tags: ["testing", "backend"],
+    projectId: "software",
+  },
+  {
+    id: "sw-6",
+    title: "Integrar sistema de logging",
+    description: "Implementar logging centralizado con ELK stack",
+    status: "todo",
+    priority: "medium",
+    assignedAgent: "Sentinel",
+    createdAt: "2024-03-05",
+    tags: ["devops", "monitoring"],
+    projectId: "software",
+  },
+  {
+    id: "sw-7",
+    title: "Documentar APIs con OpenAPI",
+    description: "Generar especificación OpenAPI 3.0 para todos los endpoints",
+    status: "backlog",
+    priority: "medium",
+    createdAt: "2024-03-01",
+    tags: ["docs", "api"],
+    projectId: "software",
+  },
+  {
+    id: "sw-8",
+    title: "Optimizar queries de base de datos",
+    description: "Mejorar rendimiento de consultas lentas identificadas",
+    status: "backlog",
+    priority: "low",
+    createdAt: "2024-03-02",
+    tags: ["backend", "database", "performance"],
+    projectId: "software",
+  },
+  {
+    id: "sw-9",
+    title: "Implementar caché con Redis",
+    description: "Agregar capa de caché para mejorar tiempos de respuesta",
+    status: "backlog",
+    priority: "medium",
+    createdAt: "2024-03-03",
+    tags: ["backend", "performance"],
+    projectId: "software",
+  },
+  {
+    id: "sw-10",
+    title: "Setup ambiente de staging",
+    status: "done",
+    priority: "high",
+    assignedAgent: "Optimus",
+    createdAt: "2024-02-25",
+    completedAt: "2024-03-01",
+    tags: ["devops", "infrastructure"],
+    projectId: "software",
   },
 ];
 
@@ -167,6 +316,7 @@ const columns: { status: TaskStatus; title: string; color: string }[] = [
   { status: "backlog", title: "Backlog", color: "zinc-600" },
   { status: "todo", title: "Por Hacer", color: "#ffaa00" },
   { status: "in_progress", title: "En Progreso", color: "#00d9ff" },
+  { status: "in_review", title: "En Revisión", color: "#a855f7" },
   { status: "done", title: "Completado", color: "#39ff14" },
 ];
 
@@ -182,14 +332,21 @@ export default function TasksPage() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>("7d");
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("general");
 
   const taskModal = useModal();
   const newTaskModal = useModal();
   const reminderModal = useModal();
 
+  // Get current project
+  const currentProject = projects.find(p => p.id === selectedProjectId) || projects[0];
+
+  // Filter tasks by selected project
+  const projectTasks = tasks.filter(task => task.projectId === selectedProjectId);
+
   // Task operations
   const getTasksByStatus = (status: TaskStatus) =>
-    tasks.filter((task) => task.status === status);
+    projectTasks.filter((task) => task.status === status);
 
   const moveTask = (taskId: string, newStatus: TaskStatus) => {
     setTasks((prev) =>
@@ -250,12 +407,12 @@ export default function TasksPage() {
         break;
     }
 
-    const completedInRange = tasks.filter((t) => {
+    const completedInRange = projectTasks.filter((t) => {
       if (!t.completedAt) return false;
       return new Date(t.completedAt) >= filterDate;
     }).length;
 
-    const createdInRange = tasks.filter((t) => {
+    const createdInRange = projectTasks.filter((t) => {
       return new Date(t.createdAt) >= filterDate;
     }).length;
 
@@ -265,7 +422,7 @@ export default function TasksPage() {
   const { completedInRange, createdInRange } = getKPIsByTimeRange();
 
   const avgCompletionTime = (() => {
-    const completedTasks = tasks.filter((t) => t.completedAt && t.createdAt);
+    const completedTasks = projectTasks.filter((t) => t.completedAt && t.createdAt);
     if (completedTasks.length === 0) return 0;
     const totalDays = completedTasks.reduce((acc, t) => {
       const created = new Date(t.createdAt);
@@ -275,10 +432,11 @@ export default function TasksPage() {
     return Math.round(totalDays / completedTasks.length);
   })();
 
-  const urgentTasks = tasks.filter((t) => t.priority === "urgent" && t.status !== "done").length;
-  const inProgressTasks = tasks.filter((t) => t.status === "in_progress").length;
-  const pendingTasks = tasks.filter((t) => t.status === "todo" || t.status === "backlog").length;
-  const totalNotes = tasks.reduce((acc, t) => acc + (t.notes?.length || 0), 0);
+  const urgentTasks = projectTasks.filter((t) => t.priority === "urgent" && t.status !== "done").length;
+  const inProgressTasks = projectTasks.filter((t) => t.status === "in_progress").length;
+  const inReviewTasks = projectTasks.filter((t) => t.status === "in_review").length;
+  const pendingTasks = projectTasks.filter((t) => t.status === "todo" || t.status === "backlog").length;
+  const totalNotes = projectTasks.reduce((acc, t) => acc + (t.notes?.length || 0), 0);
 
   // Activity data for sparkline
   const activityData: Record<TimeRange, number[]> = {
@@ -315,8 +473,8 @@ export default function TasksPage() {
             <div className="flex items-center gap-3">
               <h1 className="font-mono text-xl font-bold text-white">Planificador</h1>
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-[#00d9ff] status-pulse" />
-                <span className="font-mono text-[10px] text-zinc-400">{tasks.length} total</span>
+                <div className="w-2 h-2 rounded-full status-pulse" style={{ backgroundColor: currentProject.color }} />
+                <span className="font-mono text-[10px] text-zinc-400">{projectTasks.length} tareas</span>
               </div>
             </div>
             <p className="font-mono text-xs text-zinc-500 italic">"Gestiona tareas y eventos"</p>
@@ -390,9 +548,36 @@ export default function TasksPage() {
         </div>
       </div>
 
-      {/* Sub-header: View toggle + Actions */}
+      {/* Sub-header: Project Selector + View toggle + Actions */}
       <div className="flex items-center justify-between bg-zinc-950 border border-zinc-800 rounded-sm p-3">
         <div className="flex items-center gap-3">
+          {/* Project Selector */}
+          <div className="relative">
+            <select
+              value={selectedProjectId}
+              onChange={(e) => setSelectedProjectId(e.target.value)}
+              disabled={view === "agenda"}
+              className={`appearance-none bg-zinc-900 border border-zinc-700 rounded-sm px-3 py-1.5 pr-8 font-mono text-xs focus:outline-none transition-colors ${
+                view === "agenda"
+                  ? "text-zinc-500 cursor-not-allowed opacity-50"
+                  : "text-white cursor-pointer hover:bg-zinc-800 focus:border-[#00d9ff]"
+              }`}
+              style={{ borderLeft: `3px solid ${view === "agenda" ? "#52525b" : currentProject.color}` }}
+            >
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={view === "agenda" ? "text-zinc-600" : "text-zinc-500"}>
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </div>
+          </div>
+          {/* Divider */}
+          <div className="h-6 w-px bg-zinc-700" />
           {/* View Toggle */}
           <div className="flex items-center bg-zinc-900 rounded-sm border border-zinc-700">
             <button
@@ -418,7 +603,7 @@ export default function TasksPage() {
           </div>
           <span className="font-mono text-xs text-zinc-600">
             {view === "kanban"
-              ? `${tasks.filter(t => t.status !== "done").length} tareas activas`
+              ? `${projectTasks.filter(t => t.status !== "done").length} tareas activas`
               : `${reminders.length} eventos`
             }
           </span>
@@ -469,6 +654,7 @@ export default function TasksPage() {
       <NewTaskModal
         isOpen={newTaskModal.isOpen}
         onClose={newTaskModal.close}
+        projectId={selectedProjectId}
         onAdd={(task) => {
           setTasks((prev) => [task, ...prev]);
           newTaskModal.close();
@@ -510,7 +696,7 @@ function KanbanBoard({
   setDraggedTask,
 }: KanbanBoardProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 min-h-[500px]">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 min-h-[500px]">
       {columns.map((column) => (
         <KanbanColumn
           key={column.status}
@@ -739,6 +925,7 @@ function TaskDetailModal({
   const getStatusColor = () => {
     switch (task.status) {
       case "done": return "#39ff14";
+      case "in_review": return "#a855f7";
       case "in_progress": return "#00d9ff";
       case "todo": return "#ffaa00";
       case "backlog": return "#71717a";
@@ -786,7 +973,8 @@ function TaskDetailModal({
                 >
                   {task.status === "backlog" ? "Backlog" :
                    task.status === "todo" ? "Por Hacer" :
-                   task.status === "in_progress" ? "En Progreso" : "✓ Completado"}
+                   task.status === "in_progress" ? "En Progreso" :
+                   task.status === "in_review" ? "En Revisión" : "✓ Completado"}
                 </span>
                 {task.assignedAgent && (
                   <span className="px-2 py-1 rounded-sm font-mono text-[10px] bg-zinc-800 text-[#00d9ff] border border-zinc-700">
@@ -918,9 +1106,10 @@ interface NewTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (task: Task) => void;
+  projectId: string;
 }
 
-function NewTaskModal({ isOpen, onClose, onAdd }: NewTaskModalProps) {
+function NewTaskModal({ isOpen, onClose, onAdd, projectId }: NewTaskModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("medium");
@@ -937,6 +1126,7 @@ function NewTaskModal({ isOpen, onClose, onAdd }: NewTaskModalProps) {
       priority,
       assignedAgent: assignedAgent || undefined,
       createdAt: new Date().toISOString().split("T")[0],
+      projectId,
     };
 
     onAdd(newTask);

@@ -24,7 +24,6 @@ export interface DashboardConfig {
   };
   // Header
   header: {
-    showNotificationBanner: boolean;
     showSystemStatus: boolean;
     showLastSync: boolean;
   };
@@ -46,6 +45,7 @@ export interface DashboardConfig {
       codeReviews: boolean;
     };
     condor360: {
+      balance: boolean;
       asignacionPortafolio: boolean;
       oportunidades: boolean;
       confianzaModelo: boolean;
@@ -162,7 +162,6 @@ const defaultConfig: DashboardConfig = {
     picasso: true,
   },
   header: {
-    showNotificationBanner: true,
     showSystemStatus: true,
     showLastSync: true,
   },
@@ -183,6 +182,7 @@ const defaultConfig: DashboardConfig = {
       codeReviews: true,
     },
     condor360: {
+      balance: true,
       asignacionPortafolio: true,
       oportunidades: true,
       confianzaModelo: true,

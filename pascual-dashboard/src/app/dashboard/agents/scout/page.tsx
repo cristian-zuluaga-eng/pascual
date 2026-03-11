@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import {
   AgentHeader,
-  SubAgentStatusGrid,
   Canvas,
   SectionCard,
   ExpandableListItem,
@@ -110,12 +109,6 @@ export default function ScoutDashboard() {
             statuses: { "24h": "good", "7d": "warning", "1m": "good", "1y": "good" },
           },
         ]}
-      />
-
-      {/* Sub-Agents Status Grid */}
-      <SubAgentStatusGrid
-        subAgents={data.subAgents}
-        onSettings={openConfig}
       />
 
       {/* Canvas, Searches, Trends & Data Sources - 2x2 Grid */}

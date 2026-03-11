@@ -19,7 +19,6 @@ import { HeatMap } from "@/components/charts/HeatMap";
 import { mockHeatmapData, dayLabels, hourLabels } from "@/lib/api/mock/security";
 import {
   AgentHeader,
-  SubAgentStatusGrid,
   Canvas,
   SectionCard,
   KPICard,
@@ -827,7 +826,7 @@ function DashboardConfigPanel() {
             conforme el ecosistema PASCUAL va creciendo y estabilizándose.
           </p>
           <div className="flex items-center gap-2 mt-2">
-            <span className="px-2 py-0.5 bg-zinc-800 rounded font-mono text-[10px] text-zinc-400">Agente: Picasso</span>
+            <span className="px-2 py-0.5 bg-zinc-800 rounded font-mono text-[10px] text-zinc-400">Agente: Dashboard</span>
             <span className="px-2 py-0.5 bg-[#39ff14]/10 border border-[#39ff14]/30 rounded font-mono text-[10px] text-[#39ff14]">Protección activa</span>
           </div>
         </div>
@@ -843,11 +842,6 @@ function DashboardConfigPanel() {
               <h4 className="font-mono text-sm font-bold text-white">Header</h4>
             </div>
             <div className="space-y-3 pl-1">
-              <ToggleRow
-                checked={config.header.showNotificationBanner}
-                onCheckedChange={(checked) => updateHeaderConfig("showNotificationBanner", checked)}
-                label="Banner de Notificaciones"
-              />
               <ToggleRow
                 checked={config.header.showSystemStatus}
                 onCheckedChange={(checked) => updateHeaderConfig("showSystemStatus", checked)}
@@ -910,7 +904,7 @@ function DashboardConfigPanel() {
         <div className="mt-6 pt-6 border-t border-zinc-800">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-sm">🤖</span>
-            <h4 className="font-mono text-sm font-bold text-white">Configuración por Agente</h4>
+            <h4 className="font-mono text-sm font-bold text-white">Configuración por Módulo</h4>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Sentinel */}
@@ -1092,6 +1086,7 @@ function DashboardConfigPanel() {
                     />
                   </div>
                   <div className="space-y-1 pl-2">
+                    <ToggleRow checked={config.grids.condor360.balance} onCheckedChange={(checked) => updateGridConfig("condor360", "balance", checked)} label="Balance" />
                     <ToggleRow checked={config.grids.condor360.asignacionPortafolio} onCheckedChange={(checked) => updateGridConfig("condor360", "asignacionPortafolio", checked)} label="Asignación Portafolio" />
                     <ToggleRow checked={config.grids.condor360.oportunidades} onCheckedChange={(checked) => updateGridConfig("condor360", "oportunidades", checked)} label="Oportunidades" />
                     <ToggleRow checked={config.grids.condor360.confianzaModelo} onCheckedChange={(checked) => updateGridConfig("condor360", "confianzaModelo", checked)} label="Confianza Modelo" />
@@ -1458,13 +1453,13 @@ function DashboardConfigPanel() {
               </div>
             </div>
 
-            {/* Picasso */}
+            {/* Dashboard */}
             <div className={`bg-zinc-900/30 rounded-sm border border-zinc-800 ${!config.agentViews.picasso ? "opacity-50" : ""}`}>
               <div className="p-3">
                 <div className="flex items-center justify-between mb-3 pb-2 border-b border-zinc-800">
                   <div className="flex items-center gap-2">
                     <span className="text-sm">🎨</span>
-                    <span className="font-mono text-xs text-white font-medium">Picasso</span>
+                    <span className="font-mono text-xs text-white font-medium">Dashboard</span>
                   </div>
                   <Toggle
                     checked={config.agentViews.picasso}
@@ -1496,7 +1491,7 @@ function DashboardConfigPanel() {
                     />
                   </div>
                   <div className="space-y-1 pl-2">
-                    <ToggleRow checked={config.grids.picasso.necesidades} onCheckedChange={(checked) => updateGridConfig("picasso", "necesidades", checked)} label="Hallazgos por Aprobar" />
+                    <ToggleRow checked={config.grids.picasso.necesidades} onCheckedChange={(checked) => updateGridConfig("picasso", "necesidades", checked)} label="Necesidades Identificadas" />
                     <ToggleRow checked={config.grids.picasso.logImplementacion} onCheckedChange={(checked) => updateGridConfig("picasso", "logImplementacion", checked)} label="Log Implementación" />
                   </div>
                 </div>
@@ -1541,12 +1536,6 @@ export default function TemplatesPage() {
   ];
 
   const sampleSparklineData = [20, 35, 28, 45, 38, 52, 48, 55, 60, 52];
-
-  const sampleSubAgents = [
-    { id: "1", name: "Sub-Agent A", description: "Análisis de datos", detailedDescription: "Procesa y analiza datos en tiempo real", status: "active" as const, model: "Claude 3.5", activeTasks: 2, lastActivity: "hace 5m", score: 92 },
-    { id: "2", name: "Sub-Agent B", description: "Generación de reportes", detailedDescription: "Genera reportes automatizados", status: "busy" as const, model: "GPT-4", activeTasks: 3, lastActivity: "hace 2m", score: 85 },
-    { id: "3", name: "Sub-Agent C", description: "Monitoreo", detailedDescription: "Monitorea sistemas en tiempo real", status: "idle" as const, model: "Claude 3.5", activeTasks: 0, lastActivity: "hace 1h", score: 78 },
-  ];
 
   const [filterValue, setFilterValue] = useState<"all" | "active" | "inactive">("all");
   const [searchValue, setSearchValue] = useState("");
@@ -1600,27 +1589,23 @@ export default function TemplatesPage() {
       <SectionDivider title="Plantilla de Agente" />
 
       <ComponentShowcase
-        title="AgentDashboardTemplate"
-        description="Plantilla base para crear dashboards de agentes. Incluye: Header con KPIs, Sub-Agentes, Canvas y área de contenido principal."
-        interfaceCode={`// Estructura base de un Dashboard de Agente
+        title="ModuleDashboardTemplate"
+        description="Plantilla base para crear dashboards de módulos. Incluye: Header con KPIs, Canvas y área de contenido principal."
+        interfaceCode={`// Estructura base de un Dashboard de Módulo
 // 1. AgentHeader - Header con KPIs y sparkline de uso
-// 2. SubAgentStatusGrid - Grid de sub-agentes con estados
-// 3. Grid Principal - Canvas + SectionCards personalizables
+// 2. Grid Principal - Canvas + SectionCards personalizables
 
-interface AgentDashboardTemplate {
+interface ModuleDashboardTemplate {
   // Header obligatorio
   header: {
-    name: string;           // Nombre del agente
-    icon: string;           // Emoji del agente
+    name: string;           // Nombre del módulo
+    icon: string;           // Emoji del módulo
     lema: string;           // Lema/descripción corta
     status: AgentStatus;    // Estado: active | busy | idle | offline | error
     showTimeRange?: boolean; // Mostrar filtro de tiempo
     usage?: UsageData;      // Datos para sparkline
     kpis?: HeaderKPI[];     // KPIs dinámicos (máx 5)
   };
-
-  // Sub-agentes
-  subAgents: SubAgentStatus[];
 
   // Contenido principal
   mainContent: ReactNode;   // Grids con SectionCards + Canvas
@@ -1630,9 +1615,9 @@ interface AgentDashboardTemplate {
           {/* Demo Agent Header */}
           <div className="bg-zinc-950 border border-zinc-800 rounded-sm p-4">
             <AgentHeader
-              name="Agente Demo"
+              name="Módulo Demo"
               icon="🤖"
-              lema="Un agente de ejemplo para demostración"
+              lema="Un módulo de ejemplo para demostración"
               status="active"
               showTimeRange={true}
               usage={{
@@ -1647,17 +1632,11 @@ interface AgentDashboardTemplate {
             />
           </div>
 
-          {/* Demo SubAgents Grid */}
-          <SubAgentStatusGrid
-            subAgents={sampleSubAgents}
-            onSettings={() => console.log("Config clicked")}
-          />
-
           {/* Demo Main Content Grid */}
           <div className="grid grid-cols-2 gap-4">
             <Canvas
               title="Canvas"
-              placeholder="Háblale al agente..."
+              placeholder="Háblale al módulo..."
               onSendMessage={(msg) => console.log("Message:", msg)}
               minHeight="150px"
               quickPrompts={[
@@ -1668,7 +1647,7 @@ interface AgentDashboardTemplate {
             <SectionCard title="Contenido Personalizado" maxHeight="200px">
               <div className="space-y-2">
                 <p className="font-mono text-xs text-zinc-400">
-                  Aquí va el contenido específico del agente.
+                  Aquí va el contenido específico del módulo.
                 </p>
                 <p className="font-mono text-xs text-zinc-500">
                   Puede incluir cualquier combinación de SectionCards.
@@ -1972,42 +1951,6 @@ interface UsageData {
             { id: "bloqueadas", label: "Bloqueadas", value: 127, status: "good" },
             { id: "uptime", label: "Uptime", value: "99.9%", status: "good" },
           ]}
-        />
-      </ComponentShowcase>
-
-      {/* SubAgentStatusGrid */}
-      <ComponentShowcase
-        title="SubAgentStatusGrid"
-        description="Grid de sub-agentes con estados, scores y animaciones para agentes ocupados."
-        interfaceCode={`interface SubAgentStatusGridProps {
-  subAgents: SubAgentStatus[];
-  title?: string;
-  showTitle?: boolean;
-  onSettings?: () => void;  // Callback para botón de config
-  className?: string;
-}
-
-interface SubAgentStatus {
-  id: string;
-  name: string;
-  description: string;
-  detailedDescription: string;  // Tooltip content
-  status: "active" | "busy" | "idle" | "offline" | "error";
-  model: string;
-  activeTasks: number;
-  lastActivity: string;
-  score: number;  // 0-100, determina color del badge
-}`}
-      >
-        <SubAgentStatusGrid
-          subAgents={[
-            { id: "1", name: "Threat Analyzer", description: "Análisis de amenazas", detailedDescription: "Analiza patrones de amenazas en tiempo real", status: "active", model: "Claude 3.5", activeTasks: 2, lastActivity: "hace 2m", score: 95 },
-            { id: "2", name: "Network Monitor", description: "Monitoreo de red", detailedDescription: "Monitorea tráfico y detecta anomalías", status: "busy", model: "GPT-4", activeTasks: 5, lastActivity: "ahora", score: 88 },
-            { id: "3", name: "Log Parser", description: "Parseo de logs", detailedDescription: "Procesa y analiza logs del sistema", status: "active", model: "Claude 3.5", activeTasks: 1, lastActivity: "hace 5m", score: 72 },
-            { id: "4", name: "Vuln Scanner", description: "Escaneo de vulnerabilidades", detailedDescription: "Detecta vulnerabilidades conocidas", status: "idle", model: "GPT-4", activeTasks: 0, lastActivity: "hace 1h", score: 65 },
-            { id: "5", name: "Incident Handler", description: "Manejo de incidentes", detailedDescription: "Gestiona respuestas a incidentes", status: "error", model: "Claude 3.5", activeTasks: 0, lastActivity: "hace 30m", score: 45 },
-          ]}
-          onSettings={() => console.log("Settings clicked")}
         />
       </ComponentShowcase>
 

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import {
   AgentHeader,
-  SubAgentStatusGrid,
   Canvas,
   SectionCard,
   ProgressBar,
@@ -25,6 +24,27 @@ export default function Condor360Dashboard() {
   const [trendFilter, setTrendFilter] = useState<TrendFilter>("all");
   const [trendSearch, setTrendSearch] = useState("");
   const [confidenceSearch, setConfidenceSearch] = useState("");
+  const [balanceTab, setBalanceTab] = useState<"real" | "simulado">("real");
+
+  // Datos de balance real
+  const realBalance = {
+    initial: 50000,
+    current: 56250,
+    pnl: 6250,
+    pnlPercent: 12.5,
+    avgAllocation: 15,
+    riskLevel: "Moderado",
+  };
+
+  // Datos de balance simulado
+  const simulatedBalance = {
+    initial: 50000,
+    current: 68500,
+    pnl: 18500,
+    pnlPercent: 37.0,
+    avgAllocation: 25,
+    riskLevel: "Agresivo",
+  };
 
   // Usar el hook reutilizable para configuración del agente
   const {
@@ -106,12 +126,6 @@ export default function Condor360Dashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "good" },
           },
         ]}
-      />
-
-      {/* Sub-Agents Status Grid */}
-      <SubAgentStatusGrid
-        subAgents={data.subAgents}
-        onSettings={openConfig}
       />
 
       {/* Canvas + Portfolio + Signals - Grid */}
@@ -241,8 +255,108 @@ export default function Condor360Dashboard() {
         </SectionCard>
       </div>
 
-      {/* AI Recommendations, Sectors, News & Sentiment */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Balance, Oportunidades, Confianza, Noticias */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Balance */}
+        <SectionCard title="Balance" visible={config.grids.condor360.balance} maxHeight="320px">
+          <div className="space-y-4">
+            {/* Tabs */}
+            <div className="flex border-b border-zinc-800">
+              <button
+                onClick={() => setBalanceTab("real")}
+                className={`flex-1 py-2 font-mono text-xs transition-colors ${
+                  balanceTab === "real"
+                    ? "text-[#39ff14] border-b-2 border-[#39ff14]"
+                    : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                Real
+              </button>
+              <button
+                onClick={() => setBalanceTab("simulado")}
+                className={`flex-1 py-2 font-mono text-xs transition-colors ${
+                  balanceTab === "simulado"
+                    ? "text-[#00d9ff] border-b-2 border-[#00d9ff]"
+                    : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                Simulado
+              </button>
+            </div>
+
+            {/* Balance Content */}
+            {balanceTab === "real" ? (
+              <>
+                <div className="text-center p-4 bg-zinc-900 rounded-sm">
+                  <p className="font-mono text-[10px] text-zinc-500 mb-1">ACTUAL</p>
+                  <p className={`font-mono text-3xl font-bold ${realBalance.pnl >= 0 ? "text-[#39ff14]" : "text-[#ff006e]"}`}>
+                    ${realBalance.current.toLocaleString()}
+                  </p>
+                  <p className={`font-mono text-sm ${realBalance.pnl >= 0 ? "text-[#39ff14]" : "text-[#ff006e]"}`}>
+                    {realBalance.pnl >= 0 ? "+" : ""}{realBalance.pnlPercent}%
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2 bg-zinc-900 rounded-sm text-center">
+                    <p className="font-mono text-[10px] text-zinc-500">Inicial</p>
+                    <p className="font-mono text-sm text-white">${realBalance.initial.toLocaleString()}</p>
+                  </div>
+                  <div className="p-2 bg-zinc-900 rounded-sm text-center">
+                    <p className="font-mono text-[10px] text-zinc-500">P&L</p>
+                    <p className={`font-mono text-sm ${realBalance.pnl >= 0 ? "text-[#39ff14]" : "text-[#ff006e]"}`}>
+                      {realBalance.pnl >= 0 ? "+" : ""}${realBalance.pnl.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="pt-3 border-t border-zinc-800">
+                  <div className="flex justify-between mb-1">
+                    <span className="font-mono text-[10px] text-zinc-500">Asignación Prom.</span>
+                    <span className="font-mono text-xs text-white">{realBalance.avgAllocation}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-mono text-[10px] text-zinc-500">Nivel de Riesgo</span>
+                    <span className="font-mono text-xs text-white">{realBalance.riskLevel}</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-center p-4 bg-zinc-900 rounded-sm">
+                  <p className="font-mono text-[10px] text-zinc-500 mb-1">SIMULADO</p>
+                  <p className={`font-mono text-3xl font-bold ${simulatedBalance.pnl >= 0 ? "text-[#00d9ff]" : "text-[#ff006e]"}`}>
+                    ${simulatedBalance.current.toLocaleString()}
+                  </p>
+                  <p className={`font-mono text-sm ${simulatedBalance.pnl >= 0 ? "text-[#00d9ff]" : "text-[#ff006e]"}`}>
+                    {simulatedBalance.pnl >= 0 ? "+" : ""}{simulatedBalance.pnlPercent}%
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2 bg-zinc-900 rounded-sm text-center">
+                    <p className="font-mono text-[10px] text-zinc-500">Inicial</p>
+                    <p className="font-mono text-sm text-white">${simulatedBalance.initial.toLocaleString()}</p>
+                  </div>
+                  <div className="p-2 bg-zinc-900 rounded-sm text-center">
+                    <p className="font-mono text-[10px] text-zinc-500">P&L</p>
+                    <p className={`font-mono text-sm ${simulatedBalance.pnl >= 0 ? "text-[#00d9ff]" : "text-[#ff006e]"}`}>
+                      {simulatedBalance.pnl >= 0 ? "+" : ""}${simulatedBalance.pnl.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="pt-3 border-t border-zinc-800">
+                  <div className="flex justify-between mb-1">
+                    <span className="font-mono text-[10px] text-zinc-500">Asignación Prom.</span>
+                    <span className="font-mono text-xs text-white">{simulatedBalance.avgAllocation}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-mono text-[10px] text-zinc-500">Nivel de Riesgo</span>
+                    <span className="font-mono text-xs text-white">{simulatedBalance.riskLevel}</span>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </SectionCard>
+
         {/* Oportunidades */}
         <SectionCard title="Oportunidades" visible={config.grids.condor360.oportunidades} maxHeight="320px">
           <div className="space-y-2">

@@ -1,8 +1,6 @@
 export {
   AgentHeader,
   PascualFeedbackBar,
-  SubAgentsStatusBar,
-  SubAgentStatusGrid,
   Canvas,
   KPICard,
   ProgressBar,

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import {
   AgentHeader,
-  SubAgentStatusGrid,
   Canvas,
   SectionCard,
   ProgressBar,
@@ -141,12 +140,6 @@ export default function SentinelDashboard() {
             statuses: { "24h": "warning", "7d": "good", "1m": "good", "1y": "good" },
           },
         ]}
-      />
-
-      {/* Sub-Agents Status Grid */}
-      <SubAgentStatusGrid
-        subAgents={data.subAgents}
-        onSettings={openConfig}
       />
 
       {/* Canvas, Monitor de Amenazas, Recursos del Sistema & Escaneo de Vulnerabilidades - 2x2 Grid */}

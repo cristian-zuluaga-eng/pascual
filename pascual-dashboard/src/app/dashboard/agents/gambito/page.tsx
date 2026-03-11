@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import {
   AgentHeader,
-  SubAgentStatusGrid,
   Canvas,
   SectionCard,
   ProgressBar,
@@ -21,6 +20,17 @@ export default function GambitoDashboard() {
   const { config } = useDashboardConfig();
   const [sportFilter, setSportFilter] = useState<string>("all");
   const [predictionSearch, setPredictionSearch] = useState("");
+  const [balanceTab, setBalanceTab] = useState<"real" | "simulado">("real");
+
+  // Datos simulados para el balance
+  const simulatedBankroll = {
+    initial: 10000,
+    current: 12850,
+    pnl: 2850,
+    pnlPercent: 28.5,
+    avgStake: 3.5,
+    kellyFraction: 30,
+  };
 
   // Usar el hook reutilizable para configuración del agente
   const {
@@ -118,12 +128,6 @@ export default function GambitoDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "warning" },
           },
         ]}
-      />
-
-      {/* Sub-Agents Status Grid */}
-      <SubAgentStatusGrid
-        subAgents={data.subAgents}
-        onSettings={openConfig}
       />
 
       {/* Canvas + Predictions + Bankroll - Grid */}
@@ -272,37 +276,100 @@ export default function GambitoDashboard() {
         {/* Bankroll */}
         <SectionCard title="Balance" visible={config.grids.gambito.bankroll} maxHeight="320px">
           <div className="space-y-4">
-            <div className="text-center p-4 bg-zinc-900 rounded-sm">
-              <p className="font-mono text-[10px] text-zinc-500 mb-1">ACTUAL</p>
-              <p className={`font-mono text-3xl font-bold ${data.bankroll.pnl >= 0 ? "text-[#39ff14]" : "text-[#ff006e]"}`}>
-                ${data.bankroll.current.toLocaleString()}
-              </p>
-              <p className={`font-mono text-sm ${data.bankroll.pnl >= 0 ? "text-[#39ff14]" : "text-[#ff006e]"}`}>
-                {data.bankroll.pnl >= 0 ? "+" : ""}{data.bankroll.pnlPercent}%
-              </p>
+            {/* Tabs */}
+            <div className="flex border-b border-zinc-800">
+              <button
+                onClick={() => setBalanceTab("real")}
+                className={`flex-1 py-2 font-mono text-xs transition-colors ${
+                  balanceTab === "real"
+                    ? "text-[#39ff14] border-b-2 border-[#39ff14]"
+                    : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                Real
+              </button>
+              <button
+                onClick={() => setBalanceTab("simulado")}
+                className={`flex-1 py-2 font-mono text-xs transition-colors ${
+                  balanceTab === "simulado"
+                    ? "text-[#00d9ff] border-b-2 border-[#00d9ff]"
+                    : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                Simulado
+              </button>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2 bg-zinc-900 rounded-sm text-center">
-                <p className="font-mono text-[10px] text-zinc-500">Inicial</p>
-                <p className="font-mono text-sm text-white">${data.bankroll.initial.toLocaleString()}</p>
-              </div>
-              <div className="p-2 bg-zinc-900 rounded-sm text-center">
-                <p className="font-mono text-[10px] text-zinc-500">P&L</p>
-                <p className={`font-mono text-sm ${data.bankroll.pnl >= 0 ? "text-[#39ff14]" : "text-[#ff006e]"}`}>
-                  {data.bankroll.pnl >= 0 ? "+" : ""}${data.bankroll.pnl}
-                </p>
-              </div>
-            </div>
-            <div className="pt-3 border-t border-zinc-800">
-              <div className="flex justify-between mb-1">
-                <span className="font-mono text-[10px] text-zinc-500">Stake Promedio</span>
-                <span className="font-mono text-xs text-white">{data.bankroll.avgStake}%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-mono text-[10px] text-zinc-500">Fracción Kelly</span>
-                <span className="font-mono text-xs text-white">{data.bankroll.kellyFraction}%</span>
-              </div>
-            </div>
+
+            {/* Balance Content */}
+            {balanceTab === "real" ? (
+              <>
+                <div className="text-center p-4 bg-zinc-900 rounded-sm">
+                  <p className="font-mono text-[10px] text-zinc-500 mb-1">ACTUAL</p>
+                  <p className={`font-mono text-3xl font-bold ${data.bankroll.pnl >= 0 ? "text-[#39ff14]" : "text-[#ff006e]"}`}>
+                    ${data.bankroll.current.toLocaleString()}
+                  </p>
+                  <p className={`font-mono text-sm ${data.bankroll.pnl >= 0 ? "text-[#39ff14]" : "text-[#ff006e]"}`}>
+                    {data.bankroll.pnl >= 0 ? "+" : ""}{data.bankroll.pnlPercent}%
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2 bg-zinc-900 rounded-sm text-center">
+                    <p className="font-mono text-[10px] text-zinc-500">Inicial</p>
+                    <p className="font-mono text-sm text-white">${data.bankroll.initial.toLocaleString()}</p>
+                  </div>
+                  <div className="p-2 bg-zinc-900 rounded-sm text-center">
+                    <p className="font-mono text-[10px] text-zinc-500">P&L</p>
+                    <p className={`font-mono text-sm ${data.bankroll.pnl >= 0 ? "text-[#39ff14]" : "text-[#ff006e]"}`}>
+                      {data.bankroll.pnl >= 0 ? "+" : ""}${data.bankroll.pnl}
+                    </p>
+                  </div>
+                </div>
+                <div className="pt-3 border-t border-zinc-800">
+                  <div className="flex justify-between mb-1">
+                    <span className="font-mono text-[10px] text-zinc-500">Stake Promedio</span>
+                    <span className="font-mono text-xs text-white">{data.bankroll.avgStake}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-mono text-[10px] text-zinc-500">Fracción Kelly</span>
+                    <span className="font-mono text-xs text-white">{data.bankroll.kellyFraction}%</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-center p-4 bg-zinc-900 rounded-sm">
+                  <p className="font-mono text-[10px] text-zinc-500 mb-1">SIMULADO</p>
+                  <p className={`font-mono text-3xl font-bold ${simulatedBankroll.pnl >= 0 ? "text-[#00d9ff]" : "text-[#ff006e]"}`}>
+                    ${simulatedBankroll.current.toLocaleString()}
+                  </p>
+                  <p className={`font-mono text-sm ${simulatedBankroll.pnl >= 0 ? "text-[#00d9ff]" : "text-[#ff006e]"}`}>
+                    {simulatedBankroll.pnl >= 0 ? "+" : ""}{simulatedBankroll.pnlPercent}%
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2 bg-zinc-900 rounded-sm text-center">
+                    <p className="font-mono text-[10px] text-zinc-500">Inicial</p>
+                    <p className="font-mono text-sm text-white">${simulatedBankroll.initial.toLocaleString()}</p>
+                  </div>
+                  <div className="p-2 bg-zinc-900 rounded-sm text-center">
+                    <p className="font-mono text-[10px] text-zinc-500">P&L</p>
+                    <p className={`font-mono text-sm ${simulatedBankroll.pnl >= 0 ? "text-[#00d9ff]" : "text-[#ff006e]"}`}>
+                      {simulatedBankroll.pnl >= 0 ? "+" : ""}${simulatedBankroll.pnl}
+                    </p>
+                  </div>
+                </div>
+                <div className="pt-3 border-t border-zinc-800">
+                  <div className="flex justify-between mb-1">
+                    <span className="font-mono text-[10px] text-zinc-500">Stake Promedio</span>
+                    <span className="font-mono text-xs text-white">{simulatedBankroll.avgStake}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-mono text-[10px] text-zinc-500">Fracción Kelly</span>
+                    <span className="font-mono text-xs text-white">{simulatedBankroll.kellyFraction}%</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </SectionCard>
 

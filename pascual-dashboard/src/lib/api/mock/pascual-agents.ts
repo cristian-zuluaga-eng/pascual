@@ -1,25 +1,35 @@
-// PASCUAL Ecosystem - Agent Dashboard Mock Data
+// PASCUAL Ecosystem - Module Dashboard Mock Data
 // Based on REQUIREMENTS-AGENT-DASHBOARDS-V2.md
+//
+// NOTA: En este archivo "módulos" se refiere a las diferentes secciones/funcionalidades
+// del dashboard (Asistente, Scout, Sentinel, etc.). Los "agentes" reales del sistema
+// son: Pascual (orquestador), Hunter (búsqueda/datos), Warden (seguridad) y Nexus (programación/análisis financiero).
 
-export type AgentStatus = "active" | "busy" | "idle" | "offline" | "error";
+export type ModuleStatus = "active" | "busy" | "idle" | "offline" | "error";
 export type Priority = "critical" | "high" | "medium" | "low";
 export type ConvictionLevel = "high" | "medium" | "low";
+
+// Alias para compatibilidad
+export type AgentStatus = ModuleStatus;
 
 // ============================================================================
 // SHARED INTERFACES
 // ============================================================================
 
-export interface SubAgentStatus {
+export interface SubModuleStatus {
   id: string;
   name: string;
   description: string;
   detailedDescription: string; // Detailed description for tooltip
   model: string;
-  status: AgentStatus;
+  status: ModuleStatus;
   activeTasks: number;
   lastActivity: string;
   score: number; // 0-100 score
 }
+
+// Alias para compatibilidad
+export type SubAgentStatus = SubModuleStatus;
 
 export interface QuickAction {
   id: string;
@@ -31,25 +41,28 @@ export interface QuickAction {
 export interface PascualMessage {
   id: string;
   timestamp: string;
-  agentId: string;
+  moduleId: string;
   query: string;
   response: string;
   confidence?: number;
   suggestedActions?: string[];
 }
 
-export interface AgentBase {
+export interface ModuleBase {
   id: string;
   name: string;
   icon: string;
   lema: string;
   description: string;
-  status: AgentStatus;
+  status: ModuleStatus;
   lastSync: string;
-  subAgents: SubAgentStatus[];
+  subModules: SubModuleStatus[];
   quickActions: QuickAction[];
   recentMessages: PascualMessage[];
 }
+
+// Alias para compatibilidad con código existente
+export type AgentBase = ModuleBase;
 
 // ============================================================================
 // 1. ASISTENTE - Gestor Personal
@@ -109,7 +122,7 @@ export const asistenteData: AsistenteData = {
   description: "Gestor Personal Inteligente - Orquestación de sistemas para gestión personal",
   status: "active",
   lastSync: "hace 2s",
-  subAgents: [
+  subModules: [
     { id: "chronos", name: "Chronos", description: "Gestión de Tiempo y Tareas", detailedDescription: "Organiza calendarios, programa recordatorios, prioriza tareas y optimiza la distribución del tiempo diario para maximizar productividad.", model: "Claude Sonnet", status: "active", activeTasks: 2, lastActivity: "hace 1m", score: 94 },
     { id: "proactive", name: "Proactive", description: "Anticipación Proactiva", detailedDescription: "Analiza patrones de comportamiento para anticipar necesidades, genera sugerencias contextuales y previene olvidos importantes.", model: "Claude Haiku", status: "active", activeTasks: 1, lastActivity: "hace 5m", score: 87 },
     { id: "domus", name: "Domus", description: "Gestión Doméstica", detailedDescription: "Administra inventarios del hogar, programa mantenimientos, genera listas de compras y coordina servicios domésticos.", model: "Claude Haiku", status: "idle", activeTasks: 0, lastActivity: "hace 15m", score: 91 },
@@ -121,7 +134,7 @@ export const asistenteData: AsistenteData = {
     { id: "routine", label: "Optimizar rutina", icon: "🔄", prompt: "Pascual, analiza mi rutina y sugiere mejoras" },
   ],
   recentMessages: [
-    { id: "1", timestamp: "hace 5m", agentId: "asistente", query: "¿Qué tengo pendiente hoy?", response: "Tienes 3 reuniones y 5 tareas pendientes. La primera reunión es a las 09:00.", confidence: 0.95 },
+    { id: "1", timestamp: "hace 5m", moduleId: "asistente", query: "¿Qué tengo pendiente hoy?", response: "Tienes 3 reuniones y 5 tareas pendientes. La primera reunión es a las 09:00.", confidence: 0.95 },
   ],
   metrics: {
     tasksToday: 12,
@@ -266,7 +279,7 @@ export const nexusData: NexusData = {
   description: "Director de Desarrollo de Software - Dirección estratégica del desarrollo técnico",
   status: "active",
   lastSync: "hace 5m",
-  subAgents: [
+  subModules: [
     { id: "explorer", name: "Explorer", description: "Analista de Código", detailedDescription: "Explora y analiza bases de código existentes, identifica patrones, dependencias y áreas de mejora en la arquitectura del software.", model: "Claude Sonnet", status: "active", activeTasks: 1, lastActivity: "hace 2m", score: 92 },
     { id: "proposer", name: "Proposer", description: "Estratega Técnico", detailedDescription: "Diseña estrategias técnicas, propone soluciones arquitectónicas y evalúa trade-offs entre diferentes enfoques de implementación.", model: "Claude Opus", status: "active", activeTasks: 0, lastActivity: "hace 10m", score: 88 },
     { id: "spec-writer", name: "Spec Writer", description: "Especificador", detailedDescription: "Redacta especificaciones técnicas detalladas, documenta requisitos funcionales y define criterios de aceptación.", model: "Claude Sonnet", status: "active", activeTasks: 1, lastActivity: "hace 5m", score: 95 },
@@ -648,7 +661,7 @@ export const sentinelData: SentinelData = {
   description: "Guardián de Seguridad - Protección integral del ecosistema",
   status: "active",
   lastSync: "tiempo real",
-  subAgents: [
+  subModules: [
     { id: "cipher", name: "Cipher", description: "Director de Seguridad Digital", detailedDescription: "Gestiona encriptación, certificados SSL, políticas de seguridad y protocolos de protección de datos sensibles.", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 30s", score: 98 },
     { id: "monitor", name: "Monitor", description: "Supervisor de Rendimiento", detailedDescription: "Monitorea métricas del sistema en tiempo real, detecta anomalías, genera alertas y analiza tendencias de rendimiento.", model: "Claude Haiku", status: "active", activeTasks: 1, lastActivity: "hace 10s", score: 94 },
     { id: "guardian", name: "Guardian", description: "Responsable de Resiliencia", detailedDescription: "Gestiona backups, planes de recuperación ante desastres, redundancia de sistemas y continuidad operativa.", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 2m", score: 96 },
@@ -1056,7 +1069,7 @@ export const scoutData: ScoutData = {
   description: "Maestro en Búsqueda e Ingesta de Datos",
   status: "active",
   lastSync: "continua",
-  subAgents: [
+  subModules: [
     { id: "hunter", name: "Hunter", description: "Especialista en Búsqueda", detailedDescription: "Ejecuta búsquedas avanzadas en múltiples fuentes, optimiza queries, rankea resultados por relevancia y filtra información.", model: "Claude Sonnet", status: "busy", activeTasks: 2, lastActivity: "hace 30s", score: 93 },
     { id: "harvester", name: "Harvester", description: "Experto en Extracción", detailedDescription: "Extrae datos estructurados de páginas web, APIs y documentos, normaliza formatos y valida integridad de datos.", model: "Claude Haiku", status: "active", activeTasks: 1, lastActivity: "hace 1m", score: 88 },
     { id: "curator", name: "Curator", description: "Gestor de Calidad", detailedDescription: "Evalúa calidad y confiabilidad de datos, elimina duplicados, verifica fuentes y mantiene estándares de precisión.", model: "Claude Haiku", status: "active", activeTasks: 0, lastActivity: "hace 5m", score: 95 },
@@ -1218,7 +1231,7 @@ export const audiovisualData: AudiovisualData = {
   description: "Orquestador Multimedia Integral",
   status: "active",
   lastSync: "por demanda",
-  subAgents: [
+  subModules: [
     { id: "imagen", name: "Imagen", description: "Especialista Visual", detailedDescription: "Genera imágenes con IA, edita fotografías, crea ilustraciones y mantiene coherencia visual con la marca.", model: "DALL-E 3", status: "busy", activeTasks: 1, lastActivity: "hace 1m", score: 89 },
     { id: "video", name: "Video", description: "Productor Videográfico", detailedDescription: "Produce videos con IA, edita clips, genera animaciones y crea contenido audiovisual profesional.", model: "Runway", status: "idle", activeTasks: 0, lastActivity: "hace 2h", score: 76 },
     { id: "audio", name: "Audio", description: "Especialista Sonoro", detailedDescription: "Genera voces sintéticas, crea efectos de sonido, produce música y optimiza audio para diferentes plataformas.", model: "ElevenLabs", status: "active", activeTasks: 0, lastActivity: "hace 30m", score: 92 },
@@ -1423,7 +1436,7 @@ export const consultorData: ConsultorData = {
   description: "Orquestador Multidisciplinario de Conocimiento",
   status: "active",
   lastSync: "por consulta",
-  subAgents: [
+  subModules: [
     { id: "financiero", name: "Financiero", description: "Asesor Económico", detailedDescription: "Analiza finanzas personales, optimiza presupuestos, planifica inversiones y asesora en decisiones económicas.", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 10m", score: 91 },
     { id: "crianza", name: "Crianza", description: "Experto en Desarrollo Infantil", detailedDescription: "Asesora en desarrollo infantil, sugiere actividades educativas, orienta en disciplina positiva y apoya rutinas familiares.", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 2h", score: 88 },
     { id: "emprendimiento", name: "Emprendimiento", description: "Especialista en Negocios", detailedDescription: "Desarrolla planes de negocio, valida ideas, asesora en estrategia comercial y optimiza modelos de monetización.", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 30m", score: 85 },
@@ -1546,7 +1559,7 @@ export const gambitoData: GambitoData = {
   description: "Estratega de Predicción Deportiva",
   status: "active",
   lastSync: "cada 1h",
-  subAgents: [
+  subModules: [
     { id: "analyst", name: "Analyst", description: "Modelador Estadístico", detailedDescription: "Desarrolla modelos predictivos, analiza datos históricos, calcula probabilidades y genera proyecciones estadísticas.", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 15m", score: 87 },
     { id: "evaluator", name: "Evaluator", description: "Validador de Modelos", detailedDescription: "Valida precisión de modelos, ejecuta backtesting, compara rendimiento y detecta overfitting o sesgos.", model: "Claude Sonnet", status: "active", activeTasks: 1, lastActivity: "hace 30m", score: 92 },
     { id: "optimizer", name: "Optimizer", description: "Ajustador de Modelos", detailedDescription: "Calibra parámetros de modelos, optimiza hiperparámetros, ajusta pesos y mejora accuracy de predicciones.", model: "Claude Sonnet", status: "busy", activeTasks: 1, lastActivity: "hace 5m", score: 79 },
@@ -1818,7 +1831,7 @@ export const condor360Data: Condor360Data = {
   description: "Sistema de Inteligencia Financiera",
   status: "active",
   lastSync: "real-time (markets)",
-  subAgents: [
+  subModules: [
     { id: "cuantificador", name: "Cuantificador", description: "Analista Numérico", detailedDescription: "Realiza análisis técnico avanzado, calcula indicadores, detecta patrones de precio y genera señales cuantitativas.", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 5m", score: 95 },
     { id: "fundamental", name: "Fundamental", description: "Evaluador Empresarial", detailedDescription: "Analiza estados financieros, evalúa ratios fundamentales, estudia ventajas competitivas y valora empresas.", model: "Claude Opus", status: "active", activeTasks: 0, lastActivity: "hace 15m", score: 89 },
     { id: "estratega", name: "Estratega", description: "Optimizador de Portafolios", detailedDescription: "Diseña allocations óptimas, balancea riesgo-retorno, rebalancea posiciones y maximiza Sharpe ratio.", model: "Claude Opus", status: "busy", activeTasks: 1, lastActivity: "hace 2m", score: 82 },
@@ -1949,13 +1962,13 @@ export interface PicassoData extends AgentBase {
 
 export const picassoData: PicassoData = {
   id: "picasso",
-  name: "Picasso",
+  name: "Dashboard",
   icon: "🎨",
   lema: "Información valiosa, perfectamente presentada",
   description: "Sistema de Interfaces y Experiencia de Usuario",
   status: "active",
   lastSync: "tiempo real",
-  subAgents: [
+  subModules: [
     { id: "designer-o", name: "Designer", description: "Especialista UX/UI", detailedDescription: "Diseña interfaces intuitivas, crea sistemas de diseño, optimiza flujos de usuario y asegura consistencia visual.", model: "Claude Opus", status: "active", activeTasks: 1, lastActivity: "hace 5m", score: 93 },
     { id: "integrator", name: "Integrator", description: "Experto en APIs", detailedDescription: "Integra servicios externos, diseña arquitecturas de API, gestiona autenticación y optimiza comunicación entre sistemas.", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 15m", score: 90 },
     { id: "innovator", name: "Innovator", description: "Prototipador", detailedDescription: "Desarrolla prototipos rápidos, experimenta con nuevas tecnologías, valida conceptos y propone innovaciones UX.", model: "Claude Sonnet", status: "active", activeTasks: 0, lastActivity: "hace 30m", score: 86 },

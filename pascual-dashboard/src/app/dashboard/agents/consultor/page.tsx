@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import {
   AgentHeader,
-  SubAgentStatusGrid,
   Canvas,
   SectionCard,
   ProgressBar,
@@ -116,12 +115,6 @@ export default function ConsultorDashboard() {
             statuses: { "24h": "good", "7d": "good", "1m": "good", "1y": "good" },
           },
         ]}
-      />
-
-      {/* Sub-Agents Status Grid */}
-      <SubAgentStatusGrid
-        subAgents={data.subAgents}
-        onSettings={openConfig}
       />
 
       {/* Canvas + Expertise Areas + Active Plans - Grid */}

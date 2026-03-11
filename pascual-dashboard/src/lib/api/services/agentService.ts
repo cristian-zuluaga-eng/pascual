@@ -179,7 +179,7 @@ export const agentService = {
 
       // Simular métricas por rango de tiempo
       const metrics: AgentMetricsBase = {
-        agentId,
+        moduleId: agentId,
         timestamp: Date.now(),
         timeRange,
         values: data.metrics as Record<string, number | string | boolean>,

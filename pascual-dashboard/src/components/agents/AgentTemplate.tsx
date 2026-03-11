@@ -3,14 +3,13 @@
 import { ReactNode } from "react";
 import {
   AgentHeader,
-  SubAgentStatusGrid,
   Canvas,
   AgentConfigModal,
   useAgentConfig,
   TimeRange,
 } from "./AgentDashboardLayout";
 import { useGrowl } from "@/components/growl";
-import type { AgentStatus, SubAgentStatus } from "@/lib/api/mock/pascual-agents";
+import type { AgentStatus } from "@/lib/api/mock/pascual-agents";
 
 // ============================================================================
 // AGENT TEMPLATE - Plantilla base para dashboards de agentes
@@ -67,7 +66,6 @@ export interface QuickPrompt {
  *   icon="🛡️"
  *   lema="Seguridad proactiva"
  *   status="active"
- *   subAgents={subAgentsList}
  *   kpis={[
  *     { label: "Amenazas", value: 3, status: "warning" },
  *     { label: "Uptime", value: "99.9%", status: "good" },
@@ -94,10 +92,6 @@ export interface AgentTemplateProps {
   lema: string;
   /** Estado actual del agente */
   status: AgentStatus;
-
-  // === Sub-Agentes ===
-  /** Lista de sub-agentes */
-  subAgents: SubAgentStatus[];
 
   // === KPIs y Métricas ===
   /** KPIs a mostrar en el header (máximo 5 recomendado) */
@@ -131,25 +125,23 @@ export interface AgentTemplateProps {
 }
 
 /**
- * AgentTemplate - Componente base para crear dashboards de agentes
+ * AgentTemplate - Componente base para crear dashboards de módulos
  *
  * Estructura:
  * 1. AgentHeader con KPIs y sparkline
- * 2. SubAgentStatusGrid con estados
- * 3. Grid principal con Canvas (opcional) + contenido personalizado
- * 4. AgentConfigModal para configuración
+ * 2. Grid principal con Canvas (opcional) + contenido personalizado
+ * 3. AgentConfigModal para configuración
  *
  * @example Uso básico
  * ```tsx
- * export default function MiAgenteDashboard() {
+ * export default function MiModuloDashboard() {
  *   return (
  *     <AgentTemplate
- *       agentId="mi-agente"
- *       name="Mi Agente"
+ *       agentId="mi-modulo"
+ *       name="Mi Módulo"
  *       icon="🤖"
- *       lema="Un agente genial"
+ *       lema="Un módulo genial"
  *       status="active"
- *       subAgents={misSubAgentes}
  *       kpis={misKPIs}
  *       usage={misDatosDeUso}
  *       canvasPlaceholder="¿Qué necesitas?"
@@ -171,8 +163,6 @@ export function AgentTemplate({
   icon,
   lema,
   status,
-  // Sub-agentes
-  subAgents,
   // KPIs y métricas
   kpis,
   usage,
@@ -191,7 +181,7 @@ export function AgentTemplate({
 }: AgentTemplateProps) {
   const { sendToAgent } = useGrowl();
 
-  // Hook de configuración del agente
+  // Hook de configuración del módulo
   const {
     showConfigModal,
     agentData,
@@ -232,14 +222,6 @@ export function AgentTemplate({
       />
 
       {/* ================================================================ */}
-      {/* SUB-AGENTES - Grid de estados con botón de config */}
-      {/* ================================================================ */}
-      <SubAgentStatusGrid
-        subAgents={subAgents}
-        onSettings={showConfigButton ? handleConfig : undefined}
-      />
-
-      {/* ================================================================ */}
       {/* CONTENIDO PRINCIPAL */}
       {/* ================================================================ */}
       {showCanvas ? (
@@ -255,7 +237,7 @@ export function AgentTemplate({
             {canvasContent}
           </Canvas>
 
-          {/* Contenido personalizado del agente */}
+          {/* Contenido personalizado del módulo */}
           {children}
         </div>
       ) : (

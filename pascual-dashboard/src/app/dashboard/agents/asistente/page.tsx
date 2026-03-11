@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
   AgentHeader,
-  SubAgentStatusGrid,
   Canvas,
   SectionCard,
   ProgressBar,
@@ -120,12 +119,6 @@ export default function AsistenteDashboard() {
         ]}
       />
 
-      {/* Sub-Agents Status Grid */}
-      <SubAgentStatusGrid
-        subAgents={data.subAgents}
-        onSettings={openConfig}
-      />
-
       {/* Canvas + Agenda + Sugerencias - Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Canvas - Lienzo de respuestas de Pascual */}
@@ -180,10 +173,6 @@ export default function AsistenteDashboard() {
                 </div>
               </div>
             ))}
-            <div className="flex gap-2 mt-3">
-              <Button variant="primary" size="sm" className="flex-1">Aceptar todas</Button>
-              <Button variant="ghost" size="sm" className="flex-1">Personalizar</Button>
-            </div>
           </div>
         </SectionCard>
 

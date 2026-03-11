@@ -50,6 +50,7 @@ type StatusType = "active" | "busy" | "offline" | "error";
 interface StatusBadgeProps {
   status: StatusType;
   showDot?: boolean;
+  size?: "sm" | "md";
 }
 
 const getStatusConfig = (status: StatusType) => {
@@ -87,17 +88,19 @@ const getStatusConfig = (status: StatusType) => {
   }
 };
 
-export function StatusBadge({ status, showDot = true }: StatusBadgeProps) {
+export function StatusBadge({ status, showDot = true, size = "md" }: StatusBadgeProps) {
   const config = getStatusConfig(status);
+  const isSmall = size === "sm";
 
   return (
     <Badge
       variant={config.variant}
-      pulse={status === "active" || status === "error"}
+      pulse={status === "active" || status === "busy" || status === "error"}
+      className={isSmall ? "text-[9px] px-1.5 py-0" : ""}
     >
       {showDot && (
         <span
-          className={`w-1.5 h-1.5 rounded-full ${config.dotColor} mr-1.5`}
+          className={`rounded-full ${config.dotColor} ${isSmall ? "w-1 h-1 mr-1" : "w-1.5 h-1.5 mr-1.5"}`}
         />
       )}
       {config.label}

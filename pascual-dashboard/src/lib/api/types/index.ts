@@ -1,9 +1,29 @@
 // ============================================================================
 // TIPOS COMPARTIDOS PARA API Y DATOS
 // ============================================================================
+//
+// NOMENCLATURA:
+// - "Módulo" = Secciones del dashboard (Asistente, Sentinel, Nexus, etc.)
+// - "Agente" = Los 3 agentes reales: Pascual, Hunter, Warden
+//
+// Por compatibilidad, se mantienen aliases con prefijo "Agent" pero
+// la nomenclatura correcta usa "Module".
+// ============================================================================
 
-// Re-export de tipos existentes
-export type { AgentStatus, SubAgentStatus, QuickAction, PascualMessage } from "../mock/pascual-agents";
+// Re-export de tipos base desde la nueva ubicacion
+export type {
+  DeepPartial,
+  ModuleStatus,
+  AgentStatus,
+  Priority,
+  ConvictionLevel,
+  QuickAction,
+  PascualMessage,
+  ModuleBase,
+  AgentBase,
+} from "../mock/types/base";
+
+export { mergeWithDefaults } from "../mock/types/base";
 
 // ============================================================================
 // TIME RANGE
@@ -60,23 +80,26 @@ export interface ChartConfig {
 }
 
 /**
- * Métricas base que todos los agentes comparten
+ * Métricas base que todos los módulos comparten
  */
-export interface AgentMetricsBase {
-  agentId: string;
+export interface ModuleMetricsBase {
+  moduleId: string;
   timestamp: number;
   timeRange: TimeRange;
-  /** Métricas específicas del agente */
+  /** Métricas específicas del módulo */
   values: Record<string, number | string | boolean>;
   /** Series temporales para gráficos */
   series?: Record<string, number[]>;
 }
 
+// Alias para compatibilidad
+export type AgentMetricsBase = ModuleMetricsBase;
+
 /**
- * Snapshot de salud del agente
+ * Snapshot de salud del módulo
  */
-export interface AgentHealthSnapshot {
-  agentId: string;
+export interface ModuleHealthSnapshot {
+  moduleId: string;
   timestamp: number;
   status: "healthy" | "degraded" | "critical";
   uptime: number; // porcentaje
@@ -84,6 +107,9 @@ export interface AgentHealthSnapshot {
   errorRate: number; // porcentaje
   activeConnections: number;
 }
+
+// Alias para compatibilidad
+export type AgentHealthSnapshot = ModuleHealthSnapshot;
 
 // ============================================================================
 // KPIs
@@ -277,31 +303,87 @@ export interface ListResponse<T> extends ApiResponse<T[]> {
 }
 
 // ============================================================================
-// CONFIGURACIÓN DE AGENTE
+// CONFIGURACIÓN DE MÓDULO
 // ============================================================================
 
 /**
- * Configuración de modelo de un agente
+ * Configuración de modelo de un módulo
  */
-export interface AgentModelConfig {
-  agentId: string;
+export interface ModuleModelConfig {
+  moduleId: string;
   model: string;
   temperature?: number;
   maxTokens?: number;
   systemPrompt?: string;
 }
 
+// Alias para compatibilidad
+export type AgentModelConfig = ModuleModelConfig;
+
 /**
- * Configuración completa de un agente
+ * Configuración completa de un módulo
  */
-export interface AgentConfig {
+export interface ModuleConfig {
   id: string;
   name: string;
   enabled: boolean;
-  model: AgentModelConfig;
-  subAgents?: AgentModelConfig[];
+  model: ModuleModelConfig;
+  subModules?: ModuleModelConfig[];
   settings?: Record<string, unknown>;
 }
+
+// Alias para compatibilidad
+export type AgentConfig = ModuleConfig;
+
+// ============================================================================
+// RECURSOS DEL SISTEMA (RAM / VRAM)
+// ============================================================================
+
+/**
+ * Recurso de memoria individual (RAM o VRAM)
+ */
+export interface MemoryResource {
+  /** Memoria usada en GB */
+  used: number;
+  /** Memoria total en GB */
+  total: number;
+}
+
+/**
+ * Recursos del sistema para monitoreo en el Header
+ */
+export interface SystemResources {
+  ram: MemoryResource;
+  vram: MemoryResource;
+}
+
+/**
+ * Calcula el porcentaje de uso de un recurso de memoria
+ */
+export const getMemoryPercentage = (resource: MemoryResource): number => {
+  return Math.round((resource.used / resource.total) * 100);
+};
+
+/**
+ * Obtiene el color según el porcentaje de uso
+ * - Verde (#39ff14): < 75% - Normal
+ * - Ámbar (#ffaa00): 75-89% - Warning
+ * - Rosa (#ff006e): >= 90% - Crítico
+ */
+export const getUsageColor = (percentage: number): string => {
+  if (percentage >= 90) return "#ff006e";
+  if (percentage >= 75) return "#ffaa00";
+  return "#39ff14";
+};
+
+/**
+ * Obtiene el estado según el porcentaje de uso
+ */
+export const getUsageStatus = (percentage: number): "good" | "warning" | "critical" => {
+  if (percentage >= 90) return "critical";
+  if (percentage >= 75) return "warning";
+  return "good";
+};
 
 // ============================================================================
 // WEBSOCKET EVENTS

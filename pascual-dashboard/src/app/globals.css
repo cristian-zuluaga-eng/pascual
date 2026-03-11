@@ -588,3 +588,17 @@ body {
     transform: scale(1);
   }
 }
+
+/* Busy agent border glow animation - only affects box-shadow, not content opacity */
+@keyframes border-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(255, 170, 0, 0.3), 0 0 16px rgba(255, 170, 0, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(255, 170, 0, 0.6), 0 0 32px rgba(255, 170, 0, 0.3);
+  }
+}
+
+.animate-border-glow {
+  animation: border-glow 1.5s ease-in-out infinite;
+}

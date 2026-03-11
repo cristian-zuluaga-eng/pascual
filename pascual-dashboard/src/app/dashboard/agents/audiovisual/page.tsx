@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import {
   AgentHeader,
-  SubAgentStatusGrid,
   Canvas,
   SectionCard,
   ProgressBar,
@@ -127,13 +126,7 @@ export default function AudiovisualDashboard() {
         ]}
       />
 
-      {/* Sub-Agents Status Grid */}
-      <SubAgentStatusGrid
-        subAgents={data.subAgents}
-        onSettings={openConfig}
-      />
-
-      {/* Canvas, Biblioteca, Cola de Producción & Assets Recientes - Grid */}
+      {/* Canvas, Biblioteca, Cola de Produccion & Assets Recientes - Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Canvas - Lienzo de respuestas de Pascual */}
         <Canvas

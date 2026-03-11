@@ -1,6 +1,27 @@
 import { ActivityItem } from "@/components/dashboard/ActivityFeed";
 import { ChatMessage } from "@/components/chat/ChatWindow";
+import { SystemResources } from "../types";
 
+// ============================================================================
+// SYSTEM RESOURCES (RAM / VRAM)
+// ============================================================================
+
+/**
+ * Mock data para recursos del sistema (RAM y VRAM)
+ * En producción estos valores vendrían de una API de monitoreo
+ */
+export const mockSystemResources: SystemResources = {
+  ram: {
+    used: 12.4,    // GB usados
+    total: 32,     // GB totales
+  },
+  vram: {
+    used: 18.2,    // GB usados
+    total: 24,     // GB totales
+  },
+};
+
+// ============================================================================
 // Dashboard stats
 export const mockDashboardStats = {
   activeAgents: {

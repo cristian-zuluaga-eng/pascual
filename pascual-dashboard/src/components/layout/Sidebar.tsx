@@ -7,7 +7,7 @@ import { useDashboardConfig, DashboardConfig } from "@/lib/context/DashboardConf
 const navItems = [
   { name: "Home", path: "/dashboard", icon: "⊞", configKey: "home" as keyof DashboardConfig["views"] },
   { name: "Planificador", path: "/dashboard/tasks", icon: "☑", configKey: "planificador" as keyof DashboardConfig["views"] },
-  { name: "Agentes Dashboard", path: "/dashboard/agents", icon: "◎", configKey: "agents" as keyof DashboardConfig["views"] },
+  { name: "Agentes IA", path: "/dashboard/agents", icon: "◎", configKey: "agents" as keyof DashboardConfig["views"] },
   { name: "Administración", path: "/dashboard/administracion", icon: "⚙", configKey: null }, // Siempre visible
 ];
 
@@ -22,7 +22,7 @@ const agentDashboardItems = [
   { name: "Audiovisual", path: "/dashboard/agents/audiovisual", icon: "🎬", configKey: "audiovisual" as keyof DashboardConfig["agentViews"] },
   { name: "Consultor", path: "/dashboard/agents/consultor", icon: "📚", configKey: "consultor" as keyof DashboardConfig["agentViews"] },
   { name: "Asistente", path: "/dashboard/agents/asistente", icon: "👤", configKey: "asistente" as keyof DashboardConfig["agentViews"] },
-  { name: "Picasso", path: "/dashboard/agents/picasso", icon: "🎨", configKey: "picasso" as keyof DashboardConfig["agentViews"] },
+  { name: "Dashboard", path: "/dashboard/agents/picasso", icon: "🎨", configKey: "picasso" as keyof DashboardConfig["agentViews"] },
 ];
 
 export function Sidebar() {
@@ -78,7 +78,7 @@ export function Sidebar() {
                   <div className="ml-4">
                     {!collapsed && (
                       <div className="px-3 py-2 text-xs font-mono text-zinc-500 uppercase tracking-wider">
-                        Agentes
+                        Módulos
                       </div>
                     )}
                     {agentDashboardItems
