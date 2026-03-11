@@ -12,12 +12,16 @@ export interface ChatMessage {
   agentName?: string;
   agentIcon?: string;
   source?: "main" | "growl";
+  isStreaming?: boolean;
 }
 
 interface ChatWindowProps {
   messages: ChatMessage[];
   isTyping?: boolean;
 }
+
+// Eliminar la variable no usada
+// const messagesContainerRef = useRef<HTMLDivElement>(null);
 
 export function ChatWindow({ messages, isTyping = false }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -30,20 +34,31 @@ export function ChatWindow({ messages, isTyping = false }: ChatWindowProps) {
     <Card className="flex flex-col h-full">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <span className="text-[#00d9ff]">◎</span>
+          <span className="text-[#00d9ff]" aria-hidden="true">◎</span>
           <h3 className="font-mono text-sm font-bold">PASCUAL</h3>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#39ff14] status-pulse" />
-          <span className="text-xs font-mono text-zinc-500">Conectado</span>
+          <span
+            className="w-2 h-2 rounded-full bg-[#39ff14] status-pulse"
+            aria-hidden="true"
+          />
+          <span className="text-xs font-mono text-zinc-400">Conectado</span>
         </div>
       </CardHeader>
-      <CardBody className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
-        ))}
-        {isTyping && <TypingIndicator />}
-        <div ref={messagesEndRef} />
+      <CardBody className="flex-1 overflow-y-auto p-0">
+        <div
+          className="p-4 space-y-4"
+          role="log"
+          aria-live="polite"
+          aria-atomic="false"
+          aria-label="Historial de conversación con Pascual"
+        >
+          {messages.map((message) => (
+            <MessageBubble key={message.id} message={message} />
+          ))}
+          {isTyping && <TypingIndicator />}
+          <div ref={messagesEndRef} />
+        </div>
       </CardBody>
     </Card>
   );
@@ -57,8 +72,8 @@ function MessageBubble({ message }: { message: ChatMessage }) {
 
   if (isSystem) {
     return (
-      <div className="flex justify-center">
-        <span className="text-xs font-mono text-zinc-600 bg-zinc-900 px-3 py-1 rounded-full">
+      <div className="flex justify-center" role="status">
+        <span className="text-xs font-mono text-zinc-500 bg-zinc-900 px-3 py-1 rounded-full">
           {message.content}
         </span>
       </div>
@@ -66,7 +81,11 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   }
 
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+    <div
+      className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+      role="article"
+      aria-label={`Mensaje de ${isUser ? "ti" : message.agentName || "Pascual"}`}
+    >
       <div
         className={`
           max-w-[80%] p-3 rounded-sm font-mono text-sm
@@ -75,19 +94,20 @@ function MessageBubble({ message }: { message: ChatMessage }) {
               ? "bg-cyan-950/30 border border-cyan-900 text-white"
               : "bg-zinc-900 border border-zinc-800 text-zinc-200"
           }
+          ${message.isStreaming ? "animate-pulse" : ""}
         `}
       >
         {!isUser && message.agentName && (
           <div className="flex items-center gap-2 text-xs text-[#00d9ff] mb-1">
-            {message.agentIcon && <span>{message.agentIcon}</span>}
+            {message.agentIcon && <span aria-hidden="true">{message.agentIcon}</span>}
             <span>[{message.agentName}]</span>
           </div>
         )}
         <div className="whitespace-pre-wrap">{message.content}</div>
         <div
-          className={`text-xs mt-2 ${isUser ? "text-cyan-700" : "text-zinc-600"}`}
+          className={`text-xs mt-2 ${isUser ? "text-cyan-600" : "text-zinc-500"}`}
         >
-          {message.timestamp}
+          <time>{message.timestamp}</time>
         </div>
       </div>
     </div>
@@ -96,17 +116,18 @@ function MessageBubble({ message }: { message: ChatMessage }) {
 
 function TypingIndicator() {
   return (
-    <div className="flex justify-start">
+    <div className="flex justify-start" role="status" aria-label="Pascual está escribiendo">
       <div className="bg-zinc-900 border border-zinc-800 p-3 rounded-sm">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm">◉</span>
+          <span className="text-sm" aria-hidden="true">◉</span>
           <span className="text-xs text-[#00d9ff]">[Pascual]</span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1" aria-hidden="true">
           <span className="w-2 h-2 bg-[#00d9ff] rounded-full animate-bounce [animation-delay:-0.3s]" />
           <span className="w-2 h-2 bg-[#00d9ff] rounded-full animate-bounce [animation-delay:-0.15s]" />
           <span className="w-2 h-2 bg-[#00d9ff] rounded-full animate-bounce" />
         </div>
+        <span className="sr-only">Pascual está escribiendo...</span>
       </div>
     </div>
   );

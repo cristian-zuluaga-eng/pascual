@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { TimeRange, TIME_RANGE_LABELS } from "./ChartContainer";
+import {
+  TimeRangeSelector,
+  TimeRange,
+} from "@/components/ui/TimeRangeSelector";
 
 interface HeatMapCell {
   value: number;
@@ -18,7 +21,7 @@ interface HeatMapProps {
   gap?: number;
   showTimeRange?: boolean;
   title?: string;
-  fullWidth?: boolean; // Si true, las celdas se expanden para llenar el ancho disponible
+  fullWidth?: boolean;
 }
 
 function interpolateColor(color1: string, color2: string, factor: number): string {
@@ -86,24 +89,10 @@ export function HeatMap({
       {(title || showTimeRange) && (
         <div className="flex items-center justify-between mb-2">
           {title && (
-            <p className="text-[10px] font-mono text-zinc-500 uppercase">{title}</p>
+            <p className="text-[10px] font-mono text-zinc-400 uppercase">{title}</p>
           )}
           {showTimeRange && (
-            <div className="flex gap-0.5">
-              {(Object.keys(TIME_RANGE_LABELS) as TimeRange[]).map((r) => (
-                <button
-                  key={r}
-                  onClick={() => setTimeRange(r)}
-                  className={`px-1.5 py-0.5 text-[9px] font-mono rounded-sm transition-colors ${
-                    timeRange === r
-                      ? "bg-zinc-700 text-white"
-                      : "text-zinc-500 hover:text-zinc-300"
-                  }`}
-                >
-                  {TIME_RANGE_LABELS[r]}
-                </button>
-              ))}
-            </div>
+            <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
           )}
         </div>
       )}
@@ -116,7 +105,7 @@ export function HeatMap({
           {xLabels.map((label, i) => (
             <div
               key={i}
-              className={`text-zinc-500 text-[10px] text-center ${fullWidth ? "flex-1" : ""}`}
+              className={`text-zinc-400 text-[10px] text-center ${fullWidth ? "flex-1" : ""}`}
               style={fullWidth ? undefined : { width: cellSize }}
             >
               {label}
@@ -132,7 +121,7 @@ export function HeatMap({
             {/* Y Label */}
             {yLabels && (
               <div
-                className={`text-zinc-500 text-[10px] text-right pr-1 flex-shrink-0 ${fullWidth ? "w-7" : "w-10 pr-2"}`}
+                className={`text-zinc-400 text-[10px] text-right pr-1 flex-shrink-0 ${fullWidth ? "w-7" : "w-10 pr-2"}`}
               >
                 {yLabels[rowIndex]}
               </div>

@@ -16,3 +16,10 @@ export {
   useTimeRangeData,
   useTimeRangeValue,
 } from "./useAgentDashboard";
+
+// Accesibilidad y performance
+export {
+  useReducedMotion,
+  useIsVisible,
+  useShouldAnimate,
+} from "./useReducedMotion";

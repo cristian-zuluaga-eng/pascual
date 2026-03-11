@@ -1,6 +1,20 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  ReactNode,
+} from "react";
+import { generateId } from "@/lib/utils/id";
+import type { AgentId } from "@/lib/api/adapters";
+
+// ============================================================================
+// TIPOS
+// ============================================================================
 
 export interface ChatMessage {
   id: string;
@@ -11,153 +25,365 @@ export interface ChatMessage {
   agentIcon?: string;
   timestamp: string;
   isTyping?: boolean;
+  isStreaming?: boolean;
   source: "main" | "growl";
+}
+
+interface StreamEvent {
+  type: "start" | "chunk" | "done" | "error";
+  content?: string;
+  error?: string;
+  adapter?: string;
+  metadata?: {
+    tokensGenerated?: number;
+    timeElapsed?: number;
+  };
 }
 
 interface PascualChatContextType {
   messages: ChatMessage[];
   isTyping: boolean;
+  isStreaming: boolean;
   sendMessage: (content: string, source?: "main" | "growl") => void;
-  sendToAgent: (agentId: string, agentName: string, agentIcon: string, userMessage: string) => void;
-  clearMessages: () => void;
-}
-
-const PascualChatContext = createContext<PascualChatContextType | undefined>(undefined);
-
-export function GrowlProvider({ children }: { children: ReactNode }) {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    // Initial welcome message
-    {
-      id: "welcome-1",
-      type: "assistant",
-      content: "Hola, soy Pascual, tu asistente del ecosistema. ¿En qué puedo ayudarte hoy?",
-      agentName: "Pascual",
-      agentIcon: "◉",
-      timestamp: new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }),
-      source: "main",
-    }
-  ]);
-  const [isTyping, setIsTyping] = useState(false);
-
-  const generateId = () => `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-  const getTimestamp = () => new Date().toLocaleTimeString("es-CO", {
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-
-  const sendMessage = useCallback((content: string, source: "main" | "growl" = "main") => {
-    // Add user message
-    const userMessage: ChatMessage = {
-      id: generateId(),
-      type: "user",
-      content,
-      agentName: "Tú",
-      timestamp: getTimestamp(),
-      source,
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setIsTyping(true);
-
-    // Simulate Pascual response after delay
-    setTimeout(() => {
-      setIsTyping(false);
-
-      const response = generatePascualResponse(content);
-      const assistantMessage: ChatMessage = {
-        id: generateId(),
-        type: "assistant",
-        content: response,
-        agentName: "Pascual",
-        agentIcon: "◉",
-        timestamp: getTimestamp(),
-        source,
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
-    }, 1200 + Math.random() * 800);
-  }, []);
-
-  const sendToAgent = useCallback((
+  sendToAgent: (
     agentId: string,
     agentName: string,
     agentIcon: string,
     userMessage: string
-  ) => {
-    // Add user message to chat
-    const userMsg: ChatMessage = {
-      id: generateId(),
-      type: "user",
-      content: `[Para ${agentName}]: ${userMessage}`,
-      agentName: "Tú",
-      timestamp: getTimestamp(),
-      source: "growl",
-    };
+  ) => void;
+  clearMessages: () => void;
+  cancelStream: () => void;
+}
 
-    setMessages(prev => [...prev, userMsg]);
-    setIsTyping(true);
+// ============================================================================
+// CONTEXT
+// ============================================================================
 
-    // Simulate agent response after delay
-    setTimeout(() => {
-      setIsTyping(false);
+const PascualChatContext = createContext<PascualChatContextType | undefined>(
+  undefined
+);
 
-      const response = generateAgentResponse(agentId, agentName, userMessage);
-      const assistantMessage: ChatMessage = {
-        id: generateId(),
-        type: "assistant",
-        content: response,
-        agentId,
-        agentName,
-        agentIcon,
-        timestamp: getTimestamp(),
-        source: "growl",
-      };
+// ============================================================================
+// HELPERS
+// ============================================================================
 
-      setMessages(prev => [...prev, assistantMessage]);
-    }, 1500 + Math.random() * 1000);
-  }, []);
+const getTimestamp = () =>
+  new Date().toLocaleTimeString("es-CO", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-  const clearMessages = useCallback(() => {
-    // Keep only the welcome message
-    setMessages([{
+// Mapeo de agentes de módulos del dashboard a agentes reales
+const MODULE_TO_AGENT: Record<string, AgentId> = {
+  asistente: "pascual",
+  nexus: "nexus",
+  sentinel: "warden",
+  scout: "hunter",
+  audiovisual: "pascual",
+  consultor: "pascual",
+  gambito: "nexus",
+  condor360: "nexus",
+  picasso: "pascual",
+};
+
+// ============================================================================
+// PROVIDER
+// ============================================================================
+
+export function GrowlProvider({ children }: { children: ReactNode }) {
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
       id: "welcome-1",
       type: "assistant",
-      content: "Hola, soy Pascual, tu asistente del ecosistema. ¿En qué puedo ayudarte hoy?",
+      content:
+        "Hola, soy Pascual, tu asistente del ecosistema. ¿En qué puedo ayudarte hoy?",
       agentName: "Pascual",
       agentIcon: "◉",
       timestamp: getTimestamp(),
       source: "main",
-    }]);
+    },
+  ]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+
+  // AbortController para cancelar streams
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  /**
+   * Consume el stream SSE del API
+   */
+  const consumeStream = useCallback(
+    async (
+      agentId: AgentId,
+      prompt: string,
+      messageId: string,
+      agentName: string,
+      agentIcon: string,
+      source: "main" | "growl"
+    ) => {
+      abortControllerRef.current = new AbortController();
+      let fullContent = "";
+
+      try {
+        const response = await fetch("/api/chat/stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ agentId, prompt }),
+          signal: abortControllerRef.current.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) {
+          throw new Error("No response body");
+        }
+
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const text = decoder.decode(value, { stream: true });
+          const lines = text.split("\n").filter((line) => line.startsWith("data: "));
+
+          for (const line of lines) {
+            try {
+              const jsonStr = line.replace("data: ", "");
+              const event: StreamEvent = JSON.parse(jsonStr);
+
+              if (event.type === "chunk" && event.content) {
+                fullContent += event.content;
+
+                // Actualizar mensaje con contenido parcial
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === messageId
+                      ? { ...msg, content: fullContent, isStreaming: true }
+                      : msg
+                  )
+                );
+              } else if (event.type === "done") {
+                // Finalizar streaming
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === messageId
+                      ? { ...msg, content: fullContent, isStreaming: false }
+                      : msg
+                  )
+                );
+              } else if (event.type === "error" || event.error) {
+                throw new Error(event.error || "Stream error");
+              }
+            } catch (parseError) {
+              // Ignorar errores de parsing (pueden ser chunks incompletos)
+              if (parseError instanceof SyntaxError) continue;
+              throw parseError;
+            }
+          }
+        }
+      } catch (error) {
+        if ((error as Error).name === "AbortError") {
+          // Stream cancelado por el usuario
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === messageId
+                ? {
+                    ...msg,
+                    content: fullContent + " [cancelado]",
+                    isStreaming: false,
+                  }
+                : msg
+            )
+          );
+        } else {
+          // Error real - mostrar mensaje de error
+          console.error("[GrowlContext] Stream error:", error);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === messageId
+                ? {
+                    ...msg,
+                    content:
+                      fullContent ||
+                      "Lo siento, hubo un error al procesar tu solicitud. Por favor intenta de nuevo.",
+                    isStreaming: false,
+                  }
+                : msg
+            )
+          );
+        }
+      } finally {
+        setIsTyping(false);
+        setIsStreaming(false);
+        abortControllerRef.current = null;
+      }
+    },
+    []
+  );
+
+  /**
+   * Envía mensaje al agente principal (Pascual)
+   */
+  const sendMessage = useCallback(
+    (content: string, source: "main" | "growl" = "main") => {
+      // Agregar mensaje del usuario
+      const userMessage: ChatMessage = {
+        id: generateId("user"),
+        type: "user",
+        content,
+        agentName: "Tú",
+        timestamp: getTimestamp(),
+        source,
+      };
+
+      // Crear placeholder para respuesta
+      const assistantMessageId = generateId("assistant");
+      const assistantMessage: ChatMessage = {
+        id: assistantMessageId,
+        type: "assistant",
+        content: "",
+        agentName: "Pascual",
+        agentIcon: "◉",
+        timestamp: getTimestamp(),
+        isStreaming: true,
+        source,
+      };
+
+      setMessages((prev) => [...prev, userMessage, assistantMessage]);
+      setIsTyping(true);
+      setIsStreaming(true);
+
+      // Iniciar streaming
+      consumeStream("pascual", content, assistantMessageId, "Pascual", "◉", source);
+    },
+    [consumeStream]
+  );
+
+  /**
+   * Envía mensaje a un agente específico
+   */
+  const sendToAgent = useCallback(
+    (
+      moduleId: string,
+      agentName: string,
+      agentIcon: string,
+      userMessage: string
+    ) => {
+      // Agregar mensaje del usuario
+      const userMsg: ChatMessage = {
+        id: generateId("user"),
+        type: "user",
+        content: `[Para ${agentName}]: ${userMessage}`,
+        agentName: "Tú",
+        timestamp: getTimestamp(),
+        source: "growl",
+      };
+
+      // Crear placeholder para respuesta
+      const assistantMessageId = generateId("assistant");
+      const assistantMessage: ChatMessage = {
+        id: assistantMessageId,
+        type: "assistant",
+        content: "",
+        agentId: moduleId,
+        agentName,
+        agentIcon,
+        timestamp: getTimestamp(),
+        isStreaming: true,
+        source: "growl",
+      };
+
+      setMessages((prev) => [...prev, userMsg, assistantMessage]);
+      setIsTyping(true);
+      setIsStreaming(true);
+
+      // Mapear módulo a agente real
+      const realAgentId = MODULE_TO_AGENT[moduleId] || "pascual";
+
+      // Iniciar streaming
+      consumeStream(
+        realAgentId,
+        userMessage,
+        assistantMessageId,
+        agentName,
+        agentIcon,
+        "growl"
+      );
+    },
+    [consumeStream]
+  );
+
+  /**
+   * Cancelar stream en curso
+   */
+  const cancelStream = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
   }, []);
 
-  // Listen for pascual:message events from PascualInput components (growl inputs)
+  /**
+   * Limpiar mensajes
+   */
+  const clearMessages = useCallback(() => {
+    cancelStream();
+    setMessages([
+      {
+        id: "welcome-1",
+        type: "assistant",
+        content:
+          "Hola, soy Pascual, tu asistente del ecosistema. ¿En qué puedo ayudarte hoy?",
+        agentName: "Pascual",
+        agentIcon: "◉",
+        timestamp: getTimestamp(),
+        source: "main",
+      },
+    ]);
+  }, [cancelStream]);
+
+  // Escuchar eventos de PascualInput
   useEffect(() => {
-    const handlePascualMessage = (event: CustomEvent<{ message: string; context?: string }>) => {
+    const handlePascualMessage = (
+      event: CustomEvent<{ message: string; context?: string }>
+    ) => {
       const { message } = event.detail;
       sendMessage(message, "growl");
     };
 
     window.addEventListener("pascual:message", handlePascualMessage as EventListener);
     return () => {
-      window.removeEventListener("pascual:message", handlePascualMessage as EventListener);
+      window.removeEventListener(
+        "pascual:message",
+        handlePascualMessage as EventListener
+      );
     };
   }, [sendMessage]);
 
   return (
-    <PascualChatContext.Provider value={{
-      messages,
-      isTyping,
-      sendMessage,
-      sendToAgent,
-      clearMessages,
-    }}>
+    <PascualChatContext.Provider
+      value={{
+        messages,
+        isTyping,
+        isStreaming,
+        sendMessage,
+        sendToAgent,
+        clearMessages,
+        cancelStream,
+      }}
+    >
       {children}
     </PascualChatContext.Provider>
   );
 }
 
-// Keep the original hook name for compatibility
+// ============================================================================
+// HOOKS
+// ============================================================================
+
 export function useGrowl() {
   const context = useContext(PascualChatContext);
   if (!context) {
@@ -169,105 +395,9 @@ export function useGrowl() {
 // Alias for clearer naming
 export const usePascualChat = useGrowl;
 
-// Simulated responses based on agent type
-function generateAgentResponse(agentId: string, agentName: string, userMessage: string): string {
-  const responses: Record<string, string[]> = {
-    asistente: [
-      "He agregado eso a tu lista de tareas pendientes. Te recordaré más tarde.",
-      "Entendido. He organizado tu agenda para hoy considerando esa solicitud.",
-      "Listo. Domus ya está coordinando eso con el sistema doméstico.",
-      "Tu solicitud ha sido procesada. Chronos te enviará un recordatorio.",
-    ],
-    nexus: [
-      "Analizando el código... He detectado algunos patrones que podemos optimizar.",
-      "El PR está listo para review. He ejecutado los tests y todo pasa correctamente.",
-      "He creado un branch con la implementación sugerida. Puedes revisarlo cuando quieras.",
-      "La arquitectura propuesta cumple con los estándares. Procederé con la implementación.",
-    ],
-    sentinel: [
-      "Escaneo de seguridad completado. No se detectaron amenazas críticas.",
-      "He actualizado las reglas del firewall según tu solicitud.",
-      "Auditoría de accesos generada. Te envío el reporte completo.",
-      "Sistema de backup ejecutado exitosamente. Recovery point actualizado.",
-    ],
-    scout: [
-      "Búsqueda completada. He encontrado 15 resultados relevantes.",
-      "Tendencia agregada a monitoreo. Te notificaré de cambios importantes.",
-      "Datos extraídos y sintetizados. El reporte está listo.",
-      "He actualizado el feed con la información más reciente.",
-    ],
-    audiovisual: [
-      "Imagen generada y guardada en la biblioteca. Puedes editarla si necesitas ajustes.",
-      "El video está en cola de producción. Tiempo estimado: 5 minutos.",
-      "Audio narrado listo. He mantenido coherencia con tu tono de marca.",
-      "Contenido creado siguiendo las guías de brand. Revisa si necesitas cambios.",
-    ],
-    consultor: [
-      "Basado en tu situación, te recomiendo considerar estas opciones...",
-      "He analizado los datos y preparado un plan personalizado para ti.",
-      "Mi recomendación profesional sería enfocarte primero en...",
-      "Excelente pregunta. Aquí tienes mi análisis detallado.",
-    ],
-    gambito: [
-      "Análisis completado. He identificado 3 oportunidades con valor esperado positivo.",
-      "Modelo actualizado con los últimos datos. Precisión actual: 72%.",
-      "El bankroll está optimizado. Kelly sugiere un stake del 2.3%.",
-      "Partido analizado. La predicción tiene confianza media-alta.",
-    ],
-    condor360: [
-      "Señal de mercado detectada. NVDA muestra momentum positivo.",
-      "Portafolio analizado. Sugiero rebalancear hacia más defensivo.",
-      "Análisis fundamental completado. Los ratios están dentro de parámetros.",
-      "Sentimiento del mercado: Bullish. VIX en niveles bajos.",
-    ],
-    picasso: [
-      "Auditoría UX completada. Core Web Vitals dentro de objetivos.",
-      "Nuevo componente diseñado siguiendo el design system.",
-      "Accesibilidad verificada. WCAG 2.1 AA compliant.",
-      "Performance optimizada. LCP mejorado en 200ms.",
-    ],
-  };
+// ============================================================================
+// TYPE EXPORTS
+// ============================================================================
 
-  const agentResponses = responses[agentId] || [
-    `Entendido. Procesando tu solicitud sobre: "${userMessage.substring(0, 50)}..."`,
-    "He recibido tu mensaje y estoy trabajando en ello.",
-    "Solicitud procesada exitosamente.",
-  ];
-
-  return agentResponses[Math.floor(Math.random() * agentResponses.length)];
-}
-
-// Simulated responses from Pascual (main orchestrator)
-function generatePascualResponse(userMessage: string): string {
-  const lowerMessage = userMessage.toLowerCase();
-
-  if (lowerMessage.includes("tarea") || lowerMessage.includes("task")) {
-    return "He registrado tu solicitud. La tarea será asignada al agente más apropiado según su naturaleza.";
-  }
-
-  if (lowerMessage.includes("ayuda") || lowerMessage.includes("help")) {
-    return "Estoy aquí para ayudarte. Puedo coordinar tareas entre los 9 agentes del ecosistema, gestionar tu agenda, analizar datos y mucho más. ¿Qué necesitas?";
-  }
-
-  if (lowerMessage.includes("estado") || lowerMessage.includes("status")) {
-    return "Todos los sistemas operando normalmente. 8 de 9 agentes activos. No hay alertas críticas pendientes.";
-  }
-
-  if (lowerMessage.includes("hola") || lowerMessage.includes("hi") || lowerMessage.includes("hey")) {
-    return "¡Hola! ¿En qué puedo ayudarte hoy? Tengo acceso a los 9 agentes del ecosistema PASCUAL.";
-  }
-
-  const defaultResponses = [
-    "Entendido. He procesado tu solicitud y estoy coordinando con los agentes necesarios.",
-    "Recibido. Voy a delegar esto al agente especializado correspondiente.",
-    "Tu mensaje ha sido registrado. Te mantendré informado del progreso.",
-    "Perfecto. He iniciado el proceso y te notificaré cuando haya resultados.",
-    "Mensaje recibido. Estoy analizando la mejor forma de proceder con tu solicitud.",
-  ];
-
-  return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
-}
-
-// Type exports for backwards compatibility
 export type GrowlMessage = ChatMessage;
 export type ChatHistoryEntry = ChatMessage;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, KeyboardEvent } from "react";
+import { useState, KeyboardEvent, useId } from "react";
 
 // Icons - matching PascualInput style
 const RobotIcon = () => (
@@ -14,6 +14,7 @@ const RobotIcon = () => (
     strokeLinecap="round"
     strokeLinejoin="round"
     className="animate-robot-idle"
+    aria-hidden="true"
   >
     <rect x="3" y="11" width="18" height="10" rx="2" />
     <circle cx="12" cy="5" r="2" />
@@ -33,6 +34,7 @@ const SendIcon = () => (
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
+    aria-hidden="true"
   >
     <path d="M22 2L11 13" />
     <path d="M22 2L15 22L11 13L2 9L22 2Z" />
@@ -48,10 +50,12 @@ interface MessageInputProps {
 export function MessageInput({
   onSend,
   disabled = false,
-  placeholder = "Háblale a Pascual...",
+  placeholder = "Escribe tu mensaje para Pascual...",
 }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const inputId = useId();
+  const helpTextId = useId();
 
   const handleSend = () => {
     if (message.trim() && !disabled) {
@@ -69,6 +73,12 @@ export function MessageInput({
 
   return (
     <div className="p-3 bg-zinc-950 border-t border-zinc-800">
+      <label htmlFor={inputId} className="sr-only">
+        Mensaje para Pascual
+      </label>
+      <span id={helpTextId} className="sr-only">
+        Presiona Enter para enviar el mensaje
+      </span>
       <div
         className={`
           flex items-center gap-3
@@ -82,6 +92,7 @@ export function MessageInput({
           <RobotIcon />
         </span>
         <input
+          id={inputId}
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
@@ -90,17 +101,20 @@ export function MessageInput({
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
           disabled={disabled}
-          className="flex-1 bg-transparent font-mono text-sm text-white placeholder:text-zinc-600 outline-none disabled:cursor-not-allowed"
+          aria-label="Escribe tu mensaje para Pascual"
+          aria-describedby={helpTextId}
+          className="flex-1 bg-transparent font-mono text-sm text-white placeholder:text-zinc-500 outline-none disabled:cursor-not-allowed"
         />
         <button
           onClick={handleSend}
           disabled={disabled || !message.trim()}
+          aria-label={message.trim() ? "Enviar mensaje" : "Escribe un mensaje para enviar"}
           className={`
             flex items-center gap-2 px-3 py-1.5 rounded-sm font-mono text-xs
             transition-all duration-200
             ${message.trim() && !disabled
               ? "text-[#00d9ff] hover:bg-[#00d9ff]/20 cursor-pointer"
-              : "text-zinc-700 cursor-not-allowed"
+              : "text-zinc-600 cursor-not-allowed"
             }
           `}
         >
@@ -121,6 +135,8 @@ export function VoiceButton({ isListening, onToggle }: VoiceButtonProps) {
   return (
     <button
       onClick={onToggle}
+      aria-label={isListening ? "Detener grabación de voz" : "Iniciar grabación de voz"}
+      aria-pressed={isListening}
       className={`
         w-10 h-10 rounded-full
         flex items-center justify-center
@@ -132,7 +148,7 @@ export function VoiceButton({ isListening, onToggle }: VoiceButtonProps) {
         }
       `}
     >
-      {isListening ? "◉" : "◎"}
+      <span aria-hidden="true">{isListening ? "◉" : "◎"}</span>
     </button>
   );
 }

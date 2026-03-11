@@ -11,11 +11,11 @@ import {
   Cell,
 } from "recharts";
 import {
+  TimeRangeSelector,
   TimeRange,
-  TIME_RANGE_LABELS,
   expandDataForRange,
   formatLabelForRange,
-} from "./ChartContainer";
+} from "@/components/ui/TimeRangeSelector";
 
 interface DataPoint {
   name: string;
@@ -60,24 +60,10 @@ export function BarChart({
       {(title || showTimeRange) && (
         <div className="flex items-center justify-between mb-2">
           {title && (
-            <p className="text-[10px] font-mono text-zinc-500 uppercase">{title}</p>
+            <p className="text-[10px] font-mono text-zinc-400 uppercase">{title}</p>
           )}
           {showTimeRange && (
-            <div className="flex gap-0.5">
-              {(Object.keys(TIME_RANGE_LABELS) as TimeRange[]).map((range) => (
-                <button
-                  key={range}
-                  onClick={() => setTimeRange(range)}
-                  className={`px-1.5 py-0.5 text-[9px] font-mono rounded-sm transition-colors ${
-                    timeRange === range
-                      ? "bg-zinc-700 text-white"
-                      : "text-zinc-500 hover:text-zinc-300"
-                  }`}
-                >
-                  {TIME_RANGE_LABELS[range]}
-                </button>
-              ))}
-            </div>
+            <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
           )}
         </div>
       )}
@@ -90,13 +76,13 @@ export function BarChart({
             <>
               {horizontal ? (
                 <>
-                  <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 10 }} />
-                  <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 10 }} width={60} />
+                  <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: "#a1a1aa", fontSize: 10 }} />
+                  <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#a1a1aa", fontSize: 10 }} width={60} />
                 </>
               ) : (
                 <>
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 10 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 10 }} width={30} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#a1a1aa", fontSize: 10 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#a1a1aa", fontSize: 10 }} width={30} />
                 </>
               )}
             </>
