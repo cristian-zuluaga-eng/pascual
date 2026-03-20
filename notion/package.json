@@ -1,0 +1,35 @@
+{
+  "name": "@openclaw/notion-integration",
+  "version": "1.0.0",
+  "description": "Notion integration layer for OpenClaw/PASCUAL AI agents",
+  "type": "module",
+  "main": "dist/tools/index.js",
+  "types": "dist/tools/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "keywords": [
+    "notion",
+    "openclaw",
+    "pascual",
+    "ai-agents"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@notionhq/client": "^2.2.15",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
